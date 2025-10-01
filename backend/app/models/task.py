@@ -5,6 +5,7 @@ from sqlalchemy.sql import func, text
 from sqlalchemy.orm import relationship
 
 from app.db.database import Base
+from app.models.associations import task_contexts
 
 
 class Task(Base):
@@ -29,5 +30,5 @@ class Task(Base):
 
     # Relationships
     project = relationship("Project", back_populates="tasks", foreign_keys=[project_id])
-    contexts = relationship("Context", secondary="task_contexts", backref="tasks")
+    contexts = relationship("Context", secondary=task_contexts, backref="tasks")
     blocking_task = relationship("Task", remote_side=[id], foreign_keys=[blocked_by_task_id])

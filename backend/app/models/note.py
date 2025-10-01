@@ -5,6 +5,7 @@ from sqlalchemy.sql import func, text
 from sqlalchemy.orm import relationship
 
 from app.db.database import Base
+from app.models.associations import note_task_links
 
 
 class Note(Base):
@@ -22,4 +23,4 @@ class Note(Base):
 
     # Relationships
     project = relationship("Project", back_populates="notes")
-    tasks = relationship("Task", secondary="note_task_links", backref="notes")
+    tasks = relationship("Task", secondary=note_task_links, backref="notes")
