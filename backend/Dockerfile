@@ -1,6 +1,9 @@
 # Use Python slim image for smaller size
 FROM python:3.12-slim
 
+# Install netcat for healthcheck
+RUN apt-get update && apt-get install -y netcat-traditional && rm -rf /var/lib/apt/lists/*
+
 # Set working directory
 WORKDIR /app
 
@@ -13,6 +16,8 @@ RUN pip install --no-cache-dir --upgrade pip && \
 
 # Copy application code
 COPY ./app ./app
+COPY ./alembic ./alembic
+COPY alembic.ini .
 
 # Expose port
 EXPOSE 8000
