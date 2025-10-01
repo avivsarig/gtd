@@ -163,3 +163,169 @@ class TestCreate:
         mock_db.commit.assert_called_once()
         mock_db.refresh.assert_called_once()
         assert result == mock_task
+
+
+class TestGetById:
+    """Test get_by_id() repository method."""
+
+    def test_get_by_id_returns_task(self):
+        """Should return task when found."""
+        from uuid import uuid4
+
+        task_id = uuid4()
+        mock_task = Mock(spec=Task, id=task_id, title="Found task")
+
+        # Mock database session
+        mock_db = Mock()
+        mock_query = mock_db.query.return_value
+        mock_filter = mock_query.filter.return_value
+        mock_filter.first.return_value = mock_task
+
+        result = task_repository.get_by_id(mock_db, task_id)
+
+        # Verify query was constructed correctly
+        mock_db.query.assert_called_once_with(Task)
+        mock_query.filter.assert_called_once()
+        assert result == mock_task
+
+    def test_get_by_id_returns_none_when_not_found(self):
+        """Should return None when task doesn't exist."""
+        from uuid import uuid4
+
+        task_id = uuid4()
+
+        # Mock database session
+        mock_db = Mock()
+        mock_query = mock_db.query.return_value
+        mock_filter = mock_query.filter.return_value
+        mock_filter.first.return_value = None
+
+        result = task_repository.get_by_id(mock_db, task_id)
+
+        assert result is None
+
+    def test_get_by_id_excludes_deleted_tasks(self):
+        """Should not return deleted tasks."""
+        from uuid import uuid4
+
+        task_id = uuid4()
+
+        # Mock database session - return None for deleted task
+        mock_db = Mock()
+        mock_query = mock_db.query.return_value
+        mock_filter = mock_query.filter.return_value
+        mock_filter.first.return_value = None
+
+        result = task_repository.get_by_id(mock_db, task_id)
+
+        # Verify filter includes deleted_at check
+        mock_query.filter.assert_called_once()
+        assert result is None
+
+
+class TestUpdate:
+    """Test update() repository method."""
+
+    def test_update_task_with_partial_data(self):
+        """Should update only provided fields."""
+        from app.schemas.task import TaskUpdate
+        from uuid import uuid4
+
+        task_id = uuid4()
+        mock_task = Mock(spec=Task, id=task_id, title="Old title", description="Old description")
+        mock_db = Mock()
+        mock_db.commit = Mock()
+        mock_db.refresh = Mock()
+
+        # Update only title
+        update_data = TaskUpdate(title="New title")
+
+        result = task_repository.update(mock_db, mock_task, update_data)
+
+        # Verify title was updated
+        assert mock_task.title == "New title"
+        # Verify commit and refresh were called
+        mock_db.commit.assert_called_once()
+        mock_db.refresh.assert_called_once_with(mock_task)
+        assert result == mock_task
+
+    def test_update_task_with_multiple_fields(self):
+        """Should update multiple fields at once."""
+        from app.schemas.task import TaskUpdate
+        from datetime import date
+
+        mock_task = Mock(spec=Task, title="Old", status="next", scheduled_date=None)
+        mock_db = Mock()
+        mock_db.commit = Mock()
+        mock_db.refresh = Mock()
+
+        # Update multiple fields
+        update_data = TaskUpdate(
+            title="Updated title",
+            status="waiting",
+            scheduled_date=date(2025, 10, 15)
+        )
+
+        result = task_repository.update(mock_db, mock_task, update_data)
+
+        # Verify all fields were updated
+        assert mock_task.title == "Updated title"
+        assert mock_task.status == "waiting"
+        assert mock_task.scheduled_date == date(2025, 10, 15)
+        mock_db.commit.assert_called_once()
+
+    def test_update_task_with_none_fields_ignored(self):
+        """Should not update fields that are None/unset."""
+        from app.schemas.task import TaskUpdate
+
+        mock_task = Mock(spec=Task, title="Original title", description="Original desc")
+        mock_db = Mock()
+        mock_db.commit = Mock()
+        mock_db.refresh = Mock()
+
+        # Create update with no fields set
+        update_data = TaskUpdate()
+
+        task_repository.update(mock_db, mock_task, update_data)
+
+        # Original values should remain
+        assert mock_task.title == "Original title"
+        assert mock_task.description == "Original desc"
+
+
+class TestSoftDelete:
+    """Test soft_delete() repository method."""
+
+    def test_soft_delete_sets_deleted_at(self):
+        """Should set deleted_at timestamp."""
+        from datetime import datetime
+
+        mock_task = Mock(spec=Task, deleted_at=None)
+        mock_db = Mock()
+        mock_db.commit = Mock()
+        mock_db.refresh = Mock()
+
+        result = task_repository.soft_delete(mock_db, mock_task)
+
+        # Verify deleted_at was set
+        assert mock_task.deleted_at is not None
+        assert isinstance(mock_task.deleted_at, datetime)
+        mock_db.commit.assert_called_once()
+        mock_db.refresh.assert_called_once_with(mock_task)
+        assert result == mock_task
+
+    def test_soft_delete_preserves_task_data(self):
+        """Should only set deleted_at, not modify other fields."""
+        from uuid import uuid4
+
+        task_id = uuid4()
+        mock_task = Mock(spec=Task, id=task_id, title="My task", deleted_at=None)
+        mock_db = Mock()
+        mock_db.commit = Mock()
+        mock_db.refresh = Mock()
+
+        task_repository.soft_delete(mock_db, mock_task)
+
+        # Other fields should remain unchanged
+        assert mock_task.id == task_id
+        assert mock_task.title == "My task"

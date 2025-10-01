@@ -103,3 +103,145 @@ class TestCreateTask:
             # Default status from schema should be 'next'
             assert task_data.status == "next"
             mock_create.assert_called_once()
+
+
+class TestGetTask:
+    """Test get_task() controller method."""
+
+    def test_get_task_calls_repository(self):
+        """Should call repository get_by_id method."""
+        from uuid import uuid4
+
+        mock_db = Mock()
+        task_id = uuid4()
+        mock_task = Mock(spec=Task, id=task_id, title="Test task")
+
+        with patch('app.controllers.task_controller.task_repository.get_by_id', return_value=mock_task) as mock_get:
+            result = task_controller.get_task(mock_db, task_id)
+
+            mock_get.assert_called_once_with(mock_db, task_id)
+            assert result == mock_task
+
+    def test_get_task_returns_none_when_not_found(self):
+        """Should return None when task doesn't exist."""
+        from uuid import uuid4
+
+        mock_db = Mock()
+        task_id = uuid4()
+
+        with patch('app.controllers.task_controller.task_repository.get_by_id', return_value=None) as mock_get:
+            result = task_controller.get_task(mock_db, task_id)
+
+            assert result is None
+
+
+class TestUpdateTask:
+    """Test update_task() controller method."""
+
+    def test_update_task_calls_repository(self):
+        """Should fetch task and call repository update."""
+        from app.schemas.task import TaskUpdate
+        from uuid import uuid4
+
+        mock_db = Mock()
+        task_id = uuid4()
+        mock_task = Mock(spec=Task, id=task_id, title="Old title")
+        update_data = TaskUpdate(title="New title")
+
+        with patch('app.controllers.task_controller.task_repository.get_by_id', return_value=mock_task) as mock_get:
+            with patch('app.controllers.task_controller.task_repository.update', return_value=mock_task) as mock_update:
+                result = task_controller.update_task(mock_db, task_id, update_data)
+
+                mock_get.assert_called_once_with(mock_db, task_id)
+                mock_update.assert_called_once_with(mock_db, mock_task, update_data)
+                assert result == mock_task
+
+    def test_update_task_returns_none_when_not_found(self):
+        """Should return None if task doesn't exist."""
+        from app.schemas.task import TaskUpdate
+        from uuid import uuid4
+
+        mock_db = Mock()
+        task_id = uuid4()
+        update_data = TaskUpdate(title="New title")
+
+        with patch('app.controllers.task_controller.task_repository.get_by_id', return_value=None) as mock_get:
+            result = task_controller.update_task(mock_db, task_id, update_data)
+
+            assert result is None
+            # Should not call update if task not found
+            mock_get.assert_called_once()
+
+    def test_update_task_with_blocked_by_sets_waiting_status(self):
+        """Should set status to 'waiting' when blocked_by_task_id is set."""
+        from app.schemas.task import TaskUpdate
+        from uuid import uuid4
+
+        mock_db = Mock()
+        task_id = uuid4()
+        blocking_task_id = uuid4()
+        mock_task = Mock(spec=Task, id=task_id, status="next")
+
+        update_data = TaskUpdate(
+            title="Blocked task",
+            blocked_by_task_id=blocking_task_id
+        )
+
+        with patch('app.controllers.task_controller.task_repository.get_by_id', return_value=mock_task):
+            with patch('app.controllers.task_controller.task_repository.update', return_value=mock_task) as mock_update:
+                result = task_controller.update_task(mock_db, task_id, update_data)
+
+                # Verify status was auto-set to waiting
+                assert update_data.status == "waiting"
+
+    def test_update_task_without_blocked_by_keeps_status(self):
+        """Should not change status when blocked_by_task_id is not set."""
+        from app.schemas.task import TaskUpdate
+        from uuid import uuid4
+
+        mock_db = Mock()
+        task_id = uuid4()
+        mock_task = Mock(spec=Task, id=task_id)
+
+        update_data = TaskUpdate(title="Updated title")
+
+        with patch('app.controllers.task_controller.task_repository.get_by_id', return_value=mock_task):
+            with patch('app.controllers.task_controller.task_repository.update', return_value=mock_task):
+                task_controller.update_task(mock_db, task_id, update_data)
+
+                # Status should not be set
+                assert update_data.status is None
+
+
+class TestDeleteTask:
+    """Test delete_task() controller method."""
+
+    def test_delete_task_calls_repository(self):
+        """Should fetch task and call repository soft_delete."""
+        from uuid import uuid4
+
+        mock_db = Mock()
+        task_id = uuid4()
+        mock_task = Mock(spec=Task, id=task_id)
+
+        with patch('app.controllers.task_controller.task_repository.get_by_id', return_value=mock_task) as mock_get:
+            with patch('app.controllers.task_controller.task_repository.soft_delete', return_value=mock_task) as mock_delete:
+                result = task_controller.delete_task(mock_db, task_id)
+
+                mock_get.assert_called_once_with(mock_db, task_id)
+                mock_delete.assert_called_once_with(mock_db, mock_task)
+                assert result == mock_task
+
+    def test_delete_task_returns_none_when_not_found(self):
+        """Should return None if task doesn't exist."""
+        from uuid import uuid4
+
+        mock_db = Mock()
+        task_id = uuid4()
+
+        with patch('app.controllers.task_controller.task_repository.get_by_id', return_value=None) as mock_get:
+            result = task_controller.delete_task(mock_db, task_id)
+
+            assert result is None
+            # Should not call soft_delete if task not found
+            mock_get.assert_called_once()
