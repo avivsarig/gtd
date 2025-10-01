@@ -1,50 +1,31 @@
 """Tasks API endpoints."""
 from typing import List
-from datetime import datetime
-from uuid import UUID
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from pydantic import BaseModel
 
 from app.db.database import get_db
-from app.models.task import Task
+from app.schemas.task import TaskCreate, TaskResponse
+from app.controllers import task_controller
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 
-# Pydantic schemas
-class TaskCreate(BaseModel):
-    title: str
-    description: str | None = None
-
-
-class TaskResponse(BaseModel):
-    id: UUID
-    title: str
-    description: str | None
-    status: str
-    created_at: datetime
-    updated_at: datetime
-
-    class Config:
-        from_attributes = True
-
-
 @router.get("/", response_model=List[TaskResponse])
 def list_tasks(db: Session = Depends(get_db)):
-    """Get all tasks (not deleted)."""
-    tasks = db.query(Task).filter(Task.deleted_at == None).order_by(Task.created_at.desc()).all()
-    return tasks
+    """
+    Get all active tasks.
+
+    Returns list of all non-deleted tasks ordered by created_at descending.
+    """
+    return task_controller.list_tasks(db)
 
 
-@router.post("/", response_model=TaskResponse)
+@router.post("/", response_model=TaskResponse, status_code=201)
 def create_task(task_data: TaskCreate, db: Session = Depends(get_db)):
-    """Create a new task."""
-    task = Task(
-        title=task_data.title,
-        description=task_data.description,
-    )
-    db.add(task)
-    db.commit()
-    db.refresh(task)
-    return task
+    """
+    Create a new task.
+
+    Business rules applied:
+    - Tasks with blocked_by_task_id are automatically set to 'waiting' status
+    """
+    return task_controller.create_task(db, task_data)
