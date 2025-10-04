@@ -1,8 +1,10 @@
 """Unit tests for Task controller."""
 from unittest.mock import Mock, patch
+from datetime import datetime
 
 from app.models.task import Task
 from app.controllers import task_controller
+from app.schemas.task import TaskStatus
 
 
 class TestListTasks:
@@ -62,7 +64,7 @@ class TestCreateTask:
         # Create task with blocked_by set
         task_data = TaskCreate(
             title="Blocked task",
-            status="next",  # User tries to set to 'next'
+            status=TaskStatus.NEXT,  # User tries to set to 'next'
             blocked_by_task_id=blocking_task_id
         )
         mock_task = Mock(spec=Task, status="waiting")
@@ -71,7 +73,7 @@ class TestCreateTask:
             result = task_controller.create_task(mock_db, task_data)
 
             # Verify status was changed to 'waiting'
-            assert task_data.status == "waiting"
+            assert task_data.status == TaskStatus.WAITING
             mock_create.assert_called_once_with(mock_db, task_data)
 
     def test_create_task_without_blocked_by_keeps_original_status(self):
@@ -79,14 +81,14 @@ class TestCreateTask:
         from app.schemas.task import TaskCreate
 
         mock_db = Mock()
-        task_data = TaskCreate(title="Normal task", status="next")
+        task_data = TaskCreate(title="Normal task", status=TaskStatus.NEXT)
         mock_task = Mock(spec=Task, status="next")
 
         with patch('app.controllers.task_controller.task_repository.create', return_value=mock_task) as mock_create:
             result = task_controller.create_task(mock_db, task_data)
 
             # Verify status was NOT changed
-            assert task_data.status == "next"
+            assert task_data.status == TaskStatus.NEXT
             mock_create.assert_called_once()
 
     def test_create_task_uses_default_status(self):
@@ -101,7 +103,7 @@ class TestCreateTask:
             result = task_controller.create_task(mock_db, task_data)
 
             # Default status from schema should be 'next'
-            assert task_data.status == "next"
+            assert task_data.status == TaskStatus.NEXT
             mock_create.assert_called_once()
 
 
@@ -192,7 +194,7 @@ class TestUpdateTask:
                 result = task_controller.update_task(mock_db, task_id, update_data)
 
                 # Verify status was auto-set to waiting
-                assert update_data.status == "waiting"
+                assert update_data.status == TaskStatus.WAITING
 
     def test_update_task_without_blocked_by_keeps_status(self):
         """Should not change status when blocked_by_task_id is not set."""
@@ -245,3 +247,161 @@ class TestDeleteTask:
             assert result is None
             # Should not call soft_delete if task not found
             mock_get.assert_called_once()
+
+
+class TestCompleteTask:
+    """Test complete_task() controller method."""
+
+    def test_complete_task_sets_completed_at_timestamp(self):
+        """Should set completed_at to current time."""
+        from uuid import uuid4
+
+        mock_db = Mock()
+        task_id = uuid4()
+        mock_task = Mock(spec=Task, id=task_id, completed_at=None)
+
+        with patch('app.controllers.task_controller.task_repository.get_by_id', return_value=mock_task):
+            with patch('app.controllers.task_controller.datetime') as mock_datetime:
+                mock_now = datetime(2025, 10, 5, 12, 0, 0)
+                mock_datetime.utcnow.return_value = mock_now
+
+                result = task_controller.complete_task(mock_db, task_id)
+
+                assert mock_task.completed_at == mock_now
+                mock_db.commit.assert_called_once()
+                mock_db.refresh.assert_called_once_with(mock_task)
+
+    def test_complete_task_returns_none_when_not_found(self):
+        """Should return None if task doesn't exist."""
+        from uuid import uuid4
+
+        mock_db = Mock()
+        task_id = uuid4()
+
+        with patch('app.controllers.task_controller.task_repository.get_by_id', return_value=None):
+            result = task_controller.complete_task(mock_db, task_id)
+
+            assert result is None
+            mock_db.commit.assert_not_called()
+
+
+class TestUncompleteTask:
+    """Test uncomplete_task() controller method."""
+
+    def test_uncomplete_task_clears_completed_at(self):
+        """Should clear completed_at timestamp."""
+        from uuid import uuid4
+
+        mock_db = Mock()
+        task_id = uuid4()
+        mock_task = Mock(spec=Task, id=task_id, completed_at=datetime.utcnow())
+
+        with patch('app.controllers.task_controller.task_repository.get_by_id', return_value=mock_task):
+            result = task_controller.uncomplete_task(mock_db, task_id)
+
+            assert mock_task.completed_at is None
+            mock_db.commit.assert_called_once()
+            mock_db.refresh.assert_called_once_with(mock_task)
+
+    def test_uncomplete_task_returns_none_when_not_found(self):
+        """Should return None if task doesn't exist."""
+        from uuid import uuid4
+
+        mock_db = Mock()
+        task_id = uuid4()
+
+        with patch('app.controllers.task_controller.task_repository.get_by_id', return_value=None):
+            result = task_controller.uncomplete_task(mock_db, task_id)
+
+            assert result is None
+            mock_db.commit.assert_not_called()
+
+
+class TestBulkUpdateStatus:
+    """Test bulk_update_status() controller method."""
+
+    def test_bulk_update_status_updates_all_valid_tasks(self):
+        """Should update status for all existing tasks."""
+        from uuid import uuid4
+
+        mock_db = Mock()
+        task_id1, task_id2, task_id3 = uuid4(), uuid4(), uuid4()
+        task_ids = [task_id1, task_id2, task_id3]
+
+        mock_task1 = Mock(spec=Task, id=task_id1, status="next")
+        mock_task2 = Mock(spec=Task, id=task_id2, status="next")
+        mock_task3 = Mock(spec=Task, id=task_id3, status="next")
+
+        def get_by_id_side_effect(db, task_id):
+            if task_id == task_id1:
+                return mock_task1
+            elif task_id == task_id2:
+                return mock_task2
+            elif task_id == task_id3:
+                return mock_task3
+            return None
+
+        with patch('app.controllers.task_controller.task_repository.get_by_id', side_effect=get_by_id_side_effect):
+            with patch('app.controllers.task_controller.datetime') as mock_datetime:
+                mock_now = datetime(2025, 10, 5, 12, 0, 0)
+                mock_datetime.utcnow.return_value = mock_now
+
+                result = task_controller.bulk_update_status(
+                    mock_db,
+                    task_ids,
+                    TaskStatus.WAITING
+                )
+
+                assert len(result) == 3
+                assert mock_task1.status == TaskStatus.WAITING.value
+                assert mock_task2.status == TaskStatus.WAITING.value
+                assert mock_task3.status == TaskStatus.WAITING.value
+                assert mock_task1.updated_at == mock_now
+                mock_db.commit.assert_called_once()
+
+    def test_bulk_update_status_ignores_nonexistent_tasks(self):
+        """Should skip tasks that don't exist without error."""
+        from uuid import uuid4
+
+        mock_db = Mock()
+        task_id1 = uuid4()
+        task_id2 = uuid4()  # This one doesn't exist
+        task_id3 = uuid4()
+
+        mock_task1 = Mock(spec=Task, id=task_id1, status="next")
+        mock_task3 = Mock(spec=Task, id=task_id3, status="next")
+
+        def get_by_id_side_effect(db, task_id):
+            if task_id == task_id1:
+                return mock_task1
+            elif task_id == task_id3:
+                return mock_task3
+            return None
+
+        with patch('app.controllers.task_controller.task_repository.get_by_id', side_effect=get_by_id_side_effect):
+            with patch('app.controllers.task_controller.datetime') as mock_datetime:
+                mock_datetime.utcnow.return_value = datetime.utcnow()
+
+                result = task_controller.bulk_update_status(
+                    mock_db,
+                    [task_id1, task_id2, task_id3],
+                    TaskStatus.SOMEDAY
+                )
+
+                # Should only return 2 tasks (1 and 3)
+                assert len(result) == 2
+                assert mock_task1 in result
+                assert mock_task3 in result
+
+    def test_bulk_update_status_handles_empty_list(self):
+        """Should handle empty task list gracefully."""
+        mock_db = Mock()
+
+        result = task_controller.bulk_update_status(
+            mock_db,
+            [],
+            TaskStatus.NEXT
+        )
+
+        assert len(result) == 0
+        mock_db.commit.assert_called_once()

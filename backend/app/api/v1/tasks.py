@@ -5,7 +5,13 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
-from app.schemas.task import TaskCreate, TaskUpdate, TaskResponse
+from app.schemas.task import (
+    TaskCreate,
+    TaskUpdate,
+    TaskResponse,
+    BulkStatusUpdate,
+    BulkStatusUpdateResponse
+)
 from app.controllers import task_controller
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
@@ -87,3 +93,65 @@ def delete_task(task_id: UUID, db: Session = Depends(get_db)):
             detail=f"Task with id {task_id} not found"
         )
     return None  # 204 No Content
+
+
+@router.post("/{task_id}/complete", response_model=TaskResponse)
+def complete_task(task_id: UUID, db: Session = Depends(get_db)):
+    """
+    Mark a task as completed.
+
+    Sets completed_at timestamp. Task remains visible until archived.
+
+    Raises:
+        404: Task not found or has been deleted
+    """
+    task = task_controller.complete_task(db, task_id)
+    if task is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Task with id {task_id} not found"
+        )
+    return task
+
+
+@router.post("/{task_id}/uncomplete", response_model=TaskResponse)
+def uncomplete_task(task_id: UUID, db: Session = Depends(get_db)):
+    """
+    Mark a completed task as incomplete.
+
+    Clears completed_at timestamp.
+
+    Raises:
+        404: Task not found or has been deleted
+    """
+    task = task_controller.uncomplete_task(db, task_id)
+    if task is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Task with id {task_id} not found"
+        )
+    return task
+
+
+@router.post("/bulk/status", response_model=BulkStatusUpdateResponse)
+def bulk_update_status(
+    bulk_update: BulkStatusUpdate,
+    db: Session = Depends(get_db)
+):
+    """
+    Update status for multiple tasks at once.
+
+    Only updates tasks that exist and are not deleted.
+    Silently ignores task IDs that don't exist.
+
+    Returns count of updated tasks and their IDs.
+    """
+    updated_tasks = task_controller.bulk_update_status(
+        db,
+        bulk_update.task_ids,
+        bulk_update.status
+    )
+    return BulkStatusUpdateResponse(
+        updated_count=len(updated_tasks),
+        task_ids=[task.id for task in updated_tasks]
+    )
