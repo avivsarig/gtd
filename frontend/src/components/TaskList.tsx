@@ -1,10 +1,18 @@
-import type { Task } from "@/lib/api"
+import type { Task, TaskStatus } from "@/lib/api"
 
 interface TaskListProps {
   tasks: Task[]
+  onUpdateStatus: (taskId: string, status: TaskStatus) => void
+  onToggleComplete: (task: Task) => void
 }
 
-export function TaskList({ tasks }: TaskListProps) {
+const STATUS_OPTIONS: { value: TaskStatus; label: string; color: string }[] = [
+  { value: "next", label: "Next", color: "bg-blue-100 text-blue-800 border-blue-200" },
+  { value: "waiting", label: "Waiting", color: "bg-yellow-100 text-yellow-800 border-yellow-200" },
+  { value: "someday", label: "Someday", color: "bg-gray-100 text-gray-800 border-gray-200" },
+]
+
+export function TaskList({ tasks, onUpdateStatus, onToggleComplete }: TaskListProps) {
   if (tasks.length === 0) {
     return (
       <div className="text-center text-muted-foreground py-8">
@@ -18,19 +26,62 @@ export function TaskList({ tasks }: TaskListProps) {
       {tasks.map((task) => (
         <div
           key={task.id}
-          className="border border-border rounded-lg p-4 hover:bg-accent transition-colors"
+          className={`border border-border rounded-lg p-4 hover:bg-accent transition-colors ${
+            task.completed_at ? "opacity-60" : ""
+          }`}
         >
-          <h3 className="font-medium">{task.title}</h3>
-          {task.description && (
-            <p className="text-sm text-muted-foreground mt-1">
-              {task.description}
-            </p>
-          )}
-          <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
-            <span className="px-2 py-1 bg-secondary rounded">
-              {task.status}
-            </span>
-            <span>{new Date(task.created_at).toLocaleDateString()}</span>
+          <div className="flex items-start gap-3">
+            {/* Completion Checkbox */}
+            <input
+              type="checkbox"
+              checked={!!task.completed_at}
+              onChange={() => onToggleComplete(task)}
+              className="mt-1 h-4 w-4 rounded border-gray-300 cursor-pointer"
+            />
+
+            <div className="flex-1">
+              <h3
+                className={`font-medium ${
+                  task.completed_at ? "line-through text-muted-foreground" : ""
+                }`}
+              >
+                {task.title}
+              </h3>
+              {task.description && (
+                <p className="text-sm text-muted-foreground mt-1">
+                  {task.description}
+                </p>
+              )}
+
+              <div className="flex items-center gap-2 mt-3">
+                {/* Status Selector */}
+                <select
+                  value={task.status}
+                  onChange={(e) => onUpdateStatus(task.id, e.target.value as TaskStatus)}
+                  className={`px-2 py-1 text-xs font-medium rounded border cursor-pointer ${
+                    STATUS_OPTIONS.find((opt) => opt.value === task.status)?.color
+                  }`}
+                  disabled={!!task.completed_at}
+                >
+                  {STATUS_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+
+                {/* Metadata */}
+                <span className="text-xs text-muted-foreground">
+                  {new Date(task.created_at).toLocaleDateString()}
+                </span>
+
+                {task.completed_at && (
+                  <span className="text-xs text-green-600">
+                    ✓ Completed {new Date(task.completed_at).toLocaleDateString()}
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       ))}

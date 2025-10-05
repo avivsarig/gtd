@@ -1,13 +1,16 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { QuickCapture } from "@/components/QuickCapture"
 import { TaskList } from "@/components/TaskList"
-import { getTasks, createTask, healthCheck, type Task } from "@/lib/api"
+import { getTasks, createTask, healthCheck, updateTask, completeTask, uncompleteTask, type Task, type TaskStatus } from "@/lib/api"
+
+type StatusFilter = "all" | TaskStatus
 
 export function Home() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [backendStatus, setBackendStatus] = useState<"checking" | "online" | "offline">("checking")
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all")
 
   // Check backend health on mount
   useEffect(() => {
@@ -45,6 +48,38 @@ export function Home() {
       setIsLoading(false)
     }
   }
+
+  const handleUpdateStatus = async (taskId: string, status: TaskStatus) => {
+    try {
+      const updatedTask = await updateTask(taskId, { status })
+      setTasks((prev) =>
+        prev.map((task) => (task.id === taskId ? updatedTask : task))
+      )
+    } catch (err) {
+      setError("Failed to update task status")
+      console.error(err)
+    }
+  }
+
+  const handleToggleComplete = async (task: Task) => {
+    try {
+      const updatedTask = task.completed_at
+        ? await uncompleteTask(task.id)
+        : await completeTask(task.id)
+      setTasks((prev) =>
+        prev.map((t) => (t.id === task.id ? updatedTask : t))
+      )
+    } catch (err) {
+      setError("Failed to toggle task completion")
+      console.error(err)
+    }
+  }
+
+  // Filter tasks based on status filter
+  const filteredTasks = useMemo(() => {
+    if (statusFilter === "all") return tasks
+    return tasks.filter((task) => task.status === statusFilter)
+  }, [tasks, statusFilter])
 
   return (
     <div className="container mx-auto max-w-4xl py-8 px-4">
@@ -84,7 +119,7 @@ export function Home() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold">
-            Tasks ({tasks.length})
+            Tasks ({filteredTasks.length})
           </h2>
           <button
             onClick={loadTasks}
@@ -93,7 +128,34 @@ export function Home() {
             Refresh
           </button>
         </div>
-        <TaskList tasks={tasks} />
+
+        {/* Status Filter Tabs */}
+        <div className="flex gap-2 mb-4">
+          {(["all", "next", "waiting", "someday"] as const).map((filter) => (
+            <button
+              key={filter}
+              onClick={() => setStatusFilter(filter)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                statusFilter === filter
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+              }`}
+            >
+              {filter.charAt(0).toUpperCase() + filter.slice(1)}
+              {filter !== "all" && (
+                <span className="ml-2 opacity-70">
+                  ({tasks.filter((t) => t.status === filter).length})
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        <TaskList
+          tasks={filteredTasks}
+          onUpdateStatus={handleUpdateStatus}
+          onToggleComplete={handleToggleComplete}
+        />
       </div>
     </div>
   )
