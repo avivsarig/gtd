@@ -7,9 +7,9 @@ interface TaskListProps {
 }
 
 const STATUS_OPTIONS: { value: TaskStatus; label: string; color: string }[] = [
-  { value: "next", label: "Next", color: "bg-blue-100 text-blue-800 border-blue-200" },
-  { value: "waiting", label: "Waiting", color: "bg-yellow-100 text-yellow-800 border-yellow-200" },
-  { value: "someday", label: "Someday", color: "bg-gray-100 text-gray-800 border-gray-200" },
+  { value: "next", label: "Next", color: "bg-blue-500/20 text-blue-400 border-blue-500/30" },
+  { value: "waiting", label: "Waiting", color: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30" },
+  { value: "someday", label: "Someday", color: "bg-gray-500/20 text-gray-400 border-gray-500/30" },
 ]
 
 export function TaskList({ tasks, onUpdateStatus, onToggleComplete }: TaskListProps) {
@@ -76,7 +76,7 @@ export function TaskList({ tasks, onUpdateStatus, onToggleComplete }: TaskListPr
                 </span>
 
                 {task.completed_at && (
-                  <span className="text-xs text-green-600">
+                  <span className="text-xs text-green-400">
                     ✓ Completed {new Date(task.completed_at).toLocaleDateString()}
                   </span>
                 )}
