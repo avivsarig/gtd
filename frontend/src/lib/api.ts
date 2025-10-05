@@ -11,6 +11,7 @@ export interface Task {
   title: string
   description?: string
   status: TaskStatus
+  project_id?: string | null
   completed_at?: string | null
   created_at: string
   updated_at: string
@@ -26,6 +27,7 @@ export interface UpdateTaskInput {
   title?: string
   description?: string
   status?: TaskStatus
+  project_id?: string | null
 }
 
 /**
@@ -95,6 +97,64 @@ export async function uncompleteTask(id: string): Promise<Task> {
   })
   if (!response.ok) {
     throw new Error("Failed to uncomplete task")
+  }
+  return response.json()
+}
+
+/**
+ * Projects
+ */
+export type ProjectStatus = "active" | "on_hold" | "completed"
+
+export interface Project {
+  id: string
+  name: string
+  outcome_statement?: string
+  status: ProjectStatus
+  parent_project_id?: string | null
+  created_at: string
+  updated_at: string
+  completed_at?: string | null
+  archived_at?: string | null
+  last_activity_at?: string | null
+  task_count?: number
+  completed_task_count?: number
+  next_task_count?: number
+}
+
+export interface CreateProjectInput {
+  name: string
+  outcome_statement?: string
+  status?: ProjectStatus
+}
+
+/**
+ * Fetch all projects
+ */
+export async function getProjects(withStats = false): Promise<Project[]> {
+  const url = withStats
+    ? `${API_BASE_URL}/api/v1/projects/?with_stats=true`
+    : `${API_BASE_URL}/api/v1/projects/`
+  const response = await fetch(url)
+  if (!response.ok) {
+    throw new Error("Failed to fetch projects")
+  }
+  return response.json()
+}
+
+/**
+ * Create a new project
+ */
+export async function createProject(input: CreateProjectInput): Promise<Project> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/projects/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(input),
+  })
+  if (!response.ok) {
+    throw new Error("Failed to create project")
   }
   return response.json()
 }

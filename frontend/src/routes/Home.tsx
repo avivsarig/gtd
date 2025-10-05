@@ -1,12 +1,13 @@
 import { useEffect, useState, useMemo } from "react"
 import { QuickCapture } from "@/components/QuickCapture"
 import { TaskList } from "@/components/TaskList"
-import { getTasks, createTask, healthCheck, updateTask, completeTask, uncompleteTask, type Task, type TaskStatus } from "@/lib/api"
+import { getTasks, createTask, healthCheck, updateTask, completeTask, uncompleteTask, getProjects, type Task, type TaskStatus, type Project } from "@/lib/api"
 
 type StatusFilter = "all" | TaskStatus
 
 export function Home() {
   const [tasks, setTasks] = useState<Task[]>([])
+  const [projects, setProjects] = useState<Project[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [backendStatus, setBackendStatus] = useState<"checking" | "online" | "offline">("checking")
@@ -19,9 +20,10 @@ export function Home() {
       .catch(() => setBackendStatus("offline"))
   }, [])
 
-  // Load tasks on mount
+  // Load tasks and projects on mount
   useEffect(() => {
     loadTasks()
+    loadProjects()
   }, [])
 
   const loadTasks = async () => {
@@ -32,6 +34,15 @@ export function Home() {
     } catch (err) {
       setError("Failed to load tasks. Make sure the backend is running.")
       console.error(err)
+    }
+  }
+
+  const loadProjects = async () => {
+    try {
+      const data = await getProjects(true) // with stats
+      setProjects(data)
+    } catch (err) {
+      console.error("Failed to load projects:", err)
     }
   }
 
@@ -71,6 +82,18 @@ export function Home() {
       )
     } catch (err) {
       setError("Failed to toggle task completion")
+      console.error(err)
+    }
+  }
+
+  const handleUpdateProject = async (taskId: string, projectId: string | null) => {
+    try {
+      const updatedTask = await updateTask(taskId, { project_id: projectId })
+      setTasks((prev) =>
+        prev.map((task) => (task.id === taskId ? updatedTask : task))
+      )
+    } catch (err) {
+      setError("Failed to update task project")
       console.error(err)
     }
   }
@@ -153,8 +176,10 @@ export function Home() {
 
         <TaskList
           tasks={filteredTasks}
+          projects={projects}
           onUpdateStatus={handleUpdateStatus}
           onToggleComplete={handleToggleComplete}
+          onUpdateProject={handleUpdateProject}
         />
       </div>
     </div>

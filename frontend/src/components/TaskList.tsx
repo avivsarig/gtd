@@ -1,9 +1,11 @@
-import type { Task, TaskStatus } from "@/lib/api"
+import type { Task, TaskStatus, Project } from "@/lib/api"
 
 interface TaskListProps {
   tasks: Task[]
+  projects: Project[]
   onUpdateStatus: (taskId: string, status: TaskStatus) => void
   onToggleComplete: (task: Task) => void
+  onUpdateProject: (taskId: string, projectId: string | null) => void
 }
 
 const STATUS_OPTIONS: { value: TaskStatus; label: string; color: string }[] = [
@@ -12,7 +14,7 @@ const STATUS_OPTIONS: { value: TaskStatus; label: string; color: string }[] = [
   { value: "someday", label: "Someday", color: "bg-gray-500/20 text-gray-400 border-gray-500/30" },
 ]
 
-export function TaskList({ tasks, onUpdateStatus, onToggleComplete }: TaskListProps) {
+export function TaskList({ tasks, projects, onUpdateStatus, onToggleComplete, onUpdateProject }: TaskListProps) {
   if (tasks.length === 0) {
     return (
       <div className="text-center text-muted-foreground py-8">
@@ -66,6 +68,21 @@ export function TaskList({ tasks, onUpdateStatus, onToggleComplete }: TaskListPr
                   {STATUS_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
                       {option.label}
+                    </option>
+                  ))}
+                </select>
+
+                {/* Project Selector */}
+                <select
+                  value={task.project_id || ""}
+                  onChange={(e) => onUpdateProject(task.id, e.target.value || null)}
+                  className="px-2 py-1 text-xs font-medium rounded border border-purple-500/30 bg-purple-500/20 text-purple-400 cursor-pointer"
+                  disabled={!!task.completed_at}
+                >
+                  <option value="">No Project</option>
+                  {projects.map((project) => (
+                    <option key={project.id} value={project.id}>
+                      {project.name}
                     </option>
                   ))}
                 </select>

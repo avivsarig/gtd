@@ -70,13 +70,20 @@ npm run tc
 npm run validate
 ```
 
-## Key Features
+## Implemented Features
 
-- **Keyboard-first navigation** - All actions accessible via keyboard shortcuts
-- **Fast task capture** - Optimized for rapid input
-- **GTD methodology** - Next/Waiting/Someday/Maybe lists
-- **Context-based filtering** - Filter tasks by context tags
-- **Dark mode support** - Built-in theme switching
+✅ **Current**
+- **Task Management** - Quick capture, status updates (Next/Waiting/Someday)
+- **Task Completion** - Checkbox toggle with visual feedback
+- **Status Filtering** - Filter tasks by status with count badges
+- **Project Assignment** - Assign tasks to projects via dropdown
+- **Dark Mode UI** - Default dark theme with consistent styling
+
+🚧 **In Progress**
+- **Keyboard shortcuts** - Cmd+K quick capture
+- **Context filtering** - Filter tasks by context tags
+- **Search functionality** - Full-text task search
+- **Calendar integration** - Scheduled date/time support
 
 ## Development Guidelines
 
