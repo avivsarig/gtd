@@ -1,4 +1,4 @@
-.PHONY: help build up down restart clean logs db-shell db-migrate db-reset test-seed
+.PHONY: help build up down restart clean logs db-shell db-migrate db-reset test-seed lint lint-fe lint-be test
 
 help:
 	@echo "GTD Task Management - Makefile Commands"
@@ -14,6 +14,10 @@ help:
 	@echo "make db-shell    - Open PostgreSQL shell"
 	@echo "make db-migrate  - Run database migrations"
 	@echo "make db-reset    - Reset database (WARNING: deletes all data)"
+	@echo "make lint        - Run linters on frontend and backend"
+	@echo "make lint-fe     - Run ESLint on frontend"
+	@echo "make lint-be     - Run linters on backend"
+	@echo "make test        - Run tests on backend"
 	@echo ""
 
 build:
@@ -79,3 +83,20 @@ status:
 	@echo "Backend API: http://localhost:8000"
 	@echo "API Docs: http://localhost:8000/docs"
 	@echo "Frontend: http://localhost:5173"
+
+# Code quality
+lint: lint-fe lint-be
+	@echo "All linting checks passed!"
+
+lint-fe:
+	@echo "Running frontend linters..."
+	docker compose exec frontend npm run lint
+	docker compose exec frontend npm run tc
+
+lint-be:
+	@echo "Running backend linters..."
+	docker compose exec backend python -m pytest tests/unit -v
+
+test:
+	@echo "Running backend tests..."
+	docker compose exec backend python -m pytest tests/unit -v

@@ -22,8 +22,8 @@ export function Home() {
 
   // Load tasks and projects on mount
   useEffect(() => {
-    loadTasks()
-    loadProjects()
+    void loadTasks()
+    void loadProjects()
   }, [])
 
   const loadTasks = async () => {

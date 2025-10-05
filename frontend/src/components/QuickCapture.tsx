@@ -1,5 +1,5 @@
 import { useState } from "react"
-import type { CreateTaskInput } from "@/lib/api"
+import { type CreateTaskInput } from "@/lib/api"
 
 interface QuickCaptureProps {
   onSubmit: (task: CreateTaskInput) => void

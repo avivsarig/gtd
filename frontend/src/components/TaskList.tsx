@@ -1,4 +1,4 @@
-import type { Task, TaskStatus, Project } from "@/lib/api"
+import { type Task, type TaskStatus, type Project } from "@/lib/api"
 
 interface TaskListProps {
   tasks: Task[]
