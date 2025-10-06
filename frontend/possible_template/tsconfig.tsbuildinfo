@@ -1,1 +1,0 @@
-{"root":["./vite.config.ts","./src/vite-env.d.ts","./src/lib/utils.ts","./src/main.tsx","./src/components/applayout.tsx","./src/components/spacer.tsx","./src/components/ui/dialog.tsx","./src/routes/home.tsx"],"version":"5.7.3"}
