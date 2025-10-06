@@ -17,7 +17,11 @@ help:
 	@echo "make lint        - Run linters on frontend and backend"
 	@echo "make lint-fe     - Run ESLint on frontend"
 	@echo "make lint-be     - Run linters on backend"
-	@echo "make test        - Run tests on backend"
+	@echo "make test        - Run all backend tests"
+	@echo "make test-unit   - Run unit tests only"
+	@echo "make test-int    - Run integration tests only"
+	@echo "make test-cov    - Run tests with coverage report"
+	@echo "make test-watch  - Run tests in watch mode"
 	@echo ""
 
 build:
@@ -98,5 +102,25 @@ lint-be:
 	docker compose exec backend python -m pytest tests/unit -v
 
 test:
-	@echo "Running backend tests..."
-	docker compose exec backend python -m pytest tests/unit -v
+	@echo "Running all backend tests..."
+	docker compose exec backend pytest
+
+test-unit:
+	@echo "Running unit tests..."
+	docker compose exec backend pytest tests/unit -v
+
+test-int:
+	@echo "Running integration tests..."
+	docker compose exec backend pytest tests/integration -v -m integration
+
+test-cov:
+	@echo "Running tests with coverage..."
+	docker compose exec backend pytest --cov=app --cov-report=term-missing --cov-report=html
+
+test-watch:
+	@echo "Running tests in watch mode..."
+	docker compose exec backend pytest-watch
+
+test-fast:
+	@echo "Running fast tests (excluding slow tests)..."
+	docker compose exec backend pytest -m "not slow" -x

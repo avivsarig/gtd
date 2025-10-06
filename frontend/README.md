@@ -59,6 +59,52 @@ src/
 └── styles/          # Global styles and Tailwind config
 ```
 
+## Testing
+
+**Comprehensive test framework** with Vitest + React Testing Library:
+
+```bash
+# Run all tests
+npm test
+
+# Watch mode (auto-rerun on changes)
+npm run test:watch
+
+# Interactive UI
+npm run test:ui
+
+# With coverage report
+npm run test:coverage
+```
+
+**Test Infrastructure:**
+- **Vitest** - Fast Vite-native test framework
+- **React Testing Library** - Component testing utilities
+- **@testing-library/user-event** - User interaction simulation
+- **@testing-library/jest-dom** - Custom matchers
+- **jsdom** - DOM environment for Node
+
+**Example Test:**
+```typescript
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { QuickCapture } from './QuickCapture'
+
+test('submits form with user input', async () => {
+  const onSubmit = vi.fn()
+  const user = userEvent.setup()
+
+  render(<QuickCapture onSubmit={onSubmit} />)
+
+  await user.type(screen.getByPlaceholderText(/what needs/i), 'New task')
+  await user.click(screen.getByRole('button', { name: /create/i }))
+
+  expect(onSubmit).toHaveBeenCalledWith({ title: 'New task' })
+})
+```
+
+See [/TESTING.md](../TESTING.md) for comprehensive testing guide.
+
 ## Code Quality
 
 ### Linting
@@ -71,7 +117,7 @@ npm run lint
 npm run tc
 ```
 
-### Validate All
+### Validate All (lint + types + tests)
 ```bash
 npm run validate
 ```

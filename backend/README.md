@@ -34,14 +34,18 @@ backend/
 │   │   └── database.py     # SQLAlchemy engine, session, Base
 │   └── main.py             # FastAPI application entry point
 ├── tests/                # Test suite
+│   ├── conftest.py      # Shared fixtures (db_session, client, sample data)
+│   ├── fixtures/
+│   │   └── factories.py # Factory Boy factories for test data
 │   ├── unit/            # Unit tests (62 passing)
 │   │   ├── test_task_controller.py
 │   │   ├── test_task_repository.py
 │   │   ├── test_note_controller.py
 │   │   └── test_note_repository.py
-│   ├── integration/     # Integration tests
-│   │   └── test_db_connection.py
-│   └── fixtures/        # Test fixtures and utilities
+│   └── integration/     # Integration tests
+│       ├── test_task_api.py
+│       ├── test_note_api.py
+│       └── test_project_api.py
 ├── alembic/             # Database migrations
 ├── .env                 # Environment variables (not in git)
 ├── .gitignore           # Git ignore rules
@@ -115,6 +119,39 @@ Request → API (HTTP routes) → Controller (business logic) → Repository (da
   - Create, read, update, delete notes
   - Filter notes by project
   - Soft delete support
+
+## Testing
+
+**Comprehensive test framework** with 62 passing unit tests:
+
+```bash
+# Run all tests
+pytest
+
+# Unit tests only
+pytest tests/unit -v
+
+# With coverage report
+pytest --cov=app --cov-report=html
+
+# Fast tests (exclude slow)
+pytest -m "not slow"
+```
+
+**Test Infrastructure:**
+- **pytest** with coverage reporting
+- **Factory Boy** for test data generation
+- **Fixtures** for database setup and sample data
+- **Integration tests** for API endpoints
+- **Coverage**: 61% (target: 80%)
+
+**Available Fixtures:**
+- `db_session` - Clean SQLite database for each test
+- `client` - FastAPI TestClient
+- `sample_task`, `sample_project`, `sample_note` - Pre-created instances
+- `multiple_tasks`, `multiple_projects` - Batch test data
+
+See [/TESTING.md](../TESTING.md) for comprehensive testing guide.
 
 🚧 **In Progress**
 - Context tagging
