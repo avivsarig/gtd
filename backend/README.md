@@ -2,157 +2,99 @@
 
 FastAPI-based REST API for GTD Task Management System.
 
-## Directory Structure
+## Quick Start
 
-```
-backend/
-├── app/                      # Application code
-│   ├── api/                 # API layer (HTTP routes)
-│   │   └── v1/             # API version 1
-│   │       ├── tasks.py    # Task HTTP endpoints
-│   │       ├── projects.py # Project HTTP endpoints
-│   │       └── notes.py    # Note HTTP endpoints
-│   ├── controllers/        # Business logic layer
-│   │   ├── task_controller.py
-│   │   ├── project_controller.py
-│   │   └── note_controller.py
-│   ├── repositories/       # Data access layer
-│   │   ├── task_repository.py
-│   │   ├── project_repository.py
-│   │   └── note_repository.py
-│   ├── models/             # SQLAlchemy ORM models
-│   │   ├── task.py
-│   │   ├── project.py
-│   │   └── note.py
-│   ├── schemas/            # Pydantic schemas for validation
-│   │   ├── task.py
-│   │   ├── project.py
-│   │   └── note.py
-│   ├── core/               # Core configuration
-│   │   └── config.py       # Settings and environment variables
-│   ├── db/                 # Database setup
-│   │   └── database.py     # SQLAlchemy engine, session, Base
-│   └── main.py             # FastAPI application entry point
-├── tests/                # Test suite
-│   ├── conftest.py      # Shared fixtures (db_session, client, sample data)
-│   ├── fixtures/
-│   │   └── factories.py # Factory Boy factories for test data
-│   ├── unit/            # Unit tests (62 passing)
-│   │   ├── test_task_controller.py
-│   │   ├── test_task_repository.py
-│   │   ├── test_note_controller.py
-│   │   └── test_note_repository.py
-│   └── integration/     # Integration tests
-│       ├── test_task_api.py
-│       ├── test_note_api.py
-│       └── test_project_api.py
-├── alembic/             # Database migrations
-├── .env                 # Environment variables (not in git)
-├── .gitignore           # Git ignore rules
-├── alembic.ini          # Alembic configuration
-├── Dockerfile           # Container image definition
-└── requirements.txt     # Python dependencies
-```
-
-## Setup
-
-### 1. Create virtual environment
 ```bash
+# Install dependencies
 python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-### 2. Install dependencies
-```bash
+source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
-```
 
-### 3. Configure environment
-Create `.env` file:
-```
+# Start PostgreSQL
+docker compose up -d postgres
+
+# Configure environment
+cat > .env << EOF
 DATABASE_URL=postgresql://gtd:gtd_dev@localhost:5432/gtd
 DEBUG=True
-```
+EOF
 
-### 4. Start PostgreSQL
-```bash
-docker-compose up -d postgres
-```
-
-### 5. Test database connection
-```bash
+# Test database connection
 python tests/integration/test_db_connection.py
 ```
 
-## Development
+## Architecture Overview
 
-- See `/CLAUDE.md` for detailed development guide
-
-### Architecture (3-layer)
+**3-Layer Clean Architecture:**
 ```
-Request → API (HTTP routes) → Controller (business logic) → Repository (data access) → Database
+HTTP Request
+  → API Layer (app/api/v1/) - Routes, HTTP handling
+    → Controller (app/controllers/) - Business logic
+      → Repository (app/repositories/) - Database operations
+        → Database
 ```
 
-- **API layer** (`app/api/v1/`): FastAPI routes, HTTP concerns, request/response handling
-- **Controllers** (`app/controllers/`): Business logic, orchestration, validation rules
-- **Repositories** (`app/repositories/`): Database operations only (CRUD)
-- **Models** (`app/models/`): SQLAlchemy ORM models
-- **Schemas** (`app/schemas/`): Pydantic request/response validation
+**Directory Structure:**
+```
+app/
+├── api/v1/          # FastAPI routes (tasks.py, projects.py, notes.py)
+├── controllers/     # Business logic layer
+├── repositories/    # Data access layer (CRUD only)
+├── models/          # SQLAlchemy ORM models
+├── schemas/         # Pydantic validation schemas
+├── core/            # Configuration
+└── db/              # Database setup
+```
 
-## Current Status
+See [CLAUDE.md](CLAUDE.md) for detailed architecture and development guidelines.
 
-✅ **Foundation Complete**
-- Dependencies installed
-- Database connection configured and tested
-- FastAPI application initialized with 3-layer architecture
-- 62 unit tests passing
+## API Documentation
 
-✅ **Implemented Features**
-- **Tasks API** - Full CRUD with status management (Next/Waiting/Someday)
-  - Task completion/uncomplete endpoints
-  - Bulk status updates
-  - Project assignment
-- **Projects API** - Full CRUD with task statistics
-  - Auto-completion tracking
-  - Task count and progress metrics
-- **Notes API** - Full CRUD with project association
-  - Create, read, update, delete notes
-  - Filter notes by project
-  - Soft delete support
+**Interactive API Docs:** http://localhost:8000/docs
+
+**Implemented Endpoints:**
+- `/api/v1/tasks` - Task CRUD, status management, completion tracking
+- `/api/v1/projects` - Project CRUD, statistics, task assignment
+- `/api/v1/notes` - Note CRUD, project association
+
+See OpenAPI docs at `/docs` for complete endpoint reference.
 
 ## Testing
 
-**Comprehensive test framework** with 62 passing unit tests:
+**Current Status:** 62 passing unit tests, 61% coverage (target: 80%)
 
 ```bash
-# Run all tests
-pytest
-
-# Unit tests only
-pytest tests/unit -v
-
-# With coverage report
-pytest --cov=app --cov-report=html
-
-# Fast tests (exclude slow)
-pytest -m "not slow"
+pytest                     # All tests
+pytest tests/unit -v       # Unit tests only
+pytest --cov=app           # With coverage report
 ```
 
 **Test Infrastructure:**
-- **pytest** with coverage reporting
-- **Factory Boy** for test data generation
-- **Fixtures** for database setup and sample data
-- **Integration tests** for API endpoints
-- **Coverage**: 61% (target: 80%)
-
-**Available Fixtures:**
-- `db_session` - Clean SQLite database for each test
-- `client` - FastAPI TestClient
-- `sample_task`, `sample_project`, `sample_note` - Pre-created instances
-- `multiple_tasks`, `multiple_projects` - Batch test data
+- pytest with Factory Boy for test data
+- In-memory SQLite for unit tests
+- FastAPI TestClient for integration tests
+- Fixtures: `db_session`, `client`, `sample_task`, `sample_project`, `sample_note`
 
 See [/TESTING.md](../TESTING.md) for comprehensive testing guide.
 
-🚧 **In Progress**
+## Development
+
+See [CLAUDE.md](CLAUDE.md) for:
+- Layer responsibilities and patterns
+- Data model requirements
+- Business logic rules
+- Code standards
+- Performance requirements
+
+## Current Status
+
+✅ **Completed:**
+- 3-layer architecture implemented
+- Tasks, Projects, Notes APIs complete
+- Status management (Next/Waiting/Someday)
+- Comprehensive test framework
+
+🚧 **In Progress:**
 - Context tagging
 - Search functionality
+- Performance optimization

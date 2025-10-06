@@ -4,20 +4,19 @@ Comprehensive testing framework for the GTD Task Management System.
 
 ## Overview
 
-The project uses a multi-layered testing approach:
-- **Backend**: pytest with coverage, factories, and fixtures
+- **Backend**: pytest + coverage + factories + fixtures
 - **Frontend**: Vitest + React Testing Library
-- **Coverage**: Automated coverage reporting with thresholds
+- **Coverage**: 60% current, 80% target
 
 ## Backend Testing
 
 ### Tech Stack
+
 - **pytest** - Test framework
 - **pytest-cov** - Coverage reporting
-- **pytest-xdist** - Parallel test execution
-- **pytest-mock** - Mocking utilities
+- **pytest-xdist** - Parallel execution
 - **factory-boy** - Test data factories
-- **faker** - Realistic fake data generation
+- **faker** - Realistic fake data
 
 ### Running Tests
 
@@ -25,16 +24,13 @@ The project uses a multi-layered testing approach:
 # All tests
 make test
 
-# Unit tests only
-make test-unit
-
-# Integration tests only (note: SQLite compatibility issues)
-make test-int
-
 # With coverage report
 make test-cov
 
-# Fast tests (exclude slow tests)
+# Unit tests only
+make test-unit
+
+# Fast tests (exclude slow)
 make test-fast
 ```
 
@@ -44,7 +40,6 @@ make test-fast
 backend/tests/
 ├── conftest.py              # Shared fixtures
 ├── fixtures/
-│   ├── __init__.py
 │   └── factories.py         # Factory Boy factories
 ├── unit/                    # Unit tests
 │   ├── test_task_repository.py
@@ -59,141 +54,88 @@ backend/tests/
 
 ### Available Fixtures
 
-#### Database Fixtures
-- `db_session` - Fresh in-memory SQLite database for each test
-- `db` - Alias for db_session
+**Database:**
+- `db_session` / `db` - Fresh in-memory SQLite database
 - `client` - TestClient with database override
 
-#### Model Fixtures
-- `sample_project` - Single project instance
-- `sample_task` - Single task instance
-- `sample_note` - Single note instance
-- `sample_task_with_project` - Task associated with project
-- `multiple_tasks` - List of tasks with different statuses
-- `multiple_projects` - List of projects with different statuses
+**Models:**
+- `sample_project`, `sample_task`, `sample_note` - Single instances
+- `sample_task_with_project` - Task with project relationship
+- `multiple_tasks`, `multiple_projects` - Lists with different statuses
 
 ### Using Factories
 
 ```python
 from tests.fixtures.factories import create_task, create_project, create_note
 
-# Create instances with defaults
+# Create with defaults
 task = create_task()
 project = create_project(name="Custom Project")
-note = create_note(title="Custom Note", content="Content here")
 
 # Create with relationships
 project, tasks = create_project_with_tasks(num_tasks=5)
-
-# Create completed task
 completed_task = create_completed_task(title="Done Task")
-
-# Create blocked task
-blocked_task = create_blocked_task(blocking_task_id=task.id)
 ```
 
 ### Writing Tests
 
-#### Unit Test Example
+**Unit Test Pattern:**
 ```python
-import pytest
-from app.repositories import task_repository
-from app.schemas.task import TaskCreate
-
 def test_create_task(db_session):
-    """Should create a task in the database."""
+    """Should create task in database."""
     task_data = TaskCreate(title="Test Task", status="next")
     task = task_repository.create(db_session, task_data)
 
     assert task.id is not None
     assert task.title == "Test Task"
-    assert task.status == "next"
 ```
 
-#### Integration Test Example
+**Integration Test Pattern:**
 ```python
 def test_create_task_api(client):
     """Should create task via API."""
-    response = client.post(
-        "/api/v1/tasks/",
-        json={"title": "New Task"}
-    )
+    response = client.post("/api/v1/tasks/", json={"title": "New Task"})
 
     assert response.status_code == 201
-    data = response.json()
-    assert data["title"] == "New Task"
+    assert response.json()["title"] == "New Task"
 ```
 
 ### Test Markers
 
-Use markers to categorize tests:
-
 ```python
-@pytest.mark.unit
-def test_repository_function():
-    pass
-
-@pytest.mark.integration
-def test_api_endpoint():
-    pass
-
-@pytest.mark.slow
-def test_heavy_operation():
-    pass
+@pytest.mark.unit          # Unit test
+@pytest.mark.integration   # Integration test
+@pytest.mark.slow          # Slow test (>1s)
 ```
 
 Run specific markers:
 ```bash
-pytest -m unit          # Unit tests only
-pytest -m integration   # Integration tests only
-pytest -m "not slow"    # Exclude slow tests
+pytest -m unit             # Unit tests only
+pytest -m "not slow"       # Exclude slow tests
 ```
-
-### Coverage Requirements
-
-- **Current threshold**: 60%
-- **Target**: 80%
-- Coverage reports generated in:
-  - Terminal (term-missing)
-  - HTML (`htmlcov/index.html`)
-  - XML (`coverage.xml`)
 
 ### Known Issues
 
-**SQLite Compatibility**: Integration tests fail with SQLite due to PostgreSQL-specific features:
-- UUID type with `gen_random_uuid()`
-- Timestamp defaults
-- Full-text search
-
-**Workaround**: Integration tests should be run against PostgreSQL in CI/CD.
+**SQLite Compatibility**: Integration tests fail with SQLite due to PostgreSQL-specific features (UUID, timestamps, full-text search). Run integration tests against PostgreSQL in CI/CD.
 
 ## Frontend Testing
 
 ### Tech Stack
+
 - **Vitest** - Fast Vite-native test framework
-- **React Testing Library** - Component testing utilities
+- **React Testing Library** - Component testing
 - **@testing-library/user-event** - User interaction simulation
-- **@testing-library/jest-dom** - Custom matchers
-- **jsdom** - DOM environment for Node
+- **jsdom** - DOM environment
 - **@vitest/coverage-v8** - Coverage reporting
 
 ### Running Tests
 
 ```bash
-# Install dependencies first
-cd frontend && npm install
-
-# Run all tests
-npm test
-
-# Watch mode (re-run on changes)
-npm run test:watch
-
-# With UI
-npm run test:ui
-
-# With coverage
-npm run test:coverage
+# In frontend directory
+npm test                  # Run all tests
+npm run test:watch        # Watch mode
+npm run test:ui           # Interactive UI
+npm run test:coverage     # With coverage
 ```
 
 ### Test Structure
@@ -201,10 +143,10 @@ npm run test:coverage
 ```
 frontend/src/
 ├── test/
-│   └── setup.ts                    # Global test setup
+│   └── setup.ts              # Global setup
 └── components/
     ├── QuickCapture.tsx
-    ├── QuickCapture.test.tsx       # Component tests
+    ├── QuickCapture.test.tsx # Co-located tests
     ├── TaskList.tsx
     └── TaskList.test.tsx
 ```
@@ -218,39 +160,31 @@ import userEvent from '@testing-library/user-event'
 import { QuickCapture } from './QuickCapture'
 
 describe('QuickCapture', () => {
-  it('calls onSubmit when form is submitted', async () => {
-    const mockOnSubmit = vi.fn()
+  it('submits form with user input', async () => {
+    const onSubmit = vi.fn()
     const user = userEvent.setup()
 
-    render(<QuickCapture onSubmit={mockOnSubmit} />)
+    render(<QuickCapture onSubmit={onSubmit} />)
 
-    const input = screen.getByPlaceholderText(/what needs to be done/i)
-    await user.type(input, 'New task')
+    await user.type(screen.getByPlaceholderText(/what needs/i), 'New task')
+    await user.click(screen.getByRole('button', { name: /create/i }))
 
-    const button = screen.getByRole('button', { name: /create/i })
-    await user.click(button)
-
-    expect(mockOnSubmit).toHaveBeenCalledWith({
-      title: 'New task',
-      description: undefined
-    })
+    expect(onSubmit).toHaveBeenCalledWith({ title: 'New task' })
   })
 })
 ```
 
 ### Testing Patterns
 
-#### 1. User Interactions
+**User Interactions:**
 ```typescript
-import userEvent from '@testing-library/user-event'
-
 const user = userEvent.setup()
 await user.type(input, 'text')
 await user.click(button)
 await user.keyboard('{Enter}')
 ```
 
-#### 2. Async Assertions
+**Async Assertions:**
 ```typescript
 import { waitFor } from '@testing-library/react'
 
@@ -259,94 +193,20 @@ await waitFor(() => {
 })
 ```
 
-#### 3. Mocking API Calls
+**Mocking API Calls:**
 ```typescript
-import { vi } from 'vitest'
-
-// Mock the API module
 vi.mock('@/lib/api', () => ({
-  getTasks: vi.fn().mockResolvedValue([
-    { id: '1', title: 'Task 1' }
-  ])
+  getTasks: vi.fn().mockResolvedValue([{ id: '1', title: 'Task 1' }])
 }))
-```
-
-## CI/CD Integration
-
-### GitHub Actions (Recommended)
-
-Create `.github/workflows/test.yml`:
-
-```yaml
-name: Tests
-
-on: [push, pull_request]
-
-jobs:
-  backend:
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: gtd
-          POSTGRES_PASSWORD: gtd_dev
-          POSTGRES_DB: gtd
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.12'
-      - name: Install dependencies
-        run: |
-          cd backend
-          pip install -r requirements.txt
-      - name: Run tests
-        run: |
-          cd backend
-          pytest --cov=app --cov-report=xml
-      - name: Upload coverage
-        uses: codecov/codecov-action@v3
-        with:
-          files: ./backend/coverage.xml
-
-  frontend:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-      - name: Install dependencies
-        run: |
-          cd frontend
-          npm ci
-      - name: Run tests
-        run: |
-          cd frontend
-          npm test
-      - name: Run coverage
-        run: |
-          cd frontend
-          npm run test:coverage
 ```
 
 ## Best Practices
 
-### 1. Test Naming
-- Use descriptive test names that explain what's being tested
+**Test Naming:**
 - Format: `test_<what>_<condition>_<expected>`
 - Example: `test_create_task_with_empty_title_returns_422`
 
-### 2. Arrange-Act-Assert Pattern
+**Arrange-Act-Assert Pattern:**
 ```python
 def test_example():
     # Arrange - Set up test data
@@ -359,54 +219,16 @@ def test_example():
     assert result.title == "Test"
 ```
 
-### 3. Test Independence
+**Test Independence:**
 - Each test should be independent
-- Use fixtures to set up clean state
-- Don't rely on test execution order
+- Use fixtures for clean state
+- Don't rely on execution order
 
-### 4. Mock External Dependencies
-- Mock API calls, external services
-- Use factories for database objects
-- Keep tests fast and reliable
-
-### 5. Test Coverage Goals
-- **Critical paths**: 100% coverage
-- **Business logic**: 90%+ coverage
-- **API endpoints**: 80%+ coverage
-- **UI components**: 70%+ coverage
-
-## Troubleshooting
-
-### Backend Tests Failing
-```bash
-# Check if containers are running
-docker compose ps
-
-# View backend logs
-docker compose logs backend
-
-# Run tests with verbose output
-docker compose exec backend pytest -vv --tb=long
-```
-
-### Frontend Tests Failing
-```bash
-# Clear node_modules and reinstall
-rm -rf node_modules package-lock.json
-npm install
-
-# Run with debug output
-npm run test -- --reporter=verbose
-```
-
-### Coverage Not Generating
-```bash
-# Backend - check pytest-cov is installed
-docker compose exec backend pip list | grep cov
-
-# Frontend - check coverage tool
-cd frontend && npm list @vitest/coverage-v8
-```
+**Coverage Goals:**
+- Critical paths: 100%
+- Business logic: 90%+
+- API endpoints: 80%+
+- UI components: 70%+
 
 ## Resources
 

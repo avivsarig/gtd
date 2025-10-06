@@ -1,45 +1,33 @@
 # GTD Frontend
 
-React-based frontend for the GTD (Getting Things Done) task management system.
+React-based frontend for the GTD task management system.
 
 ## Tech Stack
 
-- **React 19** - UI framework
-- **Vite** - Build tool and dev server
-- **TypeScript** - Type safety
-- **Tailwind CSS v4** - Utility-first styling
-- **shadcn/ui** - Radix UI component primitives
-- **React Router v7** - Client-side routing
-- **Lucide React** - Icon library
+- **React 19** + **Vite** + **TypeScript**
+- **Tailwind CSS v4** + **shadcn/ui** (Radix UI primitives)
+- **React Router v7** + **Lucide React** icons
 
-## Getting Started
-
-### Prerequisites
-- Node.js 18+
-- npm or yarn
-
-### Installation
+## Quick Start
 
 ```bash
 npm install
+npm run dev       # Development server
+npm run build     # Production build
+npm run preview   # Preview production build
 ```
 
-### Development
+## Development Commands
 
 ```bash
-npm run dev
-```
+npm test              # Run tests
+npm run test:watch    # Watch mode
+npm run test:ui       # Interactive UI
+npm run test:coverage # With coverage
 
-### Build
-
-```bash
-npm run build
-```
-
-### Preview Production Build
-
-```bash
-npm run preview
+npm run lint          # Run ESLint
+npm run tc            # Type checking
+npm run validate      # Lint + type check
 ```
 
 ## Project Structure
@@ -48,99 +36,56 @@ npm run preview
 src/
 ├── components/       # Reusable UI components
 │   ├── QuickCapture.tsx  # Task creation form
-│   ├── TaskList.tsx      # Task list with status/project controls
-│   ├── NotesList.tsx     # Notes list with expand/collapse
-│   ├── NoteForm.tsx      # Note creation/editing form
+│   ├── TaskList.tsx      # Task list with controls
+│   ├── NotesList.tsx     # Notes management
 │   └── ui/               # shadcn/ui components
-├── routes/          # Page components
-│   └── Home.tsx     # Main page (tasks + notes)
-├── lib/             # Utility functions
-│   └── api.ts       # API client for backend
-└── styles/          # Global styles and Tailwind config
+├── routes/          # Page components (Home.tsx)
+├── lib/
+│   └── api.ts       # Backend API client
+└── styles/          # Global styles + Tailwind config
 ```
+
+See [CLAUDE.md](CLAUDE.md) for detailed architecture and component guidelines.
 
 ## Testing
 
-**Comprehensive test framework** with Vitest + React Testing Library:
+**Framework:** Vitest + React Testing Library
 
 ```bash
-# Run all tests
-npm test
-
-# Watch mode (auto-rerun on changes)
-npm run test:watch
-
-# Interactive UI
-npm run test:ui
-
-# With coverage report
-npm run test:coverage
+npm test              # All tests
+npm run test:watch    # Watch mode
+npm run test:coverage # With coverage
 ```
 
 **Test Infrastructure:**
-- **Vitest** - Fast Vite-native test framework
-- **React Testing Library** - Component testing utilities
-- **@testing-library/user-event** - User interaction simulation
-- **@testing-library/jest-dom** - Custom matchers
-- **jsdom** - DOM environment for Node
+- Vitest for fast Vite-native testing
+- React Testing Library for component tests
+- @testing-library/user-event for interactions
+- jsdom for DOM environment
 
-**Example Test:**
-```typescript
-import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { QuickCapture } from './QuickCapture'
-
-test('submits form with user input', async () => {
-  const onSubmit = vi.fn()
-  const user = userEvent.setup()
-
-  render(<QuickCapture onSubmit={onSubmit} />)
-
-  await user.type(screen.getByPlaceholderText(/what needs/i), 'New task')
-  await user.click(screen.getByRole('button', { name: /create/i }))
-
-  expect(onSubmit).toHaveBeenCalledWith({ title: 'New task' })
-})
-```
-
-See [/TESTING.md](../TESTING.md) for comprehensive testing guide.
-
-## Code Quality
-
-### Linting
-```bash
-npm run lint
-```
-
-### Type Checking
-```bash
-npm run tc
-```
-
-### Validate All (lint + types + tests)
-```bash
-npm run validate
-```
+See [/TESTING.md](../TESTING.md) for testing patterns and examples.
 
 ## Implemented Features
 
-✅ **Current**
-- **Task Management** - Quick capture, status updates (Next/Waiting/Someday)
-- **Task Completion** - Checkbox toggle with visual feedback
-- **Status Filtering** - Filter tasks by status with count badges
-- **Project Assignment** - Assign tasks to projects via dropdown
-- **Notes Management** - Create, edit, delete notes with project association
-  - Expandable note cards
-  - Rich content support
-  - Project filtering
-- **Dark Mode UI** - Default dark theme with consistent styling
+✅ **Current:**
+- Task capture, status management (Next/Waiting/Someday)
+- Task completion tracking
+- Status filtering with count badges
+- Project assignment dropdown
+- Notes CRUD with project association
+- Dark mode UI
 
-🚧 **In Progress**
-- **Keyboard shortcuts** - Cmd+K quick capture
-- **Context filtering** - Filter tasks by context tags
-- **Search functionality** - Full-text task search
-- **Calendar integration** - Scheduled date/time support
+🚧 **In Progress:**
+- Keyboard shortcuts (Cmd+K quick capture)
+- Context filtering
+- Full-text search
+- Calendar integration
 
-## Development Guidelines
+## Development
 
-Refer to `/frontend/CLAUDE.md` for detailed development instructions and architecture guidelines.
+See [CLAUDE.md](CLAUDE.md) for:
+- Component architecture patterns
+- Keyboard-first design requirements
+- GTD methodology compliance
+- Testing requirements
+- Code quality standards
