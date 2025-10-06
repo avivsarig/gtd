@@ -1,17 +1,13 @@
 """Projects API endpoints."""
-from typing import List
+
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.db.database import get_db
-from app.schemas.project import (
-    ProjectCreate,
-    ProjectUpdate,
-    ProjectResponse,
-    ProjectWithStats
-)
 from app.controllers import project_controller
+from app.db.database import get_db
+from app.schemas.project import ProjectCreate, ProjectResponse, ProjectUpdate, ProjectWithStats
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 
@@ -19,8 +15,8 @@ router = APIRouter(prefix="/projects", tags=["projects"])
 @router.get("/")
 def list_projects(
     with_stats: bool = Query(False, description="Include task statistics"),
-    db: Session = Depends(get_db)
-) -> List[ProjectResponse] | List[ProjectWithStats]:
+    db: Session = Depends(get_db),
+) -> list[ProjectResponse] | list[ProjectWithStats]:
     """
     Get all active projects.
 
@@ -36,7 +32,7 @@ def list_projects(
 def get_project(
     project_id: UUID,
     with_stats: bool = Query(False, description="Include task statistics"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ) -> ProjectResponse | ProjectWithStats:
     """
     Get a single project by ID.
@@ -53,8 +49,7 @@ def get_project(
 
     if project is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Project with id {project_id} not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Project with id {project_id} not found"
         )
     return project
 
@@ -71,11 +66,7 @@ def create_project(project_data: ProjectCreate, db: Session = Depends(get_db)):
 
 
 @router.put("/{project_id}", response_model=ProjectResponse)
-def update_project(
-    project_id: UUID,
-    project_data: ProjectUpdate,
-    db: Session = Depends(get_db)
-):
+def update_project(project_id: UUID, project_data: ProjectUpdate, db: Session = Depends(get_db)):
     """
     Update an existing project.
 
@@ -89,8 +80,7 @@ def update_project(
     project = project_controller.update_project(db, project_id, project_data)
     if project is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Project with id {project_id} not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Project with id {project_id} not found"
         )
     return project
 
@@ -109,8 +99,7 @@ def delete_project(project_id: UUID, db: Session = Depends(get_db)):
     project = project_controller.delete_project(db, project_id)
     if project is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Project with id {project_id} not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Project with id {project_id} not found"
         )
     return None  # 204 No Content
 
@@ -128,7 +117,6 @@ def complete_project(project_id: UUID, db: Session = Depends(get_db)):
     project = project_controller.complete_project(db, project_id)
     if project is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Project with id {project_id} not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Project with id {project_id} not found"
         )
     return project

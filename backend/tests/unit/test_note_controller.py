@@ -1,16 +1,17 @@
 """Unit tests for Note controller."""
+
 from unittest.mock import Mock, patch
 from uuid import uuid4
 
-from app.models.note import Note
 from app.controllers import note_controller
+from app.models.note import Note
 from app.schemas.note import NoteCreate, NoteUpdate
 
 
 class TestListNotes:
     """Test list_notes() controller method."""
 
-    @patch('app.controllers.note_controller.note_repository')
+    @patch("app.controllers.note_controller.note_repository")
     def test_list_notes_calls_repository(self, mock_repo):
         """Should call repository get_all with correct parameters."""
         mock_db = Mock()
@@ -18,14 +19,10 @@ class TestListNotes:
 
         result = note_controller.list_notes(mock_db)
 
-        mock_repo.get_all.assert_called_once_with(
-            mock_db,
-            include_deleted=False,
-            project_id=None
-        )
+        mock_repo.get_all.assert_called_once_with(mock_db, include_deleted=False, project_id=None)
         assert result == []
 
-    @patch('app.controllers.note_controller.note_repository')
+    @patch("app.controllers.note_controller.note_repository")
     def test_list_notes_with_project_filter(self, mock_repo):
         """Should filter by project_id when provided."""
         mock_db = Mock()
@@ -35,16 +32,14 @@ class TestListNotes:
         note_controller.list_notes(mock_db, project_id=project_id)
 
         mock_repo.get_all.assert_called_once_with(
-            mock_db,
-            include_deleted=False,
-            project_id=project_id
+            mock_db, include_deleted=False, project_id=project_id
         )
 
 
 class TestGetNote:
     """Test get_note() controller method."""
 
-    @patch('app.controllers.note_controller.note_repository')
+    @patch("app.controllers.note_controller.note_repository")
     def test_get_note_found(self, mock_repo):
         """Should return note when found."""
         mock_db = Mock()
@@ -57,7 +52,7 @@ class TestGetNote:
         assert result == mock_note
         mock_repo.get_by_id.assert_called_once_with(mock_db, note_id)
 
-    @patch('app.controllers.note_controller.note_repository')
+    @patch("app.controllers.note_controller.note_repository")
     def test_get_note_not_found(self, mock_repo):
         """Should return None when note not found."""
         mock_db = Mock()
@@ -71,7 +66,7 @@ class TestGetNote:
 class TestCreateNote:
     """Test create_note() controller method."""
 
-    @patch('app.controllers.note_controller.note_repository')
+    @patch("app.controllers.note_controller.note_repository")
     def test_create_note(self, mock_repo):
         """Should create note via repository."""
         mock_db = Mock()
@@ -88,7 +83,7 @@ class TestCreateNote:
 class TestUpdateNote:
     """Test update_note() controller method."""
 
-    @patch('app.controllers.note_controller.note_repository')
+    @patch("app.controllers.note_controller.note_repository")
     def test_update_note_success(self, mock_repo):
         """Should update note when found."""
         mock_db = Mock()
@@ -106,7 +101,7 @@ class TestUpdateNote:
         mock_repo.get_by_id.assert_called_once_with(mock_db, note_id)
         mock_repo.update.assert_called_once_with(mock_db, mock_note, note_data)
 
-    @patch('app.controllers.note_controller.note_repository')
+    @patch("app.controllers.note_controller.note_repository")
     def test_update_note_not_found(self, mock_repo):
         """Should return None when note not found."""
         mock_db = Mock()
@@ -121,7 +116,7 @@ class TestUpdateNote:
 class TestDeleteNote:
     """Test delete_note() controller method."""
 
-    @patch('app.controllers.note_controller.note_repository')
+    @patch("app.controllers.note_controller.note_repository")
     def test_delete_note_success(self, mock_repo):
         """Should soft delete note when found."""
         mock_db = Mock()
@@ -138,7 +133,7 @@ class TestDeleteNote:
         mock_repo.get_by_id.assert_called_once_with(mock_db, note_id)
         mock_repo.soft_delete.assert_called_once_with(mock_db, mock_note)
 
-    @patch('app.controllers.note_controller.note_repository')
+    @patch("app.controllers.note_controller.note_repository")
     def test_delete_note_not_found(self, mock_repo):
         """Should return None when note not found."""
         mock_db = Mock()

@@ -36,10 +36,26 @@ make db-shell      # PostgreSQL shell
 make test          # Run backend unit tests (62 passing)
 make test-all      # Run all tests (includes broken integration tests)
 make test-cov      # Unit tests with coverage (77%)
-make lint          # Run all linters (ESLint + TypeScript)
 
-# Frontend tests (in container)
-docker compose exec frontend npm test
+# Code Quality
+make lint          # Run all linters (ruff, black, mypy, ESLint, prettier)
+make lint-fe       # Frontend linters only
+make lint-be       # Backend linters only
+make format        # Auto-format all code
+make format-fe     # Auto-format frontend
+make format-be     # Auto-format backend
+```
+
+**Tools:**
+- **Backend**: ruff (linting), black (formatting), mypy (type checking)
+- **Frontend**: ESLint (linting), prettier (formatting), TypeScript (type checking)
+- **Pre-commit**: Automated formatting on git commit (optional)
+
+**Optional: Setup Pre-commit Hooks**
+```bash
+pip install pre-commit
+pre-commit install
+# Now code is auto-formatted before each commit
 ```
 
 ## Project Status
@@ -51,10 +67,11 @@ See [.claude/status.md](.claude/status.md) for detailed progress and [CLAUDE.md]
 ## Documentation
 
 - [TESTING.md](TESTING.md) - Testing guide and framework documentation
+- [CODE_QUALITY.md](CODE_QUALITY.md) - **Linting, formatting, and code quality tools**
 - [CLAUDE.md](CLAUDE.md) - AI development guide and project overview
 - [backend/README.md](backend/README.md) - Backend API documentation
 - [frontend/README.md](frontend/README.md) - Frontend component documentation
-- [.claude/](. claude/) - User stories, requirements, and technical specs
+- [.claude/](.claude/) - User stories, requirements, and technical specs
 
 ---
 

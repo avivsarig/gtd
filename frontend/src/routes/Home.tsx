@@ -3,7 +3,23 @@ import { QuickCapture } from "@/components/QuickCapture"
 import { TaskList } from "@/components/TaskList"
 import { NotesList } from "@/components/NotesList"
 import { NoteForm } from "@/components/NoteForm"
-import { getTasks, createTask, healthCheck, updateTask, completeTask, uncompleteTask, getProjects, getNotes, createNote, updateNote, deleteNote, type Task, type TaskStatus, type Project, type Note } from "@/lib/api"
+import {
+  getTasks,
+  createTask,
+  healthCheck,
+  updateTask,
+  completeTask,
+  uncompleteTask,
+  getProjects,
+  getNotes,
+  createNote,
+  updateNote,
+  deleteNote,
+  type Task,
+  type TaskStatus,
+  type Project,
+  type Note,
+} from "@/lib/api"
 
 type StatusFilter = "all" | TaskStatus
 
@@ -13,7 +29,9 @@ export function Home() {
   const [notes, setNotes] = useState<Note[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [backendStatus, setBackendStatus] = useState<"checking" | "online" | "offline">("checking")
+  const [backendStatus, setBackendStatus] = useState<
+    "checking" | "online" | "offline"
+  >("checking")
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all")
   const [editingNote, setEditingNote] = useState<Note | null>(null)
   const [showNoteForm, setShowNoteForm] = useState(false)
@@ -61,7 +79,10 @@ export function Home() {
     }
   }
 
-  const handleCreateTask = async (input: { title: string; description?: string }) => {
+  const handleCreateTask = async (input: {
+    title: string
+    description?: string
+  }) => {
     try {
       setIsLoading(true)
       setError(null)
@@ -79,7 +100,7 @@ export function Home() {
     try {
       const updatedTask = await updateTask(taskId, { status })
       setTasks((prev) =>
-        prev.map((task) => (task.id === taskId ? updatedTask : task))
+        prev.map((task) => (task.id === taskId ? updatedTask : task)),
       )
     } catch (err) {
       setError("Failed to update task status")
@@ -92,20 +113,21 @@ export function Home() {
       const updatedTask = task.completed_at
         ? await uncompleteTask(task.id)
         : await completeTask(task.id)
-      setTasks((prev) =>
-        prev.map((t) => (t.id === task.id ? updatedTask : t))
-      )
+      setTasks((prev) => prev.map((t) => (t.id === task.id ? updatedTask : t)))
     } catch (err) {
       setError("Failed to toggle task completion")
       console.error(err)
     }
   }
 
-  const handleUpdateProject = async (taskId: string, projectId: string | null) => {
+  const handleUpdateProject = async (
+    taskId: string,
+    projectId: string | null,
+  ) => {
     try {
       const updatedTask = await updateTask(taskId, { project_id: projectId })
       setTasks((prev) =>
-        prev.map((task) => (task.id === taskId ? updatedTask : task))
+        prev.map((task) => (task.id === taskId ? updatedTask : task)),
       )
     } catch (err) {
       setError("Failed to update task project")
@@ -113,7 +135,11 @@ export function Home() {
     }
   }
 
-  const handleCreateNote = async (data: { title: string; content?: string; project_id?: string | null }) => {
+  const handleCreateNote = async (data: {
+    title: string
+    content?: string
+    project_id?: string | null
+  }) => {
     try {
       setIsLoading(true)
       const newNote = await createNote(data)
@@ -127,12 +153,18 @@ export function Home() {
     }
   }
 
-  const handleUpdateNote = async (data: { title: string; content?: string; project_id?: string | null }) => {
+  const handleUpdateNote = async (data: {
+    title: string
+    content?: string
+    project_id?: string | null
+  }) => {
     if (!editingNote) return
     try {
       setIsLoading(true)
       const updatedNote = await updateNote(editingNote.id, data)
-      setNotes((prev) => prev.map((note) => (note.id === editingNote.id ? updatedNote : note)))
+      setNotes((prev) =>
+        prev.map((note) => (note.id === editingNote.id ? updatedNote : note)),
+      )
       setEditingNote(null)
       setShowNoteForm(false)
     } catch (err) {
@@ -170,19 +202,19 @@ export function Home() {
   }, [tasks, statusFilter])
 
   return (
-    <div className="container mx-auto max-w-4xl py-8 px-4">
+    <div className="container mx-auto max-w-4xl px-4 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">GTD Task Manager</h1>
+        <h1 className="mb-2 text-3xl font-bold">GTD Task Manager</h1>
         <div className="flex items-center gap-2 text-sm">
           <span>Backend:</span>
           <span
-            className={`px-2 py-1 rounded text-xs font-medium ${
+            className={`rounded px-2 py-1 text-xs font-medium ${
               backendStatus === "online"
-                ? "bg-green-500/20 text-green-400 border border-green-500/30"
+                ? "border border-green-500/30 bg-green-500/20 text-green-400"
                 : backendStatus === "offline"
-                  ? "bg-red-500/20 text-red-400 border border-red-500/30"
-                  : "bg-gray-500/20 text-gray-400 border border-gray-500/30"
+                  ? "border border-red-500/30 bg-red-500/20 text-red-400"
+                  : "border border-gray-500/30 bg-gray-500/20 text-gray-400"
             }`}
           >
             {backendStatus}
@@ -192,38 +224,38 @@ export function Home() {
 
       {/* Error Message */}
       {error && (
-        <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-lg mb-6">
+        <div className="bg-destructive/10 text-destructive mb-6 rounded-lg px-4 py-3">
           {error}
         </div>
       )}
 
       {/* Quick Capture */}
-      <div className="bg-card border border-border rounded-lg p-6 mb-8">
-        <h2 className="text-xl font-semibold mb-4">Quick Capture</h2>
+      <div className="bg-card border-border mb-8 rounded-lg border p-6">
+        <h2 className="mb-4 text-xl font-semibold">Quick Capture</h2>
         <QuickCapture onSubmit={handleCreateTask} isLoading={isLoading} />
       </div>
 
       {/* Task List */}
       <div>
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4 flex items-center justify-between">
           <h2 className="text-xl font-semibold">
             Tasks ({filteredTasks.length})
           </h2>
           <button
             onClick={loadTasks}
-            className="text-sm text-muted-foreground hover:text-foreground"
+            className="text-muted-foreground hover:text-foreground text-sm"
           >
             Refresh
           </button>
         </div>
 
         {/* Status Filter Tabs */}
-        <div className="flex gap-2 mb-4">
+        <div className="mb-4 flex gap-2">
           {(["all", "next", "waiting", "someday"] as const).map((filter) => (
             <button
               key={filter}
               onClick={() => setStatusFilter(filter)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                 statusFilter === filter
                   ? "bg-primary text-primary-foreground"
                   : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
@@ -250,22 +282,22 @@ export function Home() {
 
       {/* Notes Section */}
       <div className="mt-12">
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4 flex items-center justify-between">
           <h2 className="text-xl font-semibold">Notes ({notes.length})</h2>
           <button
             onClick={() => {
               setEditingNote(null)
               setShowNoteForm(!showNoteForm)
             }}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg px-4 py-2 text-sm transition-colors"
           >
             {showNoteForm ? "Cancel" : "+ New Note"}
           </button>
         </div>
 
         {showNoteForm && (
-          <div className="bg-card border border-border rounded-lg p-6 mb-6">
-            <h3 className="text-lg font-semibold mb-4">
+          <div className="bg-card border-border mb-6 rounded-lg border p-6">
+            <h3 className="mb-4 text-lg font-semibold">
               {editingNote ? "Edit Note" : "Create Note"}
             </h3>
             <NoteForm

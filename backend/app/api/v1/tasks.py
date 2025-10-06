@@ -1,23 +1,24 @@
 """Tasks API endpoints."""
-from typing import List
+
 from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.controllers import task_controller
 from app.db.database import get_db
 from app.schemas.task import (
-    TaskCreate,
-    TaskUpdate,
-    TaskResponse,
     BulkStatusUpdate,
-    BulkStatusUpdateResponse
+    BulkStatusUpdateResponse,
+    TaskCreate,
+    TaskResponse,
+    TaskUpdate,
 )
-from app.controllers import task_controller
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 
-@router.get("/", response_model=List[TaskResponse])
+@router.get("/", response_model=list[TaskResponse])
 def list_tasks(db: Session = Depends(get_db)):
     """
     Get all active tasks.
@@ -38,8 +39,7 @@ def get_task(task_id: UUID, db: Session = Depends(get_db)):
     task = task_controller.get_task(db, task_id)
     if task is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Task with id {task_id} not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Task with id {task_id} not found"
         )
     return task
 
@@ -69,8 +69,7 @@ def update_task(task_id: UUID, task_data: TaskUpdate, db: Session = Depends(get_
     task = task_controller.update_task(db, task_id, task_data)
     if task is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Task with id {task_id} not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Task with id {task_id} not found"
         )
     return task
 
@@ -89,8 +88,7 @@ def delete_task(task_id: UUID, db: Session = Depends(get_db)):
     task = task_controller.delete_task(db, task_id)
     if task is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Task with id {task_id} not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Task with id {task_id} not found"
         )
     return None  # 204 No Content
 
@@ -108,8 +106,7 @@ def complete_task(task_id: UUID, db: Session = Depends(get_db)):
     task = task_controller.complete_task(db, task_id)
     if task is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Task with id {task_id} not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Task with id {task_id} not found"
         )
     return task
 
@@ -127,17 +124,13 @@ def uncomplete_task(task_id: UUID, db: Session = Depends(get_db)):
     task = task_controller.uncomplete_task(db, task_id)
     if task is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Task with id {task_id} not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Task with id {task_id} not found"
         )
     return task
 
 
 @router.post("/bulk/status", response_model=BulkStatusUpdateResponse)
-def bulk_update_status(
-    bulk_update: BulkStatusUpdate,
-    db: Session = Depends(get_db)
-):
+def bulk_update_status(bulk_update: BulkStatusUpdate, db: Session = Depends(get_db)):
     """
     Update status for multiple tasks at once.
 
@@ -146,12 +139,7 @@ def bulk_update_status(
 
     Returns count of updated tasks and their IDs.
     """
-    updated_tasks = task_controller.bulk_update_status(
-        db,
-        bulk_update.task_ids,
-        bulk_update.status
-    )
+    updated_tasks = task_controller.bulk_update_status(db, bulk_update.task_ids, bulk_update.status)
     return BulkStatusUpdateResponse(
-        updated_count=len(updated_tasks),
-        task_ids=[task.id for task in updated_tasks]
+        updated_count=len(updated_tasks), task_ids=[task.id for task in updated_tasks]
     )

@@ -1,15 +1,16 @@
 """Task controller - Business logic layer for Task operations."""
-from typing import List, Optional
+
 from datetime import datetime
 from uuid import UUID
+
 from sqlalchemy.orm import Session
 
 from app.models.task import Task
-from app.schemas.task import TaskCreate, TaskUpdate, TaskStatus
 from app.repositories import task_repository
+from app.schemas.task import TaskCreate, TaskStatus, TaskUpdate
 
 
-def list_tasks(db: Session) -> List[Task]:
+def list_tasks(db: Session) -> list[Task]:
     """
     Get list of all active (non-deleted) tasks.
 
@@ -26,7 +27,7 @@ def list_tasks(db: Session) -> List[Task]:
     return task_repository.get_all(db, include_deleted=False)
 
 
-def get_task(db: Session, task_id: UUID) -> Optional[Task]:
+def get_task(db: Session, task_id: UUID) -> Task | None:
     """
     Get a single task by ID.
 
@@ -62,7 +63,7 @@ def create_task(db: Session, task_data: TaskCreate) -> Task:
     return task_repository.create(db, task_data)
 
 
-def update_task(db: Session, task_id: UUID, task_data: TaskUpdate) -> Optional[Task]:
+def update_task(db: Session, task_id: UUID, task_data: TaskUpdate) -> Task | None:
     """
     Update an existing task with business logic.
 
@@ -90,7 +91,7 @@ def update_task(db: Session, task_id: UUID, task_data: TaskUpdate) -> Optional[T
     return task_repository.update(db, task, task_data)
 
 
-def delete_task(db: Session, task_id: UUID) -> Optional[Task]:
+def delete_task(db: Session, task_id: UUID) -> Task | None:
     """
     Soft delete a task (archive).
 
@@ -111,7 +112,7 @@ def delete_task(db: Session, task_id: UUID) -> Optional[Task]:
     return task_repository.soft_delete(db, task)
 
 
-def complete_task(db: Session, task_id: UUID) -> Optional[Task]:
+def complete_task(db: Session, task_id: UUID) -> Task | None:
     """
     Mark a task as completed.
 
@@ -136,7 +137,7 @@ def complete_task(db: Session, task_id: UUID) -> Optional[Task]:
     return task
 
 
-def uncomplete_task(db: Session, task_id: UUID) -> Optional[Task]:
+def uncomplete_task(db: Session, task_id: UUID) -> Task | None:
     """
     Mark a completed task as incomplete.
 
@@ -160,7 +161,7 @@ def uncomplete_task(db: Session, task_id: UUID) -> Optional[Task]:
     return task
 
 
-def bulk_update_status(db: Session, task_ids: List[UUID], status: TaskStatus) -> List[Task]:
+def bulk_update_status(db: Session, task_ids: list[UUID], status: TaskStatus) -> list[Task]:
     """
     Update status for multiple tasks at once.
 

@@ -1,4 +1,5 @@
 """Integration tests for Project API endpoints."""
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
@@ -12,10 +13,7 @@ class TestProjectAPI:
         """Should create a new project."""
         response = client.post(
             "/api/v1/projects/",
-            json={
-                "name": "New Project",
-                "outcome_statement": "Complete the project successfully"
-            }
+            json={"name": "New Project", "outcome_statement": "Complete the project successfully"},
         )
 
         assert response.status_code == 201
@@ -28,10 +26,7 @@ class TestProjectAPI:
 
     def test_create_project_minimal(self, client: TestClient):
         """Should create project with only name."""
-        response = client.post(
-            "/api/v1/projects/",
-            json={"name": "Minimal Project"}
-        )
+        response = client.post("/api/v1/projects/", json={"name": "Minimal Project"})
 
         assert response.status_code == 201
         data = response.json()
@@ -40,10 +35,7 @@ class TestProjectAPI:
 
     def test_create_project_empty_name_returns_422(self, client: TestClient):
         """Should reject empty project name."""
-        response = client.post(
-            "/api/v1/projects/",
-            json={"name": ""}
-        )
+        response = client.post("/api/v1/projects/", json={"name": ""})
 
         assert response.status_code == 422
 
@@ -70,18 +62,21 @@ class TestProjectAPI:
     def test_list_projects_with_stats(self, client: TestClient):
         """Should return projects with task statistics."""
         # Create project
-        project_response = client.post(
-            "/api/v1/projects/",
-            json={"name": "Project with Tasks"}
-        )
+        project_response = client.post("/api/v1/projects/", json={"name": "Project with Tasks"})
         project_id = project_response.json()["id"]
 
         # Create tasks for the project
-        client.post("/api/v1/tasks/", json={"title": "Task 1", "project_id": project_id, "status": "next"})
-        client.post("/api/v1/tasks/", json={"title": "Task 2", "project_id": project_id, "status": "next"})
+        client.post(
+            "/api/v1/tasks/", json={"title": "Task 1", "project_id": project_id, "status": "next"}
+        )
+        client.post(
+            "/api/v1/tasks/", json={"title": "Task 2", "project_id": project_id, "status": "next"}
+        )
 
         # Complete one task
-        task_response = client.post("/api/v1/tasks/", json={"title": "Task 3", "project_id": project_id})
+        task_response = client.post(
+            "/api/v1/tasks/", json={"title": "Task 3", "project_id": project_id}
+        )
         task_id = task_response.json()["id"]
         client.post(f"/api/v1/tasks/{task_id}/complete")
 
@@ -99,7 +94,7 @@ class TestProjectAPI:
         """Should retrieve specific project by ID."""
         create_response = client.post(
             "/api/v1/projects/",
-            json={"name": "Specific Project", "outcome_statement": "Specific outcome"}
+            json={"name": "Specific Project", "outcome_statement": "Specific outcome"},
         )
         project_id = create_response.json()["id"]
 
@@ -123,14 +118,14 @@ class TestProjectAPI:
         # Create project
         create_response = client.post(
             "/api/v1/projects/",
-            json={"name": "Original Name", "outcome_statement": "Original outcome"}
+            json={"name": "Original Name", "outcome_statement": "Original outcome"},
         )
         project_id = create_response.json()["id"]
 
         # Update project
         update_response = client.put(
             f"/api/v1/projects/{project_id}",
-            json={"name": "Updated Name", "outcome_statement": "Updated outcome"}
+            json={"name": "Updated Name", "outcome_statement": "Updated outcome"},
         )
 
         assert update_response.status_code == 200
@@ -143,15 +138,12 @@ class TestProjectAPI:
         # Create project
         create_response = client.post(
             "/api/v1/projects/",
-            json={"name": "Original Name", "outcome_statement": "Original outcome"}
+            json={"name": "Original Name", "outcome_statement": "Original outcome"},
         )
         project_id = create_response.json()["id"]
 
         # Update only name
-        update_response = client.put(
-            f"/api/v1/projects/{project_id}",
-            json={"name": "New Name"}
-        )
+        update_response = client.put(f"/api/v1/projects/{project_id}", json={"name": "New Name"})
 
         assert update_response.status_code == 200
         data = update_response.json()
@@ -161,17 +153,11 @@ class TestProjectAPI:
     def test_update_project_status(self, client: TestClient):
         """Should update project status."""
         # Create project
-        create_response = client.post(
-            "/api/v1/projects/",
-            json={"name": "Project"}
-        )
+        create_response = client.post("/api/v1/projects/", json={"name": "Project"})
         project_id = create_response.json()["id"]
 
         # Update to on_hold
-        response = client.put(
-            f"/api/v1/projects/{project_id}",
-            json={"status": "on_hold"}
-        )
+        response = client.put(f"/api/v1/projects/{project_id}", json={"status": "on_hold"})
 
         assert response.status_code == 200
         assert response.json()["status"] == "on_hold"
@@ -179,10 +165,7 @@ class TestProjectAPI:
     def test_complete_project(self, client: TestClient):
         """Should mark project as completed."""
         # Create project
-        create_response = client.post(
-            "/api/v1/projects/",
-            json={"name": "Project to Complete"}
-        )
+        create_response = client.post("/api/v1/projects/", json={"name": "Project to Complete"})
         project_id = create_response.json()["id"]
 
         # Complete project
@@ -196,10 +179,7 @@ class TestProjectAPI:
     def test_delete_project(self, client: TestClient):
         """Should soft delete project."""
         # Create project
-        create_response = client.post(
-            "/api/v1/projects/",
-            json={"name": "Project to Delete"}
-        )
+        create_response = client.post("/api/v1/projects/", json={"name": "Project to Delete"})
         project_id = create_response.json()["id"]
 
         # Delete project

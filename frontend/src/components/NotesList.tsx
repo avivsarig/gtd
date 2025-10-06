@@ -1,5 +1,5 @@
 import { useState } from "react"
-import  { type Note, type Project } from "@/lib/api"
+import { type Note, type Project } from "@/lib/api"
 
 interface NotesListProps {
   notes: Note[]
@@ -8,7 +8,12 @@ interface NotesListProps {
   onDelete: (noteId: string) => void
 }
 
-export function NotesList({ notes, projects, onEdit, onDelete }: NotesListProps) {
+export function NotesList({
+  notes,
+  projects,
+  onEdit,
+  onDelete,
+}: NotesListProps) {
   const [expandedNoteId, setExpandedNoteId] = useState<string | null>(null)
 
   const getProjectName = (projectId: string | null | undefined) => {
@@ -23,7 +28,7 @@ export function NotesList({ notes, projects, onEdit, onDelete }: NotesListProps)
 
   if (notes.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
+      <div className="text-muted-foreground py-8 text-center">
         No notes yet. Create one to get started!
       </div>
     )
@@ -38,20 +43,20 @@ export function NotesList({ notes, projects, onEdit, onDelete }: NotesListProps)
         return (
           <div
             key={note.id}
-            className="bg-card border border-border rounded-lg p-4 hover:border-primary/50 transition-colors"
+            className="bg-card border-border hover:border-primary/50 rounded-lg border p-4 transition-colors"
           >
             <div className="flex items-start justify-between gap-4">
-              <div className="flex-1 min-w-0">
+              <div className="min-w-0 flex-1">
                 <button
                   onClick={() => toggleExpand(note.id)}
-                  className="text-left w-full group"
+                  className="group w-full text-left"
                 >
-                  <h3 className="font-medium text-foreground group-hover:text-primary transition-colors">
+                  <h3 className="text-foreground group-hover:text-primary font-medium transition-colors">
                     {note.title}
                   </h3>
                   {projectName && (
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs px-2 py-0.5 rounded bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                    <div className="mt-1 flex items-center gap-2">
+                      <span className="rounded border border-purple-500/30 bg-purple-500/20 px-2 py-0.5 text-xs text-purple-400">
                         {projectName}
                       </span>
                     </div>
@@ -59,13 +64,13 @@ export function NotesList({ notes, projects, onEdit, onDelete }: NotesListProps)
                 </button>
 
                 {isExpanded && note.content && (
-                  <div className="mt-3 text-sm text-muted-foreground whitespace-pre-wrap">
+                  <div className="text-muted-foreground mt-3 text-sm whitespace-pre-wrap">
                     {note.content}
                   </div>
                 )}
 
                 {isExpanded && (
-                  <div className="mt-2 text-xs text-muted-foreground">
+                  <div className="text-muted-foreground mt-2 text-xs">
                     Updated: {new Date(note.updated_at).toLocaleString()}
                   </div>
                 )}
@@ -74,7 +79,7 @@ export function NotesList({ notes, projects, onEdit, onDelete }: NotesListProps)
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => onEdit(note)}
-                  className="text-sm px-3 py-1 rounded bg-secondary hover:bg-secondary/80 text-secondary-foreground transition-colors"
+                  className="bg-secondary hover:bg-secondary/80 text-secondary-foreground rounded px-3 py-1 text-sm transition-colors"
                 >
                   Edit
                 </button>
@@ -84,7 +89,7 @@ export function NotesList({ notes, projects, onEdit, onDelete }: NotesListProps)
                       onDelete(note.id)
                     }
                   }}
-                  className="text-sm px-3 py-1 rounded bg-destructive/20 hover:bg-destructive/30 text-destructive transition-colors"
+                  className="bg-destructive/20 hover:bg-destructive/30 text-destructive rounded px-3 py-1 text-sm transition-colors"
                 >
                   Delete
                 </button>

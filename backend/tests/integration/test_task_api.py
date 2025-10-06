@@ -1,11 +1,7 @@
 """Integration tests for Task API endpoints."""
-import pytest
+
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
-
-from app.main import app
-from app.models.task import Task
-from app.schemas.task import TaskStatus
 
 
 class TestTaskStatusManagement:
@@ -14,11 +10,7 @@ class TestTaskStatusManagement:
     def test_create_task_with_valid_status(self, client: TestClient, db: Session):
         """Should create task with valid status."""
         response = client.post(
-            "/api/v1/tasks/",
-            json={
-                "title": "Task with waiting status",
-                "status": "waiting"
-            }
+            "/api/v1/tasks/", json={"title": "Task with waiting status", "status": "waiting"}
         )
 
         assert response.status_code == 201
@@ -29,11 +21,7 @@ class TestTaskStatusManagement:
     def test_create_task_with_invalid_status_returns_422(self, client: TestClient):
         """Should reject invalid status values."""
         response = client.post(
-            "/api/v1/tasks/",
-            json={
-                "title": "Task with invalid status",
-                "status": "invalid_status"
-            }
+            "/api/v1/tasks/", json={"title": "Task with invalid status", "status": "invalid_status"}
         )
 
         assert response.status_code == 422
@@ -42,16 +30,12 @@ class TestTaskStatusManagement:
         """Should update task status."""
         # Create a task
         create_response = client.post(
-            "/api/v1/tasks/",
-            json={"title": "Task to update", "status": "next"}
+            "/api/v1/tasks/", json={"title": "Task to update", "status": "next"}
         )
         task_id = create_response.json()["id"]
 
         # Update status to waiting
-        update_response = client.put(
-            f"/api/v1/tasks/{task_id}",
-            json={"status": "waiting"}
-        )
+        update_response = client.put(f"/api/v1/tasks/{task_id}", json={"status": "waiting"})
 
         assert update_response.status_code == 200
         data = update_response.json()
@@ -60,10 +44,7 @@ class TestTaskStatusManagement:
     def test_complete_task_sets_completed_at(self, client: TestClient, db: Session):
         """Should set completed_at timestamp when completing task."""
         # Create a task
-        create_response = client.post(
-            "/api/v1/tasks/",
-            json={"title": "Task to complete"}
-        )
+        create_response = client.post("/api/v1/tasks/", json={"title": "Task to complete"})
         task_id = create_response.json()["id"]
 
         # Complete the task
@@ -76,10 +57,7 @@ class TestTaskStatusManagement:
     def test_uncomplete_task_clears_completed_at(self, client: TestClient, db: Session):
         """Should clear completed_at when uncompleting task."""
         # Create and complete a task
-        create_response = client.post(
-            "/api/v1/tasks/",
-            json={"title": "Task to uncomplete"}
-        )
+        create_response = client.post("/api/v1/tasks/", json={"title": "Task to uncomplete"})
         task_id = create_response.json()["id"]
         client.post(f"/api/v1/tasks/{task_id}/complete")
 
@@ -104,19 +82,12 @@ class TestTaskStatusManagement:
         # Create 3 tasks
         task_ids = []
         for i in range(3):
-            response = client.post(
-                "/api/v1/tasks/",
-                json={"title": f"Task {i}", "status": "next"}
-            )
+            response = client.post("/api/v1/tasks/", json={"title": f"Task {i}", "status": "next"})
             task_ids.append(response.json()["id"])
 
         # Bulk update to waiting
         bulk_response = client.post(
-            "/api/v1/tasks/bulk/status",
-            json={
-                "task_ids": task_ids,
-                "status": "waiting"
-            }
+            "/api/v1/tasks/bulk/status", json={"task_ids": task_ids, "status": "waiting"}
         )
 
         assert bulk_response.status_code == 200
@@ -134,11 +105,7 @@ class TestTaskStatusManagement:
         from uuid import uuid4
 
         response = client.post(
-            "/api/v1/tasks/bulk/status",
-            json={
-                "task_ids": [str(uuid4())],
-                "status": "invalid"
-            }
+            "/api/v1/tasks/bulk/status", json={"task_ids": [str(uuid4())], "status": "invalid"}
         )
 
         assert response.status_code == 422
@@ -150,10 +117,7 @@ class TestTaskStatusManagement:
         # Create 2 real tasks
         task_ids = []
         for i in range(2):
-            response = client.post(
-                "/api/v1/tasks/",
-                json={"title": f"Real task {i}"}
-            )
+            response = client.post("/api/v1/tasks/", json={"title": f"Real task {i}"})
             task_ids.append(response.json()["id"])
 
         # Add a fake UUID
@@ -162,11 +126,7 @@ class TestTaskStatusManagement:
 
         # Bulk update
         bulk_response = client.post(
-            "/api/v1/tasks/bulk/status",
-            json={
-                "task_ids": task_ids,
-                "status": "someday"
-            }
+            "/api/v1/tasks/bulk/status", json={"task_ids": task_ids, "status": "someday"}
         )
 
         assert bulk_response.status_code == 200
@@ -177,13 +137,7 @@ class TestTaskStatusManagement:
 
     def test_bulk_status_update_with_empty_list(self, client: TestClient):
         """Should handle empty task list in bulk update."""
-        response = client.post(
-            "/api/v1/tasks/bulk/status",
-            json={
-                "task_ids": [],
-                "status": "next"
-            }
-        )
+        response = client.post("/api/v1/tasks/bulk/status", json={"task_ids": [], "status": "next"})
 
         # Should fail validation due to min_length=1
         assert response.status_code == 422
@@ -195,20 +149,13 @@ class TestBlockedTaskStatusRules:
     def test_create_blocked_task_auto_sets_waiting_status(self, client: TestClient, db: Session):
         """Should automatically set status to waiting when creating blocked task."""
         # Create blocking task
-        blocking_response = client.post(
-            "/api/v1/tasks/",
-            json={"title": "Blocking task"}
-        )
+        blocking_response = client.post("/api/v1/tasks/", json={"title": "Blocking task"})
         blocking_id = blocking_response.json()["id"]
 
         # Create blocked task with status=next
         blocked_response = client.post(
             "/api/v1/tasks/",
-            json={
-                "title": "Blocked task",
-                "status": "next",
-                "blocked_by_task_id": blocking_id
-            }
+            json={"title": "Blocked task", "status": "next", "blocked_by_task_id": blocking_id},
         )
 
         assert blocked_response.status_code == 201
@@ -227,8 +174,7 @@ class TestBlockedTaskStatusRules:
 
         # Update task 2 to be blocked by task 1
         update_response = client.put(
-            f"/api/v1/tasks/{task2_id}",
-            json={"blocked_by_task_id": task1_id}
+            f"/api/v1/tasks/{task2_id}", json={"blocked_by_task_id": task1_id}
         )
 
         assert update_response.status_code == 200

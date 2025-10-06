@@ -1,15 +1,16 @@
 """Project controller - Business logic layer for Project operations."""
-from typing import List, Optional
+
 from datetime import datetime
 from uuid import UUID
+
 from sqlalchemy.orm import Session
 
 from app.models.project import Project
-from app.schemas.project import ProjectCreate, ProjectUpdate, ProjectStatus, ProjectWithStats
 from app.repositories import project_repository
+from app.schemas.project import ProjectCreate, ProjectStatus, ProjectUpdate, ProjectWithStats
 
 
-def list_projects(db: Session) -> List[Project]:
+def list_projects(db: Session) -> list[Project]:
     """
     Get list of all active (non-deleted) projects.
 
@@ -26,7 +27,7 @@ def list_projects(db: Session) -> List[Project]:
     return project_repository.get_all(db, include_deleted=False)
 
 
-def list_projects_with_stats(db: Session) -> List[ProjectWithStats]:
+def list_projects_with_stats(db: Session) -> list[ProjectWithStats]:
     """
     Get list of projects with task statistics.
 
@@ -52,14 +53,14 @@ def list_projects_with_stats(db: Session) -> List[ProjectWithStats]:
             "completed_at": project.completed_at,
             "archived_at": project.archived_at,
             "last_activity_at": project.last_activity_at,
-            **stats
+            **stats,
         }
         result.append(ProjectWithStats(**project_dict))
 
     return result
 
 
-def get_project(db: Session, project_id: UUID) -> Optional[Project]:
+def get_project(db: Session, project_id: UUID) -> Project | None:
     """
     Get a single project by ID.
 
@@ -73,7 +74,7 @@ def get_project(db: Session, project_id: UUID) -> Optional[Project]:
     return project_repository.get_by_id(db, project_id)
 
 
-def get_project_with_stats(db: Session, project_id: UUID) -> Optional[ProjectWithStats]:
+def get_project_with_stats(db: Session, project_id: UUID) -> ProjectWithStats | None:
     """
     Get a single project with task statistics.
 
@@ -100,7 +101,7 @@ def get_project_with_stats(db: Session, project_id: UUID) -> Optional[ProjectWit
         "completed_at": project.completed_at,
         "archived_at": project.archived_at,
         "last_activity_at": project.last_activity_at,
-        **stats
+        **stats,
     }
     return ProjectWithStats(**project_dict)
 
@@ -126,7 +127,7 @@ def create_project(db: Session, project_data: ProjectCreate) -> Project:
     return project
 
 
-def update_project(db: Session, project_id: UUID, project_data: ProjectUpdate) -> Optional[Project]:
+def update_project(db: Session, project_id: UUID, project_data: ProjectUpdate) -> Project | None:
     """
     Update an existing project.
 
@@ -156,7 +157,7 @@ def update_project(db: Session, project_id: UUID, project_data: ProjectUpdate) -
     return project_repository.update(db, project, project_data)
 
 
-def delete_project(db: Session, project_id: UUID) -> Optional[Project]:
+def delete_project(db: Session, project_id: UUID) -> Project | None:
     """
     Soft delete a project.
 
@@ -176,7 +177,7 @@ def delete_project(db: Session, project_id: UUID) -> Optional[Project]:
     return project_repository.soft_delete(db, project)
 
 
-def complete_project(db: Session, project_id: UUID) -> Optional[Project]:
+def complete_project(db: Session, project_id: UUID) -> Project | None:
     """
     Mark a project as completed.
 

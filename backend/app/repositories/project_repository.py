@@ -1,16 +1,17 @@
 """Project repository - Data access layer for Project operations."""
-from typing import List, Optional
-from uuid import UUID
+
 from datetime import datetime
-from sqlalchemy.orm import Session
+from uuid import UUID
+
 from sqlalchemy import func
+from sqlalchemy.orm import Session
 
 from app.models.project import Project
 from app.models.task import Task
 from app.schemas.project import ProjectCreate, ProjectUpdate
 
 
-def get_all(db: Session, include_deleted: bool = False) -> List[Project]:
+def get_all(db: Session, include_deleted: bool = False) -> list[Project]:
     """
     Get all projects.
 
@@ -29,7 +30,7 @@ def get_all(db: Session, include_deleted: bool = False) -> List[Project]:
     return query.order_by(Project.created_at.desc()).all()
 
 
-def get_by_id(db: Session, project_id: UUID) -> Optional[Project]:
+def get_by_id(db: Session, project_id: UUID) -> Project | None:
     """
     Get a single project by ID.
 
@@ -40,11 +41,7 @@ def get_by_id(db: Session, project_id: UUID) -> Optional[Project]:
     Returns:
         Project object if found and not deleted, None otherwise
     """
-    return (
-        db.query(Project)
-        .filter(Project.id == project_id, Project.deleted_at.is_(None))
-        .first()
-    )
+    return db.query(Project).filter(Project.id == project_id, Project.deleted_at.is_(None)).first()
 
 
 def create(db: Session, project_data: ProjectCreate) -> Project:
@@ -116,26 +113,32 @@ def get_task_stats(db: Session, project_id: UUID) -> dict:
     Returns:
         Dictionary with task_count, completed_task_count, next_task_count
     """
-    total = db.query(func.count(Task.id)).filter(
-        Task.project_id == project_id,
-        Task.deleted_at.is_(None)
-    ).scalar() or 0
+    total = (
+        db.query(func.count(Task.id))
+        .filter(Task.project_id == project_id, Task.deleted_at.is_(None))
+        .scalar()
+        or 0
+    )
 
-    completed = db.query(func.count(Task.id)).filter(
-        Task.project_id == project_id,
-        Task.completed_at.isnot(None),
-        Task.deleted_at.is_(None)
-    ).scalar() or 0
+    completed = (
+        db.query(func.count(Task.id))
+        .filter(
+            Task.project_id == project_id, Task.completed_at.isnot(None), Task.deleted_at.is_(None)
+        )
+        .scalar()
+        or 0
+    )
 
-    next_tasks = db.query(func.count(Task.id)).filter(
-        Task.project_id == project_id,
-        Task.status == "next",
-        Task.completed_at.is_(None),
-        Task.deleted_at.is_(None)
-    ).scalar() or 0
+    next_tasks = (
+        db.query(func.count(Task.id))
+        .filter(
+            Task.project_id == project_id,
+            Task.status == "next",
+            Task.completed_at.is_(None),
+            Task.deleted_at.is_(None),
+        )
+        .scalar()
+        or 0
+    )
 
-    return {
-        "task_count": total,
-        "completed_task_count": completed,
-        "next_task_count": next_tasks
-    }
+    return {"task_count": total, "completed_task_count": completed, "next_task_count": next_tasks}

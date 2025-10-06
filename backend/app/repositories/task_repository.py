@@ -1,13 +1,14 @@
 """Task repository - Data access layer for Task operations."""
-from typing import List, Optional
+
 from uuid import UUID
+
 from sqlalchemy.orm import Session
 
 from app.models.task import Task
 from app.schemas.task import TaskCreate, TaskUpdate
 
 
-def get_all(db: Session, include_deleted: bool = False) -> List[Task]:
+def get_all(db: Session, include_deleted: bool = False) -> list[Task]:
     """
     Get all tasks from database.
 
@@ -26,7 +27,7 @@ def get_all(db: Session, include_deleted: bool = False) -> List[Task]:
     return query.order_by(Task.created_at.desc()).all()
 
 
-def get_by_id(db: Session, task_id: UUID) -> Optional[Task]:
+def get_by_id(db: Session, task_id: UUID) -> Task | None:
     """
     Get a task by its ID.
 

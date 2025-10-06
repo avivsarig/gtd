@@ -1,12 +1,14 @@
 """Factory Boy factories for test data generation."""
-import factory
-from factory import fuzzy
-from datetime import datetime, UTC
+
+from datetime import UTC, datetime
 from uuid import uuid4
 
-from app.models.task import Task
-from app.models.project import Project
+import factory
+from factory import fuzzy
+
 from app.models.note import Note
+from app.models.project import Project
+from app.models.task import Task
 
 
 class ProjectFactory(factory.Factory):
@@ -83,10 +85,7 @@ def create_note(**kwargs):
 
 def create_completed_task(**kwargs):
     """Create a completed task."""
-    defaults = {
-        "completed_at": datetime.now(UTC),
-        "status": "next"
-    }
+    defaults = {"completed_at": datetime.now(UTC), "status": "next"}
     defaults.update(kwargs)
     return TaskFactory(**defaults)
 
@@ -100,9 +99,6 @@ def create_project_with_tasks(num_tasks=3, **kwargs):
 
 def create_blocked_task(blocking_task_id, **kwargs):
     """Create a task that is blocked by another task."""
-    defaults = {
-        "blocked_by_task_id": blocking_task_id,
-        "status": "waiting"
-    }
+    defaults = {"blocked_by_task_id": blocking_task_id, "status": "waiting"}
     defaults.update(kwargs)
     return TaskFactory(**defaults)

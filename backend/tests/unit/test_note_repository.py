@@ -1,4 +1,5 @@
 """Unit tests for Note repository."""
+
 from unittest.mock import Mock
 from uuid import uuid4
 
@@ -28,9 +29,7 @@ class TestGetAll:
 
         mock_db = Mock()
         mock_query = mock_db.query.return_value
-        mock_query.filter.return_value.order_by.return_value.all.return_value = [
-            note2, note1
-        ]
+        mock_query.filter.return_value.order_by.return_value.all.return_value = [note2, note1]
 
         notes = note_repository.get_all(mock_db)
 
@@ -93,10 +92,7 @@ class TestCreate:
 
     def test_create_note(self):
         """Should create and return new note."""
-        note_data = NoteCreate(
-            title="Test Note",
-            content="Test content"
-        )
+        note_data = NoteCreate(title="Test Note", content="Test content")
 
         mock_db = Mock()
 
@@ -121,7 +117,7 @@ class TestUpdate:
         result = note_repository.update(mock_db, mock_note, note_data)
 
         assert mock_note.title == "New Title"
-        assert hasattr(mock_note, 'updated_at')
+        assert hasattr(mock_note, "updated_at")
         mock_db.commit.assert_called_once()
         mock_db.refresh.assert_called_once()
 

@@ -1,6 +1,7 @@
 """Unit tests for Task repository."""
-from unittest.mock import Mock, MagicMock
+
 from datetime import datetime
+from unittest.mock import Mock
 from uuid import uuid4
 
 from app.models.task import Task
@@ -33,7 +34,9 @@ class TestGetAll:
         mock_db = Mock()
         mock_query = mock_db.query.return_value
         mock_query.filter.return_value.order_by.return_value.all.return_value = [
-            task3, task2, task1
+            task3,
+            task2,
+            task1,
         ]
 
         tasks = task_repository.get_all(mock_db)
@@ -83,7 +86,7 @@ class TestGetAll:
         mock_filter.order_by.assert_called_once()
         # The argument to order_by should be Task.created_at.desc()
         order_arg = mock_filter.order_by.call_args[0][0]
-        assert hasattr(order_arg, 'element')  # SQLAlchemy UnaryExpression
+        assert hasattr(order_arg, "element")  # SQLAlchemy UnaryExpression
 
 
 class TestCreate:
@@ -105,7 +108,8 @@ class TestCreate:
 
         # We need to mock the Task constructor to return our mock
         from unittest.mock import patch
-        with patch('app.repositories.task_repository.Task', return_value=mock_task):
+
+        with patch("app.repositories.task_repository.Task", return_value=mock_task):
             result = task_repository.create(mock_db, task_data)
 
         # Verify database operations were called
@@ -116,9 +120,9 @@ class TestCreate:
 
     def test_create_task_with_all_fields(self):
         """Should create task with all fields."""
-        from app.schemas.task import TaskCreate
         from datetime import date
-        from uuid import uuid4
+
+        from app.schemas.task import TaskCreate
 
         project_id = uuid4()
         blocked_by_id = uuid4()
@@ -143,7 +147,8 @@ class TestCreate:
 
         # Mock the Task constructor
         from unittest.mock import patch
-        with patch('app.repositories.task_repository.Task', return_value=mock_task) as MockTask:
+
+        with patch("app.repositories.task_repository.Task", return_value=mock_task) as MockTask:
             result = task_repository.create(mock_db, task_data)
 
             # Verify Task was constructed with correct data
@@ -170,7 +175,6 @@ class TestGetById:
 
     def test_get_by_id_returns_task(self):
         """Should return task when found."""
-        from uuid import uuid4
 
         task_id = uuid4()
         mock_task = Mock(spec=Task, id=task_id, title="Found task")
@@ -190,7 +194,6 @@ class TestGetById:
 
     def test_get_by_id_returns_none_when_not_found(self):
         """Should return None when task doesn't exist."""
-        from uuid import uuid4
 
         task_id = uuid4()
 
@@ -206,7 +209,6 @@ class TestGetById:
 
     def test_get_by_id_excludes_deleted_tasks(self):
         """Should not return deleted tasks."""
-        from uuid import uuid4
 
         task_id = uuid4()
 
@@ -229,7 +231,6 @@ class TestUpdate:
     def test_update_task_with_partial_data(self):
         """Should update only provided fields."""
         from app.schemas.task import TaskUpdate
-        from uuid import uuid4
 
         task_id = uuid4()
         mock_task = Mock(spec=Task, id=task_id, title="Old title", description="Old description")
@@ -251,8 +252,9 @@ class TestUpdate:
 
     def test_update_task_with_multiple_fields(self):
         """Should update multiple fields at once."""
-        from app.schemas.task import TaskUpdate
         from datetime import date
+
+        from app.schemas.task import TaskUpdate
 
         mock_task = Mock(spec=Task, title="Old", status="next", scheduled_date=None)
         mock_db = Mock()
@@ -261,9 +263,7 @@ class TestUpdate:
 
         # Update multiple fields
         update_data = TaskUpdate(
-            title="Updated title",
-            status="waiting",
-            scheduled_date=date(2025, 10, 15)
+            title="Updated title", status="waiting", scheduled_date=date(2025, 10, 15)
         )
 
         result = task_repository.update(mock_db, mock_task, update_data)
@@ -298,7 +298,6 @@ class TestSoftDelete:
 
     def test_soft_delete_sets_deleted_at(self):
         """Should set deleted_at timestamp."""
-        from datetime import datetime
 
         mock_task = Mock(spec=Task, deleted_at=None)
         mock_db = Mock()
@@ -316,7 +315,6 @@ class TestSoftDelete:
 
     def test_soft_delete_preserves_task_data(self):
         """Should only set deleted_at, not modify other fields."""
-        from uuid import uuid4
 
         task_id = uuid4()
         mock_task = Mock(spec=Task, id=task_id, title="My task", deleted_at=None)

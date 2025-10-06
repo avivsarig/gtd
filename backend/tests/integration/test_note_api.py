@@ -1,9 +1,7 @@
 """Integration tests for Note API endpoints."""
-import pytest
+
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
-
-from app.main import app
 
 
 class TestNoteAPI:
@@ -13,10 +11,7 @@ class TestNoteAPI:
         """Should create a new note."""
         response = client.post(
             "/api/v1/notes/",
-            json={
-                "title": "Meeting Notes",
-                "content": "Discussed project requirements"
-            }
+            json={"title": "Meeting Notes", "content": "Discussed project requirements"},
         )
 
         assert response.status_code == 201
@@ -28,10 +23,7 @@ class TestNoteAPI:
 
     def test_create_note_minimal(self, client: TestClient):
         """Should create note with only title."""
-        response = client.post(
-            "/api/v1/notes/",
-            json={"title": "Quick Note"}
-        )
+        response = client.post("/api/v1/notes/", json={"title": "Quick Note"})
 
         assert response.status_code == 201
         data = response.json()
@@ -41,10 +33,7 @@ class TestNoteAPI:
     def test_create_note_with_project(self, client: TestClient, db: Session):
         """Should create note associated with a project."""
         # Create a project first
-        project_response = client.post(
-            "/api/v1/projects/",
-            json={"name": "Test Project"}
-        )
+        project_response = client.post("/api/v1/projects/", json={"name": "Test Project"})
         project_id = project_response.json()["id"]
 
         # Create note with project
@@ -53,8 +42,8 @@ class TestNoteAPI:
             json={
                 "title": "Project Notes",
                 "content": "Notes for the project",
-                "project_id": project_id
-            }
+                "project_id": project_id,
+            },
         )
 
         assert response.status_code == 201
@@ -63,10 +52,7 @@ class TestNoteAPI:
 
     def test_create_note_empty_title_returns_422(self, client: TestClient):
         """Should reject empty title."""
-        response = client.post(
-            "/api/v1/notes/",
-            json={"title": ""}
-        )
+        response = client.post("/api/v1/notes/", json={"title": ""})
 
         assert response.status_code == 422
 
@@ -117,8 +103,7 @@ class TestNoteAPI:
     def test_get_note_by_id(self, client: TestClient):
         """Should retrieve specific note by ID."""
         create_response = client.post(
-            "/api/v1/notes/",
-            json={"title": "Specific Note", "content": "Specific content"}
+            "/api/v1/notes/", json={"title": "Specific Note", "content": "Specific content"}
         )
         note_id = create_response.json()["id"]
 
@@ -141,15 +126,14 @@ class TestNoteAPI:
         """Should update note fields."""
         # Create note
         create_response = client.post(
-            "/api/v1/notes/",
-            json={"title": "Original Title", "content": "Original content"}
+            "/api/v1/notes/", json={"title": "Original Title", "content": "Original content"}
         )
         note_id = create_response.json()["id"]
 
         # Update note
         update_response = client.put(
             f"/api/v1/notes/{note_id}",
-            json={"title": "Updated Title", "content": "Updated content"}
+            json={"title": "Updated Title", "content": "Updated content"},
         )
 
         assert update_response.status_code == 200
@@ -161,16 +145,12 @@ class TestNoteAPI:
         """Should update only provided fields."""
         # Create note
         create_response = client.post(
-            "/api/v1/notes/",
-            json={"title": "Original Title", "content": "Original content"}
+            "/api/v1/notes/", json={"title": "Original Title", "content": "Original content"}
         )
         note_id = create_response.json()["id"]
 
         # Update only title
-        update_response = client.put(
-            f"/api/v1/notes/{note_id}",
-            json={"title": "New Title"}
-        )
+        update_response = client.put(f"/api/v1/notes/{note_id}", json={"title": "New Title"})
 
         assert update_response.status_code == 200
         data = update_response.json()
@@ -180,20 +160,14 @@ class TestNoteAPI:
     def test_update_note_not_found(self, client: TestClient):
         """Should return 404 when updating non-existent note."""
         fake_uuid = "00000000-0000-0000-0000-000000000000"
-        response = client.put(
-            f"/api/v1/notes/{fake_uuid}",
-            json={"title": "Updated"}
-        )
+        response = client.put(f"/api/v1/notes/{fake_uuid}", json={"title": "Updated"})
 
         assert response.status_code == 404
 
     def test_delete_note(self, client: TestClient):
         """Should soft delete note."""
         # Create note
-        create_response = client.post(
-            "/api/v1/notes/",
-            json={"title": "Note to delete"}
-        )
+        create_response = client.post("/api/v1/notes/", json={"title": "Note to delete"})
         note_id = create_response.json()["id"]
 
         # Delete note

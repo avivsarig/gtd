@@ -1,8 +1,9 @@
 """Project model - Collections of tasks working toward an outcome."""
-from sqlalchemy import Column, String, Text, TIMESTAMP
+
+from sqlalchemy import TIMESTAMP, Column, String, Text
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.sql import func, text
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func, text
 
 from app.db.database import Base
 

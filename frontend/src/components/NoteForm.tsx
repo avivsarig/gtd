@@ -1,18 +1,30 @@
 import { useState, useEffect } from "react"
-import  { type Note, type Project } from "@/lib/api"
+import { type Note, type Project } from "@/lib/api"
 
 interface NoteFormProps {
   note?: Note | null
   projects: Project[]
-  onSubmit: (data: { title: string; content?: string; project_id?: string | null }) => Promise<void>
+  onSubmit: (data: {
+    title: string
+    content?: string
+    project_id?: string | null
+  }) => Promise<void>
   onCancel?: () => void
   isLoading?: boolean
 }
 
-export function NoteForm({ note, projects, onSubmit, onCancel, isLoading }: NoteFormProps) {
+export function NoteForm({
+  note,
+  projects,
+  onSubmit,
+  onCancel,
+  isLoading,
+}: NoteFormProps) {
   const [title, setTitle] = useState(note?.title ?? "")
   const [content, setContent] = useState(note?.content ?? "")
-  const [projectId, setProjectId] = useState<string | null>(note?.project_id ?? null)
+  const [projectId, setProjectId] = useState<string | null>(
+    note?.project_id ?? null,
+  )
 
   useEffect(() => {
     setTitle(note?.title ?? "")
@@ -41,7 +53,7 @@ export function NoteForm({ note, projects, onSubmit, onCancel, isLoading }: Note
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label htmlFor="note-title" className="block text-sm font-medium mb-2">
+        <label htmlFor="note-title" className="mb-2 block text-sm font-medium">
           Title *
         </label>
         <input
@@ -50,14 +62,17 @@ export function NoteForm({ note, projects, onSubmit, onCancel, isLoading }: Note
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Enter note title..."
-          className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+          className="bg-background border-border focus:ring-primary w-full rounded-lg border px-3 py-2 focus:ring-2 focus:outline-none"
           disabled={isLoading}
           autoFocus
         />
       </div>
 
       <div>
-        <label htmlFor="note-content" className="block text-sm font-medium mb-2">
+        <label
+          htmlFor="note-content"
+          className="mb-2 block text-sm font-medium"
+        >
           Content
         </label>
         <textarea
@@ -66,20 +81,23 @@ export function NoteForm({ note, projects, onSubmit, onCancel, isLoading }: Note
           onChange={(e) => setContent(e.target.value)}
           placeholder="Enter note content..."
           rows={6}
-          className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-y"
+          className="bg-background border-border focus:ring-primary w-full resize-y rounded-lg border px-3 py-2 focus:ring-2 focus:outline-none"
           disabled={isLoading}
         />
       </div>
 
       <div>
-        <label htmlFor="note-project" className="block text-sm font-medium mb-2">
+        <label
+          htmlFor="note-project"
+          className="mb-2 block text-sm font-medium"
+        >
           Project
         </label>
         <select
           id="note-project"
           value={projectId ?? ""}
           onChange={(e) => setProjectId(e.target.value || null)}
-          className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+          className="bg-background border-border focus:ring-primary w-full rounded-lg border px-3 py-2 focus:ring-2 focus:outline-none"
           disabled={isLoading}
         >
           <option value="">No Project</option>
@@ -95,7 +113,7 @@ export function NoteForm({ note, projects, onSubmit, onCancel, isLoading }: Note
         <button
           type="submit"
           disabled={isLoading || !title.trim()}
-          className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="bg-primary text-primary-foreground hover:bg-primary/90 flex-1 rounded-lg px-4 py-2 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isLoading ? "Saving..." : note ? "Update Note" : "Create Note"}
         </button>
@@ -104,7 +122,7 @@ export function NoteForm({ note, projects, onSubmit, onCancel, isLoading }: Note
             type="button"
             onClick={onCancel}
             disabled={isLoading}
-            className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-colors"
+            className="bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-lg px-4 py-2 transition-colors"
           >
             Cancel
           </button>

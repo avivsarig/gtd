@@ -1,5 +1,6 @@
 """Context model - Tags for filtering tasks by location/tool."""
-from sqlalchemy import Column, String, Text, Integer, TIMESTAMP
+
+from sqlalchemy import TIMESTAMP, Column, Integer, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func, text
 

@@ -1,15 +1,15 @@
 """Note controller - Business logic layer for Note operations."""
-from typing import List, Optional
-from datetime import datetime
+
 from uuid import UUID
+
 from sqlalchemy.orm import Session
 
 from app.models.note import Note
-from app.schemas.note import NoteCreate, NoteUpdate
 from app.repositories import note_repository
+from app.schemas.note import NoteCreate, NoteUpdate
 
 
-def list_notes(db: Session, project_id: UUID | None = None) -> List[Note]:
+def list_notes(db: Session, project_id: UUID | None = None) -> list[Note]:
     """
     Get list of all active (non-deleted) notes.
 
@@ -28,7 +28,7 @@ def list_notes(db: Session, project_id: UUID | None = None) -> List[Note]:
     return note_repository.get_all(db, include_deleted=False, project_id=project_id)
 
 
-def get_note(db: Session, note_id: UUID) -> Optional[Note]:
+def get_note(db: Session, note_id: UUID) -> Note | None:
     """
     Get a single note by ID.
 
@@ -60,7 +60,7 @@ def create_note(db: Session, note_data: NoteCreate) -> Note:
     return note_repository.create(db, note_data)
 
 
-def update_note(db: Session, note_id: UUID, note_data: NoteUpdate) -> Optional[Note]:
+def update_note(db: Session, note_id: UUID, note_data: NoteUpdate) -> Note | None:
     """
     Update an existing note.
 
@@ -84,7 +84,7 @@ def update_note(db: Session, note_id: UUID, note_data: NoteUpdate) -> Optional[N
     return note_repository.update(db, note, note_data)
 
 
-def delete_note(db: Session, note_id: UUID) -> Optional[Note]:
+def delete_note(db: Session, note_id: UUID) -> Note | None:
     """
     Soft delete a note.
 

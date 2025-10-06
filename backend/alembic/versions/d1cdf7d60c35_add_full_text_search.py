@@ -5,17 +5,15 @@ Revises: adb6e3090ecf
 Create Date: 2025-10-01 19:49:52.760509
 
 """
-from typing import Sequence, Union
+from collections.abc import Sequence
 
 from alembic import op
-import sqlalchemy as sa
-
 
 # revision identifiers, used by Alembic.
 revision: str = 'd1cdf7d60c35'
-down_revision: Union[str, None] = 'adb6e3090ecf'
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | None = 'adb6e3090ecf'
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:

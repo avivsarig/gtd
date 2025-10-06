@@ -1,16 +1,18 @@
 """Pytest configuration and shared fixtures."""
+
+from datetime import UTC, datetime
+
 import pytest
+from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
-from fastapi.testclient import TestClient
-from datetime import datetime, UTC
 
 from app.db.database import Base, get_db
 from app.main import app
-from app.models.task import Task
-from app.models.project import Project
 from app.models.note import Note
+from app.models.project import Project
+from app.models.task import Task
 
 
 @pytest.fixture(scope="function")
@@ -61,6 +63,7 @@ def client(db_session):
     Yields:
         FastAPI TestClient
     """
+
     def override_get_db():
         try:
             yield db_session
@@ -80,9 +83,7 @@ def client(db_session):
 def sample_project(db_session):
     """Create and persist a sample project."""
     project = Project(
-        name="Test Project",
-        outcome_statement="Complete all testing",
-        status="active"
+        name="Test Project", outcome_statement="Complete all testing", status="active"
     )
     db_session.add(project)
     db_session.commit()
@@ -93,11 +94,7 @@ def sample_project(db_session):
 @pytest.fixture
 def sample_task(db_session):
     """Create and persist a sample task."""
-    task = Task(
-        title="Test Task",
-        description="This is a test task",
-        status="next"
-    )
+    task = Task(title="Test Task", description="This is a test task", status="next")
     db_session.add(task)
     db_session.commit()
     db_session.refresh(task)
@@ -107,10 +104,7 @@ def sample_task(db_session):
 @pytest.fixture
 def sample_note(db_session):
     """Create and persist a sample note."""
-    note = Note(
-        title="Test Note",
-        content="This is test content for the note"
-    )
+    note = Note(title="Test Note", content="This is test content for the note")
     db_session.add(note)
     db_session.commit()
     db_session.refresh(note)
@@ -124,7 +118,7 @@ def sample_task_with_project(db_session, sample_project):
         title="Project Task",
         description="Task in a project",
         status="next",
-        project_id=sample_project.id
+        project_id=sample_project.id,
     )
     db_session.add(task)
     db_session.commit()

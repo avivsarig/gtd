@@ -1,4 +1,4 @@
-.PHONY: help build up down restart clean logs logs-be logs-fe db-shell db-migrate db-reset dev fresh status lint lint-fe lint-be test test-all test-unit test-int test-cov test-fast
+.PHONY: help build up down restart clean logs logs-be logs-fe db-shell db-migrate db-reset dev fresh status lint lint-fe lint-be format format-fe format-be test test-all test-unit test-int test-cov test-fast
 
 help:
 	@echo "GTD Task Management - Makefile Commands"
@@ -14,9 +14,12 @@ help:
 	@echo "make db-shell    - Open PostgreSQL shell"
 	@echo "make db-migrate  - Run database migrations"
 	@echo "make db-reset    - Reset database (WARNING: deletes all data)"
-	@echo "make lint        - Run linters on frontend and backend"
-	@echo "make lint-fe     - Run ESLint on frontend"
-	@echo "make lint-be     - Run linters on backend (not configured yet)"
+	@echo "make lint        - Run all linters (ruff, black, mypy, ESLint, prettier)"
+	@echo "make lint-fe     - Run frontend linters (ESLint, prettier, TypeScript)"
+	@echo "make lint-be     - Run backend linters (ruff, black, mypy)"
+	@echo "make format      - Auto-format all code (black, ruff, prettier)"
+	@echo "make format-fe   - Auto-format frontend code"
+	@echo "make format-be   - Auto-format backend code"
 	@echo "make test        - Run backend unit tests (default)"
 	@echo "make test-all    - Run ALL backend tests (including broken integration tests)"
 	@echo "make test-unit   - Run unit tests only"
@@ -96,12 +99,29 @@ lint: lint-fe lint-be
 lint-fe:
 	@echo "Running frontend linters..."
 	docker compose exec frontend npm run lint
+	docker compose exec frontend npm run format:check
 	docker compose exec frontend npm run tc
 
 lint-be:
 	@echo "Running backend linters..."
-	@echo "Note: No linter configured for backend yet. Skipping..."
-	@echo "Consider adding: ruff, black, flake8, or mypy"
+	docker compose exec backend ruff check .
+	docker compose exec backend black --check .
+	docker compose exec backend mypy app
+
+format:
+	@echo "Formatting code..."
+	docker compose exec frontend npm run format
+	docker compose exec backend black .
+	docker compose exec backend ruff check --fix .
+
+format-fe:
+	@echo "Formatting frontend code..."
+	docker compose exec frontend npm run format
+
+format-be:
+	@echo "Formatting backend code..."
+	docker compose exec backend black .
+	docker compose exec backend ruff check --fix .
 
 test:
 	@echo "Running backend tests (unit tests only - integration tests require PostgreSQL)..."

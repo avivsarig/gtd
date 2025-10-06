@@ -1,12 +1,13 @@
 """Notes API endpoints."""
-from typing import List
+
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.db.database import get_db
-from app.schemas.note import NoteCreate, NoteUpdate, NoteResponse
 from app.controllers import note_controller
+from app.db.database import get_db
+from app.schemas.note import NoteCreate, NoteResponse, NoteUpdate
 
 router = APIRouter(prefix="/notes", tags=["notes"])
 
@@ -14,8 +15,8 @@ router = APIRouter(prefix="/notes", tags=["notes"])
 @router.get("/")
 def list_notes(
     project_id: UUID | None = Query(None, description="Filter by project ID"),
-    db: Session = Depends(get_db)
-) -> List[NoteResponse]:
+    db: Session = Depends(get_db),
+) -> list[NoteResponse]:
     """
     Get all active notes.
 
@@ -26,10 +27,7 @@ def list_notes(
 
 
 @router.get("/{note_id}")
-def get_note(
-    note_id: UUID,
-    db: Session = Depends(get_db)
-) -> NoteResponse:
+def get_note(note_id: UUID, db: Session = Depends(get_db)) -> NoteResponse:
     """
     Get a single note by ID.
 
@@ -39,17 +37,13 @@ def get_note(
     note = note_controller.get_note(db, note_id)
     if note is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Note with id {note_id} not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Note with id {note_id} not found"
         )
     return note
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
-def create_note(
-    note: NoteCreate,
-    db: Session = Depends(get_db)
-) -> NoteResponse:
+def create_note(note: NoteCreate, db: Session = Depends(get_db)) -> NoteResponse:
     """
     Create a new note.
 
@@ -64,11 +58,7 @@ def create_note(
 
 
 @router.put("/{note_id}")
-def update_note(
-    note_id: UUID,
-    note: NoteUpdate,
-    db: Session = Depends(get_db)
-) -> NoteResponse:
+def update_note(note_id: UUID, note: NoteUpdate, db: Session = Depends(get_db)) -> NoteResponse:
     """
     Update an existing note.
 
@@ -80,17 +70,13 @@ def update_note(
     updated_note = note_controller.update_note(db, note_id, note)
     if updated_note is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Note with id {note_id} not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Note with id {note_id} not found"
         )
     return updated_note
 
 
 @router.delete("/{note_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_note(
-    note_id: UUID,
-    db: Session = Depends(get_db)
-):
+def delete_note(note_id: UUID, db: Session = Depends(get_db)):
     """
     Soft delete a note.
 
@@ -102,7 +88,6 @@ def delete_note(
     deleted_note = note_controller.delete_note(db, note_id)
     if deleted_note is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Note with id {note_id} not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Note with id {note_id} not found"
         )
     return None

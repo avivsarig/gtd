@@ -1,7 +1,10 @@
 """Test database connection."""
+
 import sys
-from app.db.database import engine
+
 from sqlalchemy import text
+
+from app.db.database import engine
 
 
 def test_connection():

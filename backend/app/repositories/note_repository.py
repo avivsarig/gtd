@@ -1,14 +1,17 @@
 """Note repository - Data access layer for Note operations."""
-from typing import List, Optional
+
+from datetime import UTC, datetime
 from uuid import UUID
-from datetime import datetime, UTC
+
 from sqlalchemy.orm import Session
 
 from app.models.note import Note
 from app.schemas.note import NoteCreate, NoteUpdate
 
 
-def get_all(db: Session, include_deleted: bool = False, project_id: UUID | None = None) -> List[Note]:
+def get_all(
+    db: Session, include_deleted: bool = False, project_id: UUID | None = None
+) -> list[Note]:
     """
     Get all notes, optionally filtered by project.
 
@@ -31,7 +34,7 @@ def get_all(db: Session, include_deleted: bool = False, project_id: UUID | None 
     return query.order_by(Note.updated_at.desc()).all()
 
 
-def get_by_id(db: Session, note_id: UUID) -> Optional[Note]:
+def get_by_id(db: Session, note_id: UUID) -> Note | None:
     """
     Get a single note by ID.
 
@@ -42,11 +45,7 @@ def get_by_id(db: Session, note_id: UUID) -> Optional[Note]:
     Returns:
         Note object if found and not deleted, None otherwise
     """
-    return (
-        db.query(Note)
-        .filter(Note.id == note_id, Note.deleted_at.is_(None))
-        .first()
-    )
+    return db.query(Note).filter(Note.id == note_id, Note.deleted_at.is_(None)).first()
 
 
 def create(db: Session, note_data: NoteCreate) -> Note:

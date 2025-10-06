@@ -1,12 +1,15 @@
 """Task Pydantic schemas for request/response validation."""
-from datetime import datetime, date, time
+
+from datetime import date, datetime, time
 from enum import Enum
 from uuid import UUID
-from pydantic import BaseModel, Field, field_validator
+
+from pydantic import BaseModel, Field
 
 
 class TaskStatus(str, Enum):
     """Valid task statuses following GTD methodology."""
+
     NEXT = "next"
     WAITING = "waiting"
     SOMEDAY = "someday"
@@ -14,6 +17,7 @@ class TaskStatus(str, Enum):
 
 class TaskCreate(BaseModel):
     """Schema for creating a new task."""
+
     title: str = Field(..., min_length=1, max_length=500)
     description: str | None = None
     status: TaskStatus = TaskStatus.NEXT
@@ -26,6 +30,7 @@ class TaskCreate(BaseModel):
 
 class TaskUpdate(BaseModel):
     """Schema for updating an existing task."""
+
     title: str | None = Field(None, min_length=1, max_length=500)
     description: str | None = None
     status: TaskStatus | None = None
@@ -38,6 +43,7 @@ class TaskUpdate(BaseModel):
 
 class TaskResponse(BaseModel):
     """Schema for task responses."""
+
     model_config = {"from_attributes": True}
 
     id: UUID
@@ -57,11 +63,13 @@ class TaskResponse(BaseModel):
 
 class BulkStatusUpdate(BaseModel):
     """Schema for bulk status updates."""
+
     task_ids: list[UUID] = Field(..., min_length=1)
     status: TaskStatus
 
 
 class BulkStatusUpdateResponse(BaseModel):
     """Response for bulk status updates."""
+
     updated_count: int
     task_ids: list[UUID]

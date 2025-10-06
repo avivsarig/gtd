@@ -61,7 +61,10 @@ export async function createTask(input: CreateTaskInput): Promise<Task> {
 /**
  * Update a task
  */
-export async function updateTask(id: string, input: UpdateTaskInput): Promise<Task> {
+export async function updateTask(
+  id: string,
+  input: UpdateTaskInput,
+): Promise<Task> {
   const response = await fetch(`${API_BASE_URL}/api/v1/tasks/${id}`, {
     method: "PUT",
     headers: {
@@ -92,9 +95,12 @@ export async function completeTask(id: string): Promise<Task> {
  * Uncomplete a task
  */
 export async function uncompleteTask(id: string): Promise<Task> {
-  const response = await fetch(`${API_BASE_URL}/api/v1/tasks/${id}/uncomplete`, {
-    method: "POST",
-  })
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/tasks/${id}/uncomplete`,
+    {
+      method: "POST",
+    },
+  )
   if (!response.ok) {
     throw new Error("Failed to uncomplete task")
   }
@@ -145,7 +151,9 @@ export async function getProjects(withStats = false): Promise<Project[]> {
 /**
  * Create a new project
  */
-export async function createProject(input: CreateProjectInput): Promise<Project> {
+export async function createProject(
+  input: CreateProjectInput,
+): Promise<Project> {
   const response = await fetch(`${API_BASE_URL}/api/v1/projects/`, {
     method: "POST",
     headers: {
@@ -229,7 +237,10 @@ export async function createNote(input: CreateNoteInput): Promise<Note> {
 /**
  * Update a note
  */
-export async function updateNote(id: string, input: UpdateNoteInput): Promise<Note> {
+export async function updateNote(
+  id: string,
+  input: UpdateNoteInput,
+): Promise<Note> {
   const response = await fetch(`${API_BASE_URL}/api/v1/notes/${id}`, {
     method: "PUT",
     headers: {

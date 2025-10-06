@@ -1,11 +1,12 @@
 """GTD Task Management API - Main application entry point."""
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.core.config import settings
-from app.api.v1.tasks import router as tasks_router
-from app.api.v1.projects import router as projects_router
 from app.api.v1.notes import router as notes_router
+from app.api.v1.projects import router as projects_router
+from app.api.v1.tasks import router as tasks_router
+from app.core.config import settings
 
 # Create FastAPI application
 app = FastAPI(
@@ -34,11 +35,7 @@ app.include_router(notes_router, prefix=settings.API_V1_PREFIX)
 @app.get("/")
 def read_root():
     """Root endpoint - API health check."""
-    return {
-        "message": "GTD Task Management API",
-        "version": "0.1.0",
-        "status": "running"
-    }
+    return {"message": "GTD Task Management API", "version": "0.1.0", "status": "running"}
 
 
 @app.get("/health")
