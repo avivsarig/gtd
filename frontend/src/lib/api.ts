@@ -160,6 +160,102 @@ export async function createProject(input: CreateProjectInput): Promise<Project>
 }
 
 /**
+ * Notes
+ */
+export interface Note {
+  id: string
+  title: string
+  content?: string | null
+  project_id?: string | null
+  created_at: string
+  updated_at: string
+  deleted_at?: string | null
+}
+
+export interface CreateNoteInput {
+  title: string
+  content?: string
+  project_id?: string | null
+}
+
+export interface UpdateNoteInput {
+  title?: string
+  content?: string
+  project_id?: string | null
+}
+
+/**
+ * Fetch all notes
+ */
+export async function getNotes(projectId?: string): Promise<Note[]> {
+  const url = projectId
+    ? `${API_BASE_URL}/api/v1/notes/?project_id=${projectId}`
+    : `${API_BASE_URL}/api/v1/notes/`
+  const response = await fetch(url)
+  if (!response.ok) {
+    throw new Error("Failed to fetch notes")
+  }
+  return response.json()
+}
+
+/**
+ * Get a single note by ID
+ */
+export async function getNote(id: string): Promise<Note> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/notes/${id}`)
+  if (!response.ok) {
+    throw new Error("Failed to fetch note")
+  }
+  return response.json()
+}
+
+/**
+ * Create a new note
+ */
+export async function createNote(input: CreateNoteInput): Promise<Note> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/notes/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(input),
+  })
+  if (!response.ok) {
+    throw new Error("Failed to create note")
+  }
+  return response.json()
+}
+
+/**
+ * Update a note
+ */
+export async function updateNote(id: string, input: UpdateNoteInput): Promise<Note> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/notes/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(input),
+  })
+  if (!response.ok) {
+    throw new Error("Failed to update note")
+  }
+  return response.json()
+}
+
+/**
+ * Delete a note
+ */
+export async function deleteNote(id: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/notes/${id}`, {
+    method: "DELETE",
+  })
+  if (!response.ok) {
+    throw new Error("Failed to delete note")
+  }
+}
+
+/**
  * Health check
  */
 export async function healthCheck(): Promise<{ status: string }> {

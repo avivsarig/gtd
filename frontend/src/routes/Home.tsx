@@ -1,17 +1,22 @@
 import { useEffect, useState, useMemo } from "react"
 import { QuickCapture } from "@/components/QuickCapture"
 import { TaskList } from "@/components/TaskList"
-import { getTasks, createTask, healthCheck, updateTask, completeTask, uncompleteTask, getProjects, type Task, type TaskStatus, type Project } from "@/lib/api"
+import { NotesList } from "@/components/NotesList"
+import { NoteForm } from "@/components/NoteForm"
+import { getTasks, createTask, healthCheck, updateTask, completeTask, uncompleteTask, getProjects, getNotes, createNote, updateNote, deleteNote, type Task, type TaskStatus, type Project, type Note } from "@/lib/api"
 
 type StatusFilter = "all" | TaskStatus
 
 export function Home() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [projects, setProjects] = useState<Project[]>([])
+  const [notes, setNotes] = useState<Note[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [backendStatus, setBackendStatus] = useState<"checking" | "online" | "offline">("checking")
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all")
+  const [editingNote, setEditingNote] = useState<Note | null>(null)
+  const [showNoteForm, setShowNoteForm] = useState(false)
 
   // Check backend health on mount
   useEffect(() => {
@@ -20,10 +25,11 @@ export function Home() {
       .catch(() => setBackendStatus("offline"))
   }, [])
 
-  // Load tasks and projects on mount
+  // Load tasks, projects, and notes on mount
   useEffect(() => {
     void loadTasks()
     void loadProjects()
+    void loadNotes()
   }, [])
 
   const loadTasks = async () => {
@@ -43,6 +49,15 @@ export function Home() {
       setProjects(data)
     } catch (err) {
       console.error("Failed to load projects:", err)
+    }
+  }
+
+  const loadNotes = async () => {
+    try {
+      const data = await getNotes()
+      setNotes(data)
+    } catch (err) {
+      console.error("Failed to load notes:", err)
     }
   }
 
@@ -96,6 +111,56 @@ export function Home() {
       setError("Failed to update task project")
       console.error(err)
     }
+  }
+
+  const handleCreateNote = async (data: { title: string; content?: string; project_id?: string | null }) => {
+    try {
+      setIsLoading(true)
+      const newNote = await createNote(data)
+      setNotes((prev) => [newNote, ...prev])
+      setShowNoteForm(false)
+    } catch (err) {
+      setError("Failed to create note")
+      console.error(err)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleUpdateNote = async (data: { title: string; content?: string; project_id?: string | null }) => {
+    if (!editingNote) return
+    try {
+      setIsLoading(true)
+      const updatedNote = await updateNote(editingNote.id, data)
+      setNotes((prev) => prev.map((note) => (note.id === editingNote.id ? updatedNote : note)))
+      setEditingNote(null)
+      setShowNoteForm(false)
+    } catch (err) {
+      setError("Failed to update note")
+      console.error(err)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleEditNote = (note: Note) => {
+    setEditingNote(note)
+    setShowNoteForm(true)
+  }
+
+  const handleDeleteNote = async (noteId: string) => {
+    try {
+      await deleteNote(noteId)
+      setNotes((prev) => prev.filter((note) => note.id !== noteId))
+    } catch (err) {
+      setError("Failed to delete note")
+      console.error(err)
+    }
+  }
+
+  const handleCancelNoteForm = () => {
+    setEditingNote(null)
+    setShowNoteForm(false)
   }
 
   // Filter tasks based on status filter
@@ -180,6 +245,44 @@ export function Home() {
           onUpdateStatus={handleUpdateStatus}
           onToggleComplete={handleToggleComplete}
           onUpdateProject={handleUpdateProject}
+        />
+      </div>
+
+      {/* Notes Section */}
+      <div className="mt-12">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold">Notes ({notes.length})</h2>
+          <button
+            onClick={() => {
+              setEditingNote(null)
+              setShowNoteForm(!showNoteForm)
+            }}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm"
+          >
+            {showNoteForm ? "Cancel" : "+ New Note"}
+          </button>
+        </div>
+
+        {showNoteForm && (
+          <div className="bg-card border border-border rounded-lg p-6 mb-6">
+            <h3 className="text-lg font-semibold mb-4">
+              {editingNote ? "Edit Note" : "Create Note"}
+            </h3>
+            <NoteForm
+              note={editingNote}
+              projects={projects}
+              onSubmit={editingNote ? handleUpdateNote : handleCreateNote}
+              onCancel={handleCancelNoteForm}
+              isLoading={isLoading}
+            />
+          </div>
+        )}
+
+        <NotesList
+          notes={notes}
+          projects={projects}
+          onEdit={handleEditNote}
+          onDelete={handleDeleteNote}
         />
       </div>
     </div>

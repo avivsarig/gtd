@@ -10,29 +10,35 @@ backend/
 │   ├── api/                 # API layer (HTTP routes)
 │   │   └── v1/             # API version 1
 │   │       ├── tasks.py    # Task HTTP endpoints
-│   │       └── projects.py # Project HTTP endpoints
+│   │       ├── projects.py # Project HTTP endpoints
+│   │       └── notes.py    # Note HTTP endpoints
 │   ├── controllers/        # Business logic layer
 │   │   ├── task_controller.py
-│   │   └── project_controller.py
+│   │   ├── project_controller.py
+│   │   └── note_controller.py
 │   ├── repositories/       # Data access layer
 │   │   ├── task_repository.py
-│   │   └── project_repository.py
+│   │   ├── project_repository.py
+│   │   └── note_repository.py
 │   ├── models/             # SQLAlchemy ORM models
 │   │   ├── task.py
 │   │   ├── project.py
 │   │   └── note.py
 │   ├── schemas/            # Pydantic schemas for validation
 │   │   ├── task.py
-│   │   └── project.py
+│   │   ├── project.py
+│   │   └── note.py
 │   ├── core/               # Core configuration
 │   │   └── config.py       # Settings and environment variables
 │   ├── db/                 # Database setup
 │   │   └── database.py     # SQLAlchemy engine, session, Base
 │   └── main.py             # FastAPI application entry point
 ├── tests/                # Test suite
-│   ├── unit/            # Unit tests (44 passing)
+│   ├── unit/            # Unit tests (62 passing)
 │   │   ├── test_task_controller.py
-│   │   └── test_project_controller.py
+│   │   ├── test_task_repository.py
+│   │   ├── test_note_controller.py
+│   │   └── test_note_repository.py
 │   ├── integration/     # Integration tests
 │   │   └── test_db_connection.py
 │   └── fixtures/        # Test fixtures and utilities
@@ -95,7 +101,7 @@ Request → API (HTTP routes) → Controller (business logic) → Repository (da
 - Dependencies installed
 - Database connection configured and tested
 - FastAPI application initialized with 3-layer architecture
-- 44 unit tests passing
+- 62 unit tests passing
 
 ✅ **Implemented Features**
 - **Tasks API** - Full CRUD with status management (Next/Waiting/Someday)
@@ -105,8 +111,11 @@ Request → API (HTTP routes) → Controller (business logic) → Repository (da
 - **Projects API** - Full CRUD with task statistics
   - Auto-completion tracking
   - Task count and progress metrics
+- **Notes API** - Full CRUD with project association
+  - Create, read, update, delete notes
+  - Filter notes by project
+  - Soft delete support
 
 🚧 **In Progress**
 - Context tagging
 - Search functionality
-- Notes management

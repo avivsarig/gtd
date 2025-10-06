@@ -11,15 +11,18 @@ A keyboard-first, single-user GTD (Getting Things Done) task management system.
 ## Features
 
 ✅ **Implemented:**
-- Quick task capture
+- Quick task capture (⚠️ needs GTD methodology compliance fix)
 - Task status management (Next/Waiting/Someday)
 - Task completion tracking
 - Project organization with task assignment
+- Notes management with project association
 - Status filtering
 - Dark mode UI
 
 🚧 **In Progress:**
+- Universal inbox / GTD-compliant capture
 - Context tagging
+- Keyboard shortcuts
 - Search functionality
 - Calendar/scheduling
 
@@ -58,6 +61,7 @@ make db-shell      # Open PostgreSQL shell
 ## Project Status
 
 **Overall Completion: ~40%** (Foundation Phase)
-- 44 backend tests passing
-- Tasks & Projects APIs complete
+- 62 backend tests passing
+- Tasks, Projects & Notes APIs complete
 - Full-stack status management working
+- ⚠️ **Critical**: QuickCapture needs GTD methodology compliance (see [status.md](.claude/status.md))

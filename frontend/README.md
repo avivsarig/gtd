@@ -47,9 +47,15 @@ npm run preview
 ```
 src/
 ├── components/       # Reusable UI components
-│   └── ui/          # shadcn/ui components
+│   ├── QuickCapture.tsx  # Task creation form
+│   ├── TaskList.tsx      # Task list with status/project controls
+│   ├── NotesList.tsx     # Notes list with expand/collapse
+│   ├── NoteForm.tsx      # Note creation/editing form
+│   └── ui/               # shadcn/ui components
 ├── routes/          # Page components
+│   └── Home.tsx     # Main page (tasks + notes)
 ├── lib/             # Utility functions
+│   └── api.ts       # API client for backend
 └── styles/          # Global styles and Tailwind config
 ```
 
@@ -77,6 +83,10 @@ npm run validate
 - **Task Completion** - Checkbox toggle with visual feedback
 - **Status Filtering** - Filter tasks by status with count badges
 - **Project Assignment** - Assign tasks to projects via dropdown
+- **Notes Management** - Create, edit, delete notes with project association
+  - Expandable note cards
+  - Rich content support
+  - Project filtering
 - **Dark Mode UI** - Default dark theme with consistent styling
 
 🚧 **In Progress**
