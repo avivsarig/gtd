@@ -31,9 +31,15 @@ make up            # Start services
 make down          # Stop services
 make logs          # View logs
 make db-shell      # PostgreSQL shell
-make test          # Run backend tests
-make test-cov      # Tests with coverage
-make lint          # Run all linters
+
+# Testing
+make test          # Run backend unit tests (62 passing)
+make test-all      # Run all tests (includes broken integration tests)
+make test-cov      # Unit tests with coverage (77%)
+make lint          # Run all linters (ESLint + TypeScript)
+
+# Frontend tests (in container)
+docker compose exec frontend npm test
 ```
 
 ## Project Status

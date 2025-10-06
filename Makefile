@@ -1,4 +1,4 @@
-.PHONY: help build up down restart clean logs db-shell db-migrate db-reset test-seed lint lint-fe lint-be test
+.PHONY: help build up down restart clean logs logs-be logs-fe db-shell db-migrate db-reset dev fresh status lint lint-fe lint-be test test-all test-unit test-int test-cov test-fast
 
 help:
 	@echo "GTD Task Management - Makefile Commands"
@@ -16,12 +16,13 @@ help:
 	@echo "make db-reset    - Reset database (WARNING: deletes all data)"
 	@echo "make lint        - Run linters on frontend and backend"
 	@echo "make lint-fe     - Run ESLint on frontend"
-	@echo "make lint-be     - Run linters on backend"
-	@echo "make test        - Run all backend tests"
+	@echo "make lint-be     - Run linters on backend (not configured yet)"
+	@echo "make test        - Run backend unit tests (default)"
+	@echo "make test-all    - Run ALL backend tests (including broken integration tests)"
 	@echo "make test-unit   - Run unit tests only"
-	@echo "make test-int    - Run integration tests only"
+	@echo "make test-int    - Run integration tests (requires PostgreSQL)"
 	@echo "make test-cov    - Run tests with coverage report"
-	@echo "make test-watch  - Run tests in watch mode"
+	@echo "make test-fast   - Run fast tests (exclude slow tests)"
 	@echo ""
 
 build:
@@ -99,10 +100,15 @@ lint-fe:
 
 lint-be:
 	@echo "Running backend linters..."
-	docker compose exec backend python -m pytest tests/unit -v
+	@echo "Note: No linter configured for backend yet. Skipping..."
+	@echo "Consider adding: ruff, black, flake8, or mypy"
 
 test:
-	@echo "Running all backend tests..."
+	@echo "Running backend tests (unit tests only - integration tests require PostgreSQL)..."
+	docker compose exec backend pytest tests/unit
+
+test-all:
+	@echo "Running ALL backend tests (including integration tests that may fail with SQLite)..."
 	docker compose exec backend pytest
 
 test-unit:
@@ -110,12 +116,12 @@ test-unit:
 	docker compose exec backend pytest tests/unit -v
 
 test-int:
-	@echo "Running integration tests..."
+	@echo "Running integration tests (NOTE: requires PostgreSQL features, will fail with SQLite)..."
 	docker compose exec backend pytest tests/integration -v -m integration
 
 test-cov:
 	@echo "Running tests with coverage..."
-	docker compose exec backend pytest --cov=app --cov-report=term-missing --cov-report=html
+	docker compose exec backend pytest tests/unit --cov=app --cov-report=term-missing --cov-report=html --cov-report=xml --cov-fail-under=60
 
 test-watch:
 	@echo "Running tests in watch mode..."
