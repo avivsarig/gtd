@@ -1,92 +1,98 @@
 # GTD Task Management System
 
-A keyboard-first, single-user GTD (Getting Things Done) task management system.
-
-## Architecture
-
-- **Backend**: FastAPI + PostgreSQL + SQLAlchemy
-- **Frontend**: React 19 + Vite + Tailwind CSS v4
-- **Infrastructure**: Docker + Docker Compose
+Keyboard-first, single-user GTD (Getting Things Done) task management system.
 
 ## Quick Start
 
 ```bash
-# Start all services
-docker compose up -d
-
-# Run database migrations
-make db-migrate
+docker compose up -d     # Start all services
+make db-migrate          # Run database migrations
 ```
 
-**Access Points:**
+**Access:**
 - Frontend: http://localhost:5173
-- Backend API: http://localhost:8000
-- API Docs: http://localhost:8000/docs
+- Backend API: http://localhost:8000/docs
 
-## Development Commands
+## Key Commands
 
 ```bash
-make help          # Show all available commands
-make up            # Start services
-make down          # Stop services
+make help          # Show all commands
+make up/down       # Start/stop services
 make logs          # View logs
 make db-shell      # PostgreSQL shell
 
 # Testing
-make test          # Run backend unit tests (62 passing)
-make test-all      # Run all tests (includes broken integration tests)
-make test-cov      # Unit tests with coverage (77%)
+make test          # Backend unit tests (87 passing)
+make test-cov      # With coverage report
 
 # Code Quality
-make lint          # Run all linters (ruff, black, mypy, ESLint, prettier)
-make lint-fe       # Frontend linters only
-make lint-be       # Backend linters only
+make lint          # Run all linters
 make format        # Auto-format all code
-make format-fe     # Auto-format frontend
-make format-be     # Auto-format backend
 ```
 
-**Tools:**
-- **Backend**: ruff (linting), black (formatting), mypy (type checking)
-- **Frontend**: ESLint (linting), prettier (formatting), TypeScript (type checking)
-- **Pre-commit**: Automated formatting on git commit (optional)
-
-**Optional: Setup Pre-commit Hooks**
-```bash
-pip install pre-commit
-pre-commit install
-# Now code is auto-formatted before each commit
-```
+See [CODE_QUALITY.md](CODE_QUALITY.md) for linter details and pre-commit hook setup.
 
 ## Project Status
 
-**Overall: ~40% Complete** (Foundation Phase)
+**Phase 1: ~50% Complete** (Foundation + Inbox)
 
-See [.claude/status.md](.claude/status.md) for detailed progress and [CLAUDE.md](CLAUDE.md) for feature implementation status.
+✅ Implemented:
+- Inbox API (universal GTD capture)
+- Tasks, Projects, Notes APIs
+- Status management (Next/Waiting/Someday)
+- 87 unit tests, 25 integration tests
+
+🚧 In Progress:
+- Inbox UI (Cmd+K capture modal)
+- Context tagging
+- Full-text search
+
+See [.claude/status.md](.claude/status.md) for detailed progress.
+
+## Architecture
+
+- **Backend:** FastAPI + PostgreSQL (3-layer clean architecture)
+- **Frontend:** React 19 + Vite + Tailwind v4 + shadcn/ui
+- **Infrastructure:** Docker Compose
+
+**GTD Workflow:**
+1. **Capture** → Universal inbox (zero classification)
+2. **Process** → Convert to task/note/project during review
+3. **Organize** → Next/Waiting/Someday lists + contexts
+4. **Review** → Weekly review with inbox zero
+5. **Engage** → Work from organized lists
 
 ## Documentation
 
-- [TESTING.md](TESTING.md) - Testing guide and framework documentation
-- [CODE_QUALITY.md](CODE_QUALITY.md) - **Linting, formatting, and code quality tools**
-- [CLAUDE.md](CLAUDE.md) - AI development guide and project overview
-- [backend/README.md](backend/README.md) - Backend API documentation
-- [frontend/README.md](frontend/README.md) - Frontend component documentation
-- [.claude/](.claude/) - User stories, requirements, and technical specs
+**Implementation:**
+- [backend/README.md](backend/README.md) - API & database
+- [frontend/README.md](frontend/README.md) - UI components
+
+**Development:**
+- [CLAUDE.md](CLAUDE.md) - AI development guide
+- [backend/CLAUDE.md](backend/CLAUDE.md) - Backend architecture & patterns
+- [frontend/CLAUDE.md](frontend/CLAUDE.md) - Frontend architecture & GTD compliance
+
+**Requirements:**
+- [.claude/](.claude/) - User stories, technical requirements, data model
+
+**Testing:**
+- [TESTING.md](TESTING.md) - Testing guide & framework
 
 ---
 
-## Documentation Guidelines
+## Documentation Maintenance
 
 **Structure:**
-- Main README: overview + quick start + links
-- Subdirectory READMEs: implementation details only
+- Main README: overview + quick start + links only
+- Subdirectory READMEs: implementation specifics
+- CLAUDE.md files: AI development guidance
 
 **Rules:**
-- One explanation per concept - link, don't duplicate
-- Keep examples minimal and current
+- Single source of truth - link, don't duplicate
 - Remove deprecated content immediately
-- Use specific headers (not "Setup" but "Docker Setup")
-- Target: each README scannable in <2 minutes
+- Examples must be minimal and current
+- Each README scannable in <2 minutes
 
 **Before committing doc changes:**
 - [ ] Removed duplicate content?

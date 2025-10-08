@@ -3,6 +3,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.v1.inbox import router as inbox_router
 from app.api.v1.notes import router as notes_router
 from app.api.v1.projects import router as projects_router
 from app.api.v1.tasks import router as tasks_router
@@ -27,6 +28,7 @@ app.add_middleware(
 )
 
 # Include API routers
+app.include_router(inbox_router, prefix=settings.API_V1_PREFIX)
 app.include_router(tasks_router, prefix=settings.API_V1_PREFIX)
 app.include_router(projects_router, prefix=settings.API_V1_PREFIX)
 app.include_router(notes_router, prefix=settings.API_V1_PREFIX)

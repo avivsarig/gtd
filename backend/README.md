@@ -1,100 +1,82 @@
 # GTD Backend
 
-FastAPI-based REST API for GTD Task Management System.
+FastAPI REST API for GTD Task Management System.
 
-## Quick Start
+## Quick Start (Docker - Recommended)
 
 ```bash
-# Install dependencies
-python3 -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-
-# Start PostgreSQL
-docker compose up -d postgres
-
-# Configure environment
-cat > .env << EOF
-DATABASE_URL=postgresql://gtd:gtd_dev@localhost:5432/gtd
-DEBUG=True
-EOF
-
-# Test database connection
-python tests/integration/test_db_connection.py
+cd ..
+docker compose up -d     # Starts backend + postgres
+make db-migrate          # Apply migrations
 ```
 
-## Architecture Overview
+API: http://localhost:8000/docs
+
+## Architecture
 
 **3-Layer Clean Architecture:**
 ```
-HTTP Request
-  → API Layer (app/api/v1/) - Routes, HTTP handling
-    → Controller (app/controllers/) - Business logic
-      → Repository (app/repositories/) - Database operations
-        → Database
+HTTP Request → API (routes) → Controller (business logic) → Repository (database) → PostgreSQL
 ```
 
-**Directory Structure:**
+**Directory:**
 ```
 app/
-├── api/v1/          # FastAPI routes (tasks.py, projects.py, notes.py)
-├── controllers/     # Business logic layer
-├── repositories/    # Data access layer (CRUD only)
+├── api/v1/          # FastAPI routes (inbox, tasks, projects, notes)
+├── controllers/     # Business logic
+├── repositories/    # Database operations (CRUD only)
 ├── models/          # SQLAlchemy ORM models
-├── schemas/         # Pydantic validation schemas
-├── core/            # Configuration
-└── db/              # Database setup
+├── schemas/         # Pydantic validation
+└── db/              # Database config
 ```
 
-See [CLAUDE.md](CLAUDE.md) for detailed architecture and development guidelines.
+See [CLAUDE.md](CLAUDE.md) for layer responsibilities, patterns, and business rules.
 
-## API Documentation
+## API Endpoints
 
-**Interactive API Docs:** http://localhost:8000/docs
+**Implemented:**
+- `/api/v1/inbox` - Universal capture + GTD processing
+- `/api/v1/tasks` - CRUD, status management, completion
+- `/api/v1/projects` - CRUD, statistics, task assignment
+- `/api/v1/notes` - CRUD, markdown, project association
 
-**Implemented Endpoints:**
-- `/api/v1/tasks` - Task CRUD, status management, completion tracking
-- `/api/v1/projects` - Project CRUD, statistics, task assignment
-- `/api/v1/notes` - Note CRUD, project association
-
-See OpenAPI docs at `/docs` for complete endpoint reference.
+See http://localhost:8000/docs for interactive documentation and all endpoints.
 
 ## Testing
 
-**Current Status:** 62 passing unit tests, 61% coverage (target: 80%)
+**Status:** 87 unit tests, 25 integration tests passing
 
 ```bash
-pytest                     # All tests
-pytest tests/unit -v       # Unit tests only
-pytest --cov=app           # With coverage report
+pytest                      # All tests
+pytest tests/unit -v        # Unit tests only
+pytest --cov=app            # With coverage
 ```
 
-**Test Infrastructure:**
-- pytest with Factory Boy for test data
-- In-memory SQLite for unit tests
-- FastAPI TestClient for integration tests
-- Fixtures: `db_session`, `client`, `sample_task`, `sample_project`, `sample_note`
-
-See [/TESTING.md](../TESTING.md) for comprehensive testing guide.
+See [../TESTING.md](../TESTING.md) for testing patterns and fixtures.
 
 ## Development
 
-See [CLAUDE.md](CLAUDE.md) for:
-- Layer responsibilities and patterns
-- Data model requirements
-- Business logic rules
-- Code standards
-- Performance requirements
+**Key Files:**
+- [CLAUDE.md](CLAUDE.md) - Architecture patterns, data models, business logic
+- Git history for implementation details: `git log --oneline`
 
-## Current Status
+**Performance Requirements:**
+- Inbox capture: <2s
+- Inbox conversion: <500ms
+- Search queries: <1s
+- List operations: <100ms
 
-✅ **Completed:**
-- 3-layer architecture implemented
-- Tasks, Projects, Notes APIs complete
-- Status management (Next/Waiting/Someday)
-- Comprehensive test framework
+## Current Implementation
+
+✅ **Complete:**
+- 3-layer architecture
+- Inbox API (universal capture + conversion)
+- Tasks API (status management, completion)
+- Projects API (statistics, activity tracking)
+- Notes API (markdown, project links)
+- 87 unit tests + 25 integration tests
 
 🚧 **In Progress:**
-- Context tagging
-- Search functionality
+- Context tagging API
+- Full-text search
 - Performance optimization
