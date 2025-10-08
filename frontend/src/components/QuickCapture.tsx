@@ -1,59 +1,70 @@
+/**
+ * QuickCapture - Simple inbox capture component
+ *
+ * Default GTD behavior: capture to inbox, process later
+ */
+
 import { useState } from "react"
-import { type CreateTaskInput } from "@/lib/api"
+import { createInboxItem } from "@/lib/api"
+import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
 
 interface QuickCaptureProps {
-  onSubmit: (task: CreateTaskInput) => void
-  isLoading?: boolean
+  onSuccess?: () => void
 }
 
-export function QuickCapture({ onSubmit, isLoading }: QuickCaptureProps) {
-  const [title, setTitle] = useState("")
-  const [description, setDescription] = useState("")
+export function QuickCapture({ onSuccess }: QuickCaptureProps) {
+  const [content, setContent] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!title.trim()) return
 
-    onSubmit({
-      title: title.trim(),
-      description: description.trim() || undefined,
-    })
+    if (!content.trim()) {
+      setError("Please enter something")
+      return
+    }
 
-    // Reset form
-    setTitle("")
-    setDescription("")
+    setIsSubmitting(true)
+    setError(null)
+
+    try {
+      await createInboxItem({ content: content.trim() })
+      setContent("")
+      onSuccess?.()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to capture")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <input
-          type="text"
-          placeholder="What needs to be done?"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          disabled={isLoading}
-          className="border-border focus:ring-ring w-full rounded-lg border px-4 py-2 focus:ring-2 focus:outline-none"
-          autoFocus
-        />
-      </div>
-      <div>
-        <textarea
-          placeholder="Description (optional)"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          disabled={isLoading}
-          rows={3}
-          className="border-border focus:ring-ring w-full resize-none rounded-lg border px-4 py-2 focus:ring-2 focus:outline-none"
-        />
-      </div>
-      <button
+    <form onSubmit={handleSubmit} className="space-y-3">
+      <Textarea
+        placeholder="What's on your mind? (Press Enter to capture)"
+        value={content}
+        onChange={(e) => setContent(e.target.value)}
+        className="min-h-[80px] resize-none"
+        disabled={isSubmitting}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault()
+            void handleSubmit(e)
+          }
+        }}
+      />
+
+      {error && <p className="text-sm text-red-500">{error}</p>}
+
+      <Button
         type="submit"
-        disabled={!title.trim() || isLoading}
-        className="bg-primary text-primary-foreground hover:bg-primary/90 w-full rounded-lg px-4 py-2 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+        disabled={isSubmitting || !content.trim()}
+        className="w-full"
       >
-        {isLoading ? "Creating..." : "Create Task"}
-      </button>
+        {isSubmitting ? "Capturing..." : "Capture to Inbox"}
+      </Button>
     </form>
   )
 }

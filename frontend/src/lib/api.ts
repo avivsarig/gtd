@@ -267,6 +267,153 @@ export async function deleteNote(id: string): Promise<void> {
 }
 
 /**
+ * Inbox Items (Universal Capture)
+ */
+export interface InboxItem {
+  id: string
+  content: string
+  created_at: string
+  processed_at?: string | null
+  deleted_at?: string | null
+}
+
+export interface CreateInboxItemInput {
+  content: string
+}
+
+export interface ConvertToTaskInput {
+  title?: string
+  description?: string
+  project_id?: string
+  scheduled_date?: string
+}
+
+export interface ConvertToNoteInput {
+  title?: string
+  content?: string
+  project_id?: string
+}
+
+export interface ConvertToProjectInput {
+  name?: string
+  outcome_statement?: string
+}
+
+/**
+ * Get all inbox items (unprocessed by default)
+ */
+export async function getInboxItems(includeProcessed = false): Promise<InboxItem[]> {
+  const url = includeProcessed
+    ? `${API_BASE_URL}/api/v1/inbox/?include_processed=true`
+    : `${API_BASE_URL}/api/v1/inbox/`
+  const response = await fetch(url)
+  if (!response.ok) {
+    throw new Error("Failed to fetch inbox items")
+  }
+  return response.json()
+}
+
+/**
+ * Get count of unprocessed inbox items
+ */
+export async function getInboxCount(): Promise<{ count: number }> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/inbox/count`)
+  if (!response.ok) {
+    throw new Error("Failed to fetch inbox count")
+  }
+  return response.json()
+}
+
+/**
+ * Create a new inbox item (universal capture)
+ */
+export async function createInboxItem(input: CreateInboxItemInput): Promise<InboxItem> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/inbox/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(input),
+  })
+  if (!response.ok) {
+    throw new Error("Failed to create inbox item")
+  }
+  return response.json()
+}
+
+/**
+ * Delete an inbox item
+ */
+export async function deleteInboxItem(id: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/inbox/${id}`, {
+    method: "DELETE",
+  })
+  if (!response.ok) {
+    throw new Error("Failed to delete inbox item")
+  }
+}
+
+/**
+ * Convert inbox item to task
+ */
+export async function convertInboxToTask(
+  id: string,
+  input: ConvertToTaskInput = {},
+): Promise<Task> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/inbox/${id}/convert-to-task`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(input),
+  })
+  if (!response.ok) {
+    throw new Error("Failed to convert inbox item to task")
+  }
+  return response.json()
+}
+
+/**
+ * Convert inbox item to note
+ */
+export async function convertInboxToNote(
+  id: string,
+  input: ConvertToNoteInput = {},
+): Promise<Note> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/inbox/${id}/convert-to-note`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(input),
+  })
+  if (!response.ok) {
+    throw new Error("Failed to convert inbox item to note")
+  }
+  return response.json()
+}
+
+/**
+ * Convert inbox item to project
+ */
+export async function convertInboxToProject(
+  id: string,
+  input: ConvertToProjectInput = {},
+): Promise<Project> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/inbox/${id}/convert-to-project`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(input),
+  })
+  if (!response.ok) {
+    throw new Error("Failed to convert inbox item to project")
+  }
+  return response.json()
+}
+
+/**
  * Health check
  */
 export async function healthCheck(): Promise<{ status: string }> {

@@ -34,18 +34,19 @@ See [CODE_QUALITY.md](CODE_QUALITY.md) for linter details and pre-commit hook se
 
 ## Project Status
 
-**Phase 1: ~50% Complete** (Foundation + Inbox)
+**Phase 1: ~60% Complete** (Foundation + Inbox + Dashboard)
 
 ✅ Implemented:
-- Inbox API (universal GTD capture)
-- Tasks, Projects, Notes APIs
+- Backend: Inbox, Tasks, Projects, Notes APIs
+- Frontend: Dashboard with Capture | Inbox | Tasks | Notes
+- GTD workflow: Cmd+K capture → Inbox → convert to Task/Note
 - Status management (Next/Waiting/Someday)
 - 87 unit tests, 25 integration tests
 
-🚧 In Progress:
-- Inbox UI (Cmd+K capture modal)
+🚧 Next:
 - Context tagging
 - Full-text search
+- Weekly review page
 
 See [.claude/status.md](.claude/status.md) for detailed progress.
 

@@ -1,12 +1,20 @@
-import { useEffect, useState, useMemo } from "react"
+/**
+ * Home - Main GTD dashboard
+ *
+ * Layout:
+ * - Top: Quick Capture | Inbox (side by side)
+ * - Middle: Tasks | Notes (side by side)
+ * - Bottom: Projects | Contexts (placeholders)
+ */
+
+import { useEffect, useState } from "react"
 import { QuickCapture } from "@/components/QuickCapture"
+import { UniversalCapture } from "@/components/UniversalCapture"
 import { TaskList } from "@/components/TaskList"
 import { NotesList } from "@/components/NotesList"
 import { NoteForm } from "@/components/NoteForm"
 import {
   getTasks,
-  createTask,
-  healthCheck,
   updateTask,
   completeTask,
   uncompleteTask,
@@ -15,55 +23,42 @@ import {
   createNote,
   updateNote,
   deleteNote,
+  getInboxItems,
+  deleteInboxItem,
+  convertInboxToTask,
+  convertInboxToNote,
   type Task,
   type TaskStatus,
   type Project,
   type Note,
+  type InboxItem,
 } from "@/lib/api"
-
-type StatusFilter = "all" | TaskStatus
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Trash2, FileText, CheckSquare } from "lucide-react"
 
 export function Home() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [projects, setProjects] = useState<Project[]>([])
   const [notes, setNotes] = useState<Note[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [backendStatus, setBackendStatus] = useState<
-    "checking" | "online" | "offline"
-  >("checking")
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all")
-  const [editingNote, setEditingNote] = useState<Note | null>(null)
+  const [inboxItems, setInboxItems] = useState<InboxItem[]>([])
+  const [showUniversalCapture, setShowUniversalCapture] = useState(false)
   const [showNoteForm, setShowNoteForm] = useState(false)
-
-  // Check backend health on mount
-  useEffect(() => {
-    healthCheck()
-      .then(() => setBackendStatus("online"))
-      .catch(() => setBackendStatus("offline"))
-  }, [])
-
-  // Load tasks, projects, and notes on mount
-  useEffect(() => {
-    void loadTasks()
-    void loadProjects()
-    void loadNotes()
-  }, [])
+  const [editingNote, setEditingNote] = useState<Note | null>(null)
+  const [processingId, setProcessingId] = useState<string | null>(null)
 
   const loadTasks = async () => {
     try {
-      setError(null)
       const data = await getTasks()
       setTasks(data)
     } catch (err) {
-      setError("Failed to load tasks. Make sure the backend is running.")
-      console.error(err)
+      console.error("Failed to load tasks:", err)
     }
   }
 
   const loadProjects = async () => {
     try {
-      const data = await getProjects(true) // with stats
+      const data = await getProjects(true)
       setProjects(data)
     } catch (err) {
       console.error("Failed to load projects:", err)
@@ -79,23 +74,45 @@ export function Home() {
     }
   }
 
-  const handleCreateTask = async (input: {
-    title: string
-    description?: string
-  }) => {
+  const loadInbox = async () => {
     try {
-      setIsLoading(true)
-      setError(null)
-      const newTask = await createTask(input)
-      setTasks((prev) => [newTask, ...prev])
+      const data = await getInboxItems()
+      setInboxItems(data)
     } catch (err) {
-      setError("Failed to create task")
-      console.error(err)
-    } finally {
-      setIsLoading(false)
+      console.error("Failed to load inbox:", err)
     }
   }
 
+  useEffect(() => {
+    void loadTasks()
+    void loadProjects()
+    void loadNotes()
+    void loadInbox()
+  }, [])
+
+  // Global keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't intercept if typing in input
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      ) {
+        return
+      }
+
+      // Cmd+K / Ctrl+K - Universal capture
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault()
+        setShowUniversalCapture(true)
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [])
+
+  // Task handlers
   const handleUpdateStatus = async (taskId: string, status: TaskStatus) => {
     try {
       const updatedTask = await updateTask(taskId, { status })
@@ -103,8 +120,7 @@ export function Home() {
         prev.map((task) => (task.id === taskId ? updatedTask : task)),
       )
     } catch (err) {
-      setError("Failed to update task status")
-      console.error(err)
+      console.error("Failed to update task status:", err)
     }
   }
 
@@ -115,8 +131,7 @@ export function Home() {
         : await completeTask(task.id)
       setTasks((prev) => prev.map((t) => (t.id === task.id ? updatedTask : t)))
     } catch (err) {
-      setError("Failed to toggle task completion")
-      console.error(err)
+      console.error("Failed to toggle task completion:", err)
     }
   }
 
@@ -130,26 +145,22 @@ export function Home() {
         prev.map((task) => (task.id === taskId ? updatedTask : task)),
       )
     } catch (err) {
-      setError("Failed to update task project")
-      console.error(err)
+      console.error("Failed to update task project:", err)
     }
   }
 
+  // Note handlers
   const handleCreateNote = async (data: {
     title: string
     content?: string
     project_id?: string | null
   }) => {
     try {
-      setIsLoading(true)
       const newNote = await createNote(data)
       setNotes((prev) => [newNote, ...prev])
       setShowNoteForm(false)
     } catch (err) {
-      setError("Failed to create note")
-      console.error(err)
-    } finally {
-      setIsLoading(false)
+      console.error("Failed to create note:", err)
     }
   }
 
@@ -160,7 +171,6 @@ export function Home() {
   }) => {
     if (!editingNote) return
     try {
-      setIsLoading(true)
       const updatedNote = await updateNote(editingNote.id, data)
       setNotes((prev) =>
         prev.map((note) => (note.id === editingNote.id ? updatedNote : note)),
@@ -168,10 +178,7 @@ export function Home() {
       setEditingNote(null)
       setShowNoteForm(false)
     } catch (err) {
-      setError("Failed to update note")
-      console.error(err)
-    } finally {
-      setIsLoading(false)
+      console.error("Failed to update note:", err)
     }
   }
 
@@ -185,8 +192,7 @@ export function Home() {
       await deleteNote(noteId)
       setNotes((prev) => prev.filter((note) => note.id !== noteId))
     } catch (err) {
-      setError("Failed to delete note")
-      console.error(err)
+      console.error("Failed to delete note:", err)
     }
   }
 
@@ -195,128 +201,239 @@ export function Home() {
     setShowNoteForm(false)
   }
 
-  // Filter tasks based on status filter
-  const filteredTasks = useMemo(() => {
-    if (statusFilter === "all") return tasks
-    return tasks.filter((task) => task.status === statusFilter)
-  }, [tasks, statusFilter])
+  // Inbox handlers
+  const handleDeleteInboxItem = async (id: string) => {
+    if (!confirm("Delete this inbox item?")) return
+
+    try {
+      setProcessingId(id)
+      await deleteInboxItem(id)
+      void loadInbox()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to delete")
+    } finally {
+      setProcessingId(null)
+    }
+  }
+
+  const handleConvertToTask = async (item: InboxItem) => {
+    try {
+      setProcessingId(item.id)
+      await convertInboxToTask(item.id, { title: item.content })
+      void loadInbox()
+      void loadTasks()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to convert")
+    } finally {
+      setProcessingId(null)
+    }
+  }
+
+  const handleConvertToNote = async (item: InboxItem) => {
+    try {
+      setProcessingId(item.id)
+      await convertInboxToNote(item.id, { content: item.content })
+      void loadInbox()
+      void loadNotes()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to convert")
+    } finally {
+      setProcessingId(null)
+    }
+  }
 
   return (
-    <div className="container mx-auto max-w-4xl px-4 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="mb-2 text-3xl font-bold">GTD Task Manager</h1>
-        <div className="flex items-center gap-2 text-sm">
-          <span>Backend:</span>
-          <span
-            className={`rounded px-2 py-1 text-xs font-medium ${
-              backendStatus === "online"
-                ? "border border-green-500/30 bg-green-500/20 text-green-400"
-                : backendStatus === "offline"
-                  ? "border border-red-500/30 bg-red-500/20 text-red-400"
-                  : "border border-gray-500/30 bg-gray-500/20 text-gray-400"
-            }`}
-          >
-            {backendStatus}
-          </span>
-        </div>
-      </div>
-
-      {/* Error Message */}
-      {error && (
-        <div className="bg-destructive/10 text-destructive mb-6 rounded-lg px-4 py-3">
-          {error}
-        </div>
-      )}
-
-      {/* Quick Capture */}
-      <div className="bg-card border-border mb-8 rounded-lg border p-6">
-        <h2 className="mb-4 text-xl font-semibold">Quick Capture</h2>
-        <QuickCapture onSubmit={handleCreateTask} isLoading={isLoading} />
-      </div>
-
-      {/* Task List */}
-      <div>
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-xl font-semibold">
-            Tasks ({filteredTasks.length})
-          </h2>
-          <button
-            onClick={loadTasks}
-            className="text-muted-foreground hover:text-foreground text-sm"
-          >
-            Refresh
-          </button>
+    <div className="min-h-screen bg-background p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold">GTD Dashboard</h1>
+          <p className="text-muted-foreground mt-2">
+            Press Cmd+K for quick capture
+          </p>
         </div>
 
-        {/* Status Filter Tabs */}
-        <div className="mb-4 flex gap-2">
-          {(["all", "next", "waiting", "someday"] as const).map((filter) => (
-            <button
-              key={filter}
-              onClick={() => setStatusFilter(filter)}
-              className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-                statusFilter === filter
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-              }`}
-            >
-              {filter.charAt(0).toUpperCase() + filter.slice(1)}
-              {filter !== "all" && (
-                <span className="ml-2 opacity-70">
-                  ({tasks.filter((t) => t.status === filter).length})
-                </span>
+        {/* Top Row: Quick Capture + Inbox */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Quick Capture */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Quick Capture</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Capture thoughts instantly to inbox
+              </p>
+            </CardHeader>
+            <CardContent>
+              <QuickCapture onSuccess={loadInbox} />
+            </CardContent>
+          </Card>
+
+          {/* Inbox */}
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                Inbox
+                {inboxItems.length > 0 && (
+                  <span className="ml-2 text-sm font-normal text-muted-foreground">
+                    ({inboxItems.length} {inboxItems.length === 1 ? "item" : "items"})
+                  </span>
+                )}
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Process into tasks, notes, or projects
+              </p>
+            </CardHeader>
+            <CardContent>
+              {inboxItems.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">
+                  Inbox Zero! 🎉
+                </p>
+              ) : (
+                <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                  {inboxItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className="border rounded-lg p-3 space-y-2"
+                    >
+                      <p className="text-sm whitespace-pre-wrap">
+                        {item.content}
+                      </p>
+                      <div className="flex gap-2 flex-wrap">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleConvertToTask(item)}
+                          disabled={processingId === item.id}
+                        >
+                          <CheckSquare className="h-3 w-3 mr-1" />
+                          Task
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleConvertToNote(item)}
+                          disabled={processingId === item.id}
+                        >
+                          <FileText className="h-3 w-3 mr-1" />
+                          Note
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleDeleteInboxItem(item.id)}
+                          disabled={processingId === item.id}
+                        >
+                          <Trash2 className="h-3 w-3 mr-1" />
+                          Delete
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               )}
-            </button>
-          ))}
+            </CardContent>
+          </Card>
         </div>
 
-        <TaskList
-          tasks={filteredTasks}
-          projects={projects}
-          onUpdateStatus={handleUpdateStatus}
-          onToggleComplete={handleToggleComplete}
-          onUpdateProject={handleUpdateProject}
-        />
-      </div>
+        {/* Middle Row: Tasks + Notes */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Tasks */}
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                Tasks
+                {tasks.length > 0 && (
+                  <span className="ml-2 text-sm font-normal text-muted-foreground">
+                    ({tasks.filter((t) => !t.completed_at).length} active)
+                  </span>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="max-h-[400px] overflow-y-auto">
+              <TaskList
+                tasks={tasks}
+                projects={projects}
+                onUpdateStatus={handleUpdateStatus}
+                onToggleComplete={handleToggleComplete}
+                onUpdateProject={handleUpdateProject}
+              />
+            </CardContent>
+          </Card>
 
-      {/* Notes Section */}
-      <div className="mt-12">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-xl font-semibold">Notes ({notes.length})</h2>
-          <button
-            onClick={() => {
-              setEditingNote(null)
-              setShowNoteForm(!showNoteForm)
-            }}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg px-4 py-2 text-sm transition-colors"
-          >
-            {showNoteForm ? "Cancel" : "+ New Note"}
-          </button>
+          {/* Notes */}
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                Notes
+                {notes.length > 0 && (
+                  <span className="ml-2 text-sm font-normal text-muted-foreground">
+                    ({notes.length})
+                  </span>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="max-h-[400px] overflow-y-auto">
+              <div className="mb-3">
+                <Button onClick={() => setShowNoteForm(true)} size="sm">
+                  + New Note
+                </Button>
+              </div>
+              <NotesList
+                notes={notes}
+                projects={projects}
+                onEdit={handleEditNote}
+                onDelete={handleDeleteNote}
+              />
+            </CardContent>
+          </Card>
         </div>
 
-        {showNoteForm && (
-          <div className="bg-card border-border mb-6 rounded-lg border p-6">
-            <h3 className="mb-4 text-lg font-semibold">
-              {editingNote ? "Edit Note" : "Create Note"}
-            </h3>
-            <NoteForm
-              note={editingNote}
-              projects={projects}
-              onSubmit={editingNote ? handleUpdateNote : handleCreateNote}
-              onCancel={handleCancelNoteForm}
-              isLoading={isLoading}
-            />
-          </div>
-        )}
+        {/* Bottom Row: Projects + Contexts */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Projects Placeholder */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Projects</CardTitle>
+              <p className="text-sm text-muted-foreground">Coming soon</p>
+            </CardHeader>
+            <CardContent>
+              <p className="text-center text-muted-foreground py-8">
+                Projects view will show active projects and their progress
+              </p>
+            </CardContent>
+          </Card>
 
-        <NotesList
-          notes={notes}
-          projects={projects}
-          onEdit={handleEditNote}
-          onDelete={handleDeleteNote}
-        />
+          {/* Contexts Placeholder */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Contexts</CardTitle>
+              <p className="text-sm text-muted-foreground">Coming soon</p>
+            </CardHeader>
+            <CardContent>
+              <p className="text-center text-muted-foreground py-8">
+                Filter tasks by context (@home, @computer, @phone, etc.)
+              </p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
+
+      {/* Universal Capture Modal (Cmd+K) */}
+      <UniversalCapture
+        open={showUniversalCapture}
+        onOpenChange={setShowUniversalCapture}
+        onSuccess={loadInbox}
+      />
+
+      {/* Note Form Modal */}
+      {showNoteForm && (
+        <NoteForm
+          note={editingNote}
+          projects={projects}
+          onSubmit={editingNote ? handleUpdateNote : handleCreateNote}
+          onCancel={handleCancelNoteForm}
+        />
+      )}
     </div>
   )
 }

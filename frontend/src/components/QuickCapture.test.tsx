@@ -1,121 +1,162 @@
-import { describe, it, expect, vi } from "vitest"
+import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { QuickCapture } from "./QuickCapture"
+import * as api from "@/lib/api"
+
+// Mock the API
+vi.mock("@/lib/api", () => ({
+  createInboxItem: vi.fn(),
+}))
 
 describe("QuickCapture", () => {
-  it("renders the form with inputs and button", () => {
-    const mockOnSubmit = vi.fn()
-    render(<QuickCapture onSubmit={mockOnSubmit} />)
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it("renders the form with textarea and button", () => {
+    render(<QuickCapture />)
 
     expect(
-      screen.getByPlaceholderText(/what needs to be done/i),
+      screen.getByPlaceholderText(/what's on your mind/i),
     ).toBeInTheDocument()
-    expect(screen.getByPlaceholderText(/description/i)).toBeInTheDocument()
     expect(
-      screen.getByRole("button", { name: /create task/i }),
+      screen.getByRole("button", { name: /capture to inbox/i }),
     ).toBeInTheDocument()
   })
 
-  it("button is disabled when title is empty", () => {
-    const mockOnSubmit = vi.fn()
-    render(<QuickCapture onSubmit={mockOnSubmit} />)
+  it("button is disabled when content is empty", () => {
+    render(<QuickCapture />)
 
-    const button = screen.getByRole("button", { name: /create task/i })
+    const button = screen.getByRole("button", { name: /capture to inbox/i })
     expect(button).toBeDisabled()
   })
 
-  it("button is enabled when title has content", async () => {
-    const mockOnSubmit = vi.fn()
+  it("button is enabled when content has text", async () => {
     const user = userEvent.setup()
-    render(<QuickCapture onSubmit={mockOnSubmit} />)
+    render(<QuickCapture />)
 
-    const titleInput = screen.getByPlaceholderText(/what needs to be done/i)
-    await user.type(titleInput, "New task")
+    const textarea = screen.getByPlaceholderText(/what's on your mind/i)
+    await user.type(textarea, "New thought")
 
-    const button = screen.getByRole("button", { name: /create task/i })
+    const button = screen.getByRole("button", { name: /capture to inbox/i })
     expect(button).toBeEnabled()
   })
 
-  it("calls onSubmit with title and description when form is submitted", async () => {
-    const mockOnSubmit = vi.fn()
-    const user = userEvent.setup()
-    render(<QuickCapture onSubmit={mockOnSubmit} />)
-
-    const titleInput = screen.getByPlaceholderText(/what needs to be done/i)
-    const descInput = screen.getByPlaceholderText(/description/i)
-
-    await user.type(titleInput, "New task")
-    await user.type(descInput, "Task description")
-
-    const button = screen.getByRole("button", { name: /create task/i })
-    await user.click(button)
-
-    expect(mockOnSubmit).toHaveBeenCalledWith({
-      title: "New task",
-      description: "Task description",
+  it("creates inbox item when form is submitted", async () => {
+    const mockCreateInboxItem = vi.mocked(api.createInboxItem)
+    mockCreateInboxItem.mockResolvedValue({
+      id: "123",
+      content: "New thought",
+      created_at: new Date().toISOString(),
+      processed_at: null,
+      deleted_at: null,
     })
-  })
 
-  it("resets form after submission", async () => {
-    const mockOnSubmit = vi.fn()
     const user = userEvent.setup()
-    render(<QuickCapture onSubmit={mockOnSubmit} />)
+    render(<QuickCapture />)
 
-    const titleInput = screen.getByPlaceholderText(
-      /what needs to be done/i,
-    ) as HTMLInputElement
-    const descInput = screen.getByPlaceholderText(
-      /description/i,
-    ) as HTMLTextAreaElement
+    const textarea = screen.getByPlaceholderText(/what's on your mind/i)
+    await user.type(textarea, "New thought")
 
-    await user.type(titleInput, "New task")
-    await user.type(descInput, "Task description")
-
-    const button = screen.getByRole("button", { name: /create task/i })
+    const button = screen.getByRole("button", { name: /capture to inbox/i })
     await user.click(button)
 
     await waitFor(() => {
-      expect(titleInput.value).toBe("")
-      expect(descInput.value).toBe("")
+      expect(mockCreateInboxItem).toHaveBeenCalledWith({
+        content: "New thought",
+      })
     })
   })
 
-  it("trims whitespace from title and description", async () => {
-    const mockOnSubmit = vi.fn()
+  it("resets form after successful submission", async () => {
+    const mockCreateInboxItem = vi.mocked(api.createInboxItem)
+    mockCreateInboxItem.mockResolvedValue({
+      id: "123",
+      content: "New thought",
+      created_at: new Date().toISOString(),
+      processed_at: null,
+      deleted_at: null,
+    })
+
     const user = userEvent.setup()
-    render(<QuickCapture onSubmit={mockOnSubmit} />)
+    render(<QuickCapture />)
 
-    const titleInput = screen.getByPlaceholderText(/what needs to be done/i)
-    await user.type(titleInput, "  Whitespace task  ")
+    const textarea = screen.getByPlaceholderText(
+      /what's on your mind/i,
+    ) as HTMLTextAreaElement
 
-    const button = screen.getByRole("button", { name: /create task/i })
+    await user.type(textarea, "New thought")
+    const button = screen.getByRole("button", { name: /capture to inbox/i })
     await user.click(button)
 
-    expect(mockOnSubmit).toHaveBeenCalledWith({
-      title: "Whitespace task",
-      description: undefined,
+    await waitFor(() => {
+      expect(textarea.value).toBe("")
     })
   })
 
-  it("shows loading state when isLoading is true", () => {
-    const mockOnSubmit = vi.fn()
-    render(<QuickCapture onSubmit={mockOnSubmit} isLoading={true} />)
+  it("calls onSuccess callback after successful submission", async () => {
+    const mockCreateInboxItem = vi.mocked(api.createInboxItem)
+    mockCreateInboxItem.mockResolvedValue({
+      id: "123",
+      content: "New thought",
+      created_at: new Date().toISOString(),
+      processed_at: null,
+      deleted_at: null,
+    })
 
-    expect(
-      screen.getByRole("button", { name: /creating/i }),
-    ).toBeInTheDocument()
-    expect(screen.getByRole("button")).toBeDisabled()
+    const mockOnSuccess = vi.fn()
+    const user = userEvent.setup()
+    render(<QuickCapture onSuccess={mockOnSuccess} />)
+
+    const textarea = screen.getByPlaceholderText(/what's on your mind/i)
+    await user.type(textarea, "New thought")
+
+    const button = screen.getByRole("button", { name: /capture to inbox/i })
+    await user.click(button)
+
+    await waitFor(() => {
+      expect(mockOnSuccess).toHaveBeenCalled()
+    })
   })
 
-  it("disables inputs when loading", () => {
-    const mockOnSubmit = vi.fn()
-    render(<QuickCapture onSubmit={mockOnSubmit} isLoading={true} />)
+  it("shows error message when API call fails", async () => {
+    const mockCreateInboxItem = vi.mocked(api.createInboxItem)
+    mockCreateInboxItem.mockRejectedValue(new Error("API Error"))
 
-    const titleInput = screen.getByPlaceholderText(/what needs to be done/i)
-    const descInput = screen.getByPlaceholderText(/description/i)
+    const user = userEvent.setup()
+    render(<QuickCapture />)
 
-    expect(titleInput).toBeDisabled()
-    expect(descInput).toBeDisabled()
+    const textarea = screen.getByPlaceholderText(/what's on your mind/i)
+    await user.type(textarea, "New thought")
+
+    const button = screen.getByRole("button", { name: /capture to inbox/i })
+    await user.click(button)
+
+    await waitFor(() => {
+      expect(screen.getByText(/api error/i)).toBeInTheDocument()
+    })
+  })
+
+  it("submits on Enter key (but not Shift+Enter)", async () => {
+    const mockCreateInboxItem = vi.mocked(api.createInboxItem)
+    mockCreateInboxItem.mockResolvedValue({
+      id: "123",
+      content: "New thought",
+      created_at: new Date().toISOString(),
+      processed_at: null,
+      deleted_at: null,
+    })
+
+    const user = userEvent.setup()
+    render(<QuickCapture />)
+
+    const textarea = screen.getByPlaceholderText(/what's on your mind/i)
+    await user.type(textarea, "New thought")
+    await user.keyboard("{Enter}")
+
+    await waitFor(() => {
+      expect(mockCreateInboxItem).toHaveBeenCalled()
+    })
   })
 })

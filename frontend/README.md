@@ -33,32 +33,22 @@ npm run tc            # Type checking
 npm run validate      # Lint + type check
 ```
 
-## Project Structure
-
-```
-src/
-├── components/       # UI components (QuickCapture, TaskList, NotesList)
-│   └── ui/          # shadcn/ui primitives
-├── routes/          # Pages (Home.tsx)
-├── lib/api.ts       # Backend client
-└── styles/          # Tailwind config
-```
-
 ## Implemented Features
 
 ✅ **Current:**
-- Task capture & status management (Next/Waiting/Someday)
-- Task completion tracking
-- Status filtering with badges
-- Project assignment
-- Notes CRUD
-- Dark mode
+- Universal capture (Cmd+K modal + Quick Capture form) → Inbox
+- Inbox processing (convert to tasks/notes, delete)
+- Task management (create, complete, status changes, project assignment)
+- Notes CRUD (create, edit, delete, project assignment)
+- Dashboard layout (Capture | Inbox | Tasks | Notes | Projects | Contexts)
+- Keyboard shortcuts (Cmd+K for capture, I for inbox navigation)
 
-🚧 **In Progress:**
-- Inbox UI (Cmd+K universal capture modal)
-- Keyboard shortcuts (see CLAUDE.md)
-- Context filtering
+🚧 **Planned:**
+- Inbox keyboard navigation (J/K, T/N/D shortcuts)
+- Context filtering (@home, @computer, @phone)
 - Full-text search
+- Weekly review workflow
+- Calendar/scheduling view
 
 ## Development
 
