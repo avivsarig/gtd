@@ -1,4 +1,5 @@
 import { type Task, type TaskStatus, type Project } from "@/lib/api"
+import { Trash2 } from "lucide-react"
 
 interface TaskListProps {
   tasks: Task[]
@@ -6,6 +7,7 @@ interface TaskListProps {
   onUpdateStatus: (taskId: string, status: TaskStatus) => void
   onToggleComplete: (task: Task) => void
   onUpdateProject: (taskId: string, projectId: string | null) => void
+  onDelete?: (taskId: string) => void
 }
 
 const STATUS_OPTIONS: { value: TaskStatus; label: string; color: string }[] = [
@@ -32,6 +34,7 @@ export function TaskList({
   onUpdateStatus,
   onToggleComplete,
   onUpdateProject,
+  onDelete,
 }: TaskListProps) {
   if (tasks.length === 0) {
     return (
@@ -123,6 +126,17 @@ export function TaskList({
                 )}
               </div>
             </div>
+
+            {/* Delete Button */}
+            {onDelete && (
+              <button
+                onClick={() => onDelete(task.id)}
+                className="text-muted-foreground hover:text-destructive mt-1 transition-colors"
+                title="Delete task"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            )}
           </div>
         </div>
       ))}

@@ -18,6 +18,7 @@ import {
   updateTask,
   completeTask,
   uncompleteTask,
+  deleteTask,
   getProjects,
   getNotes,
   createNote,
@@ -146,6 +147,18 @@ export function Home() {
       )
     } catch (err) {
       console.error("Failed to update task project:", err)
+    }
+  }
+
+  const handleDeleteTask = async (taskId: string) => {
+    if (!confirm("Delete this task?")) return
+
+    try {
+      await deleteTask(taskId)
+      setTasks((prev) => prev.filter((task) => task.id !== taskId))
+    } catch (err) {
+      console.error("Failed to delete task:", err)
+      alert("Failed to delete task")
     }
   }
 
@@ -356,6 +369,7 @@ export function Home() {
                 onUpdateStatus={handleUpdateStatus}
                 onToggleComplete={handleToggleComplete}
                 onUpdateProject={handleUpdateProject}
+                onDelete={handleDeleteTask}
               />
             </CardContent>
           </Card>
