@@ -14,8 +14,9 @@ import {
   type InboxItem,
 } from "@/lib/api"
 import { Button } from "@/components/ui/button"
+import { ItemCard } from "@/components/ItemCard"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Trash2, FileText, Folder, CheckSquare } from "lucide-react"
+import { FileText, Folder, CheckSquare } from "lucide-react"
 
 export function Inbox() {
   const [items, setItems] = useState<InboxItem[]>([])
@@ -194,20 +195,17 @@ export function Inbox() {
         {items.map((item, index) => {
           const isFocused = index === focusedIndex
           return (
-            <Card
+            <ItemCard
               key={item.id}
+              onEdit={() => {
+                // TODO: Implement edit functionality for inbox items
+                alert("Edit functionality coming soon!")
+              }}
+              onDelete={() => handleDelete(item.id)}
+              deleteConfirmMessage="Delete inbox item?"
               className={isFocused ? "ring-2 ring-primary" : ""}
-            >
-              <CardHeader>
-                <CardTitle className="text-base font-normal whitespace-pre-wrap">
-                  {item.content}
-                </CardTitle>
-                <p className="text-xs text-muted-foreground">
-                  {new Date(item.created_at).toLocaleString()}
-                </p>
-              </CardHeader>
-              <CardContent>
-                <div className="flex gap-2 flex-wrap">
+              actions={
+                <>
                   <Button
                     size="sm"
                     variant="outline"
@@ -226,32 +224,19 @@ export function Inbox() {
                     <FileText className="h-4 w-4 mr-2" />
                     Note (N)
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleConvertToProject(item)}
-                    disabled={processingId === item.id}
-                  >
-                    <Folder className="h-4 w-4 mr-2" />
-                    Project (P)
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => handleDelete(item.id)}
-                    disabled={processingId === item.id}
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete (D)
-                  </Button>
-                </div>
-                {processingId === item.id && (
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Processing...
-                  </p>
-                )}
-              </CardContent>
-            </Card>
+                </>
+              }
+            >
+              <p className="text-base whitespace-pre-wrap">{item.content}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {new Date(item.created_at).toLocaleString()}
+              </p>
+              {processingId === item.id && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  Processing...
+                </p>
+              )}
+            </ItemCard>
           )
         })}
       </div>

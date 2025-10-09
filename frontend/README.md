@@ -37,18 +37,19 @@ npm run validate      # Lint + type check
 
 ✅ **Current:**
 - Universal capture (Cmd+K modal + Quick Capture form) → Inbox
-- Inbox processing (convert to tasks/notes, delete)
-- Task management (create, complete, status changes, project assignment)
+- Inbox processing (convert to tasks/notes, delete) with keyboard shortcuts (J/K, T/N/D)
+- Task management (complete/uncomplete, status changes, project assignment, delete)
 - Notes CRUD (create, edit, delete, project assignment)
-- Dashboard layout (Capture | Inbox | Tasks | Notes | Projects | Contexts)
-- Keyboard shortcuts (Cmd+K for capture, I for inbox navigation)
+- Unified ItemCard component with consistent Edit/Delete buttons
+- Dashboard layout (Capture | Inbox | Tasks | Notes)
+- Full inbox processing page (`/inbox`)
 
 🚧 **Planned:**
-- Inbox keyboard navigation (J/K, T/N/D shortcuts)
+- Task/Note edit functionality (UI ready, forms needed)
 - Context filtering (@home, @computer, @phone)
 - Full-text search
 - Weekly review workflow
-- Calendar/scheduling view
+- Projects management UI
 
 ## Development
 

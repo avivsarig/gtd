@@ -13,6 +13,7 @@ import { UniversalCapture } from "@/components/UniversalCapture"
 import { TaskList } from "@/components/TaskList"
 import { NotesList } from "@/components/NotesList"
 import { NoteForm } from "@/components/NoteForm"
+import { ItemCard } from "@/components/ItemCard"
 import {
   getTasks,
   updateTask,
@@ -36,7 +37,8 @@ import {
 } from "@/lib/api"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Trash2, FileText, CheckSquare } from "lucide-react"
+import { DeleteButton } from "@/components/DeleteButton"
+import { FileText, CheckSquare } from "lucide-react"
 
 export function Home() {
   const [tasks, setTasks] = useState<Task[]>([])
@@ -302,45 +304,46 @@ export function Home() {
                   Inbox Zero! 🎉
                 </p>
               ) : (
-                <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                <div className="space-y-2 max-h-[400px] overflow-y-auto">
                   {inboxItems.map((item) => (
-                    <div
+                    <ItemCard
                       key={item.id}
-                      className="border rounded-lg p-3 space-y-2"
+                      onEdit={() => {
+                        // TODO: Implement edit functionality for inbox items
+                        alert("Edit functionality coming soon!")
+                      }}
+                      onDelete={() => handleDeleteInboxItem(item.id)}
+                      deleteConfirmMessage={`Delete inbox item?`}
+                      actions={
+                        <>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleConvertToTask(item)}
+                            disabled={processingId === item.id}
+                          >
+                            <CheckSquare className="h-3 w-3 mr-1" />
+                            Task
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleConvertToNote(item)}
+                            disabled={processingId === item.id}
+                          >
+                            <FileText className="h-3 w-3 mr-1" />
+                            Note
+                          </Button>
+                        </>
+                      }
                     >
                       <p className="text-sm whitespace-pre-wrap">
                         {item.content}
                       </p>
-                      <div className="flex gap-2 flex-wrap">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleConvertToTask(item)}
-                          disabled={processingId === item.id}
-                        >
-                          <CheckSquare className="h-3 w-3 mr-1" />
-                          Task
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleConvertToNote(item)}
-                          disabled={processingId === item.id}
-                        >
-                          <FileText className="h-3 w-3 mr-1" />
-                          Note
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleDeleteInboxItem(item.id)}
-                          disabled={processingId === item.id}
-                        >
-                          <Trash2 className="h-3 w-3 mr-1" />
-                          Delete
-                        </Button>
-                      </div>
-                    </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {new Date(item.created_at).toLocaleString()}
+                      </p>
+                    </ItemCard>
                   ))}
                 </div>
               )}
@@ -369,6 +372,10 @@ export function Home() {
                 onUpdateStatus={handleUpdateStatus}
                 onToggleComplete={handleToggleComplete}
                 onUpdateProject={handleUpdateProject}
+                onEdit={(task) => {
+                  // TODO: Implement edit functionality for tasks
+                  alert("Edit functionality coming soon!")
+                }}
                 onDelete={handleDeleteTask}
               />
             </CardContent>
