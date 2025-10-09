@@ -1,8 +1,9 @@
 """Tasks API endpoints."""
 
+from datetime import date
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.controllers import task_controller
@@ -12,6 +13,7 @@ from app.schemas.task import (
     BulkStatusUpdateResponse,
     TaskCreate,
     TaskResponse,
+    TaskStatus,
     TaskUpdate,
 )
 
@@ -19,13 +21,38 @@ router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 
 @router.get("/", response_model=list[TaskResponse])
-def list_tasks(db: Session = Depends(get_db)):
+def list_tasks(
+    status: TaskStatus | None = Query(None, description="Filter by task status"),
+    project_id: UUID | None = Query(None, description="Filter by project ID"),
+    context_id: UUID | None = Query(None, description="Filter by context ID"),
+    scheduled_after: date | None = Query(None, description="Filter tasks scheduled after this date"),
+    scheduled_before: date | None = Query(None, description="Filter tasks scheduled before this date"),
+    db: Session = Depends(get_db),
+):
     """
-    Get all active tasks.
+    Get all active tasks with optional filters.
 
     Returns list of all non-deleted tasks ordered by created_at descending.
+
+    Filters can be combined:
+    - ?status=next - Only tasks with 'next' status
+    - ?project_id=<uuid> - Only tasks in specific project
+    - ?context_id=<uuid> - Only tasks with specific context
+    - ?scheduled_after=2025-01-01 - Tasks scheduled on or after date
+    - ?scheduled_before=2025-12-31 - Tasks scheduled on or before date
+
+    Examples:
+    - /tasks?status=next&context_id=abc123 - Next actions with specific context
+    - /tasks?project_id=xyz789&status=waiting - Waiting tasks in project
     """
-    return task_controller.list_tasks(db)
+    return task_controller.list_tasks(
+        db,
+        status=status,
+        project_id=project_id,
+        context_id=context_id,
+        scheduled_after=scheduled_after,
+        scheduled_before=scheduled_before,
+    )
 
 
 @router.get("/{task_id}", response_model=TaskResponse)

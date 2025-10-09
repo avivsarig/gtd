@@ -3,9 +3,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.v1.contexts import router as contexts_router
 from app.api.v1.inbox import router as inbox_router
 from app.api.v1.notes import router as notes_router
 from app.api.v1.projects import router as projects_router
+from app.api.v1.search import router as search_router
 from app.api.v1.tasks import router as tasks_router
 from app.core.config import settings
 
@@ -32,6 +34,8 @@ app.include_router(inbox_router, prefix=settings.API_V1_PREFIX)
 app.include_router(tasks_router, prefix=settings.API_V1_PREFIX)
 app.include_router(projects_router, prefix=settings.API_V1_PREFIX)
 app.include_router(notes_router, prefix=settings.API_V1_PREFIX)
+app.include_router(contexts_router, prefix=settings.API_V1_PREFIX)
+app.include_router(search_router, prefix=settings.API_V1_PREFIX)
 
 
 @app.get("/")

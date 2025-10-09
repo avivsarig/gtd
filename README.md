@@ -1,102 +1,82 @@
 # GTD Task Management System
 
-Keyboard-first, single-user GTD (Getting Things Done) task management system.
+A **Getting Things Done (GTD)**-based task management system to help users organize tasks according to the GTD methodology:
+1. **Capture** — Collect everything into a universal inbox  
+2. **Clarify** — Process inbox items into tasks or notes  
+3. **Organize** — Sort tasks into Next / Waiting / Someday lists, attach context or project  
+4. **Reflect** — Weekly review with “inbox zero” discipline  
+5. **Engage** — Work from the organized lists
+
+## Architectural Summary
+
+This is a fullstack app based on:
+- **Backend:** FastAPI (Python) - (see [Backend README](/backend/README.md))
+- **Frontend:** React (TypeScript) - (see [Frontend README](/frontend/README.md))
+- **Database:** PostgreSQL with Alembic migrations
+- **Containerization:** Docker Compose for orchestrating all components
 
 ## Quick Start
 
+A [Makefile](/Makefile) provides key development commands.  
+Run `make help` for a list of available commands.
+
+**To start locally:**
+
 ```bash
-docker compose up -d     # Start all services
-make db-migrate          # Run database migrations
+make up           # Start backend, frontend, and database via Docker Compose
+make db-migrate   # Apply latest database migrations
 ```
 
-**Access:**
+Then open [frontend](http://localhost:5173) in your browser
+The backend API is available at [http://localhost:8000](http://localhost:8000), and has built-in [Swagger UI documentation](http://localhost:8000/docs)
+
+## Repository Structure
+
+```bash
+├── backend                     # Backend service (FastAPI)
+├── frontend                    # Frontend app (React)
+├── .env                        # Shared environment configuration
+├── .pre-commit-config.yaml     # Code quality hooks
+├── docker-compose.yml          # Docker configuration for all services
+└── Makefile                    # Common dev commands (run, lint, test, etc.)
+```
+
+## Deployment Instructions
+
+### Prerequisites
+- Docker (version 20.10.0 or higher)
+- Docker Compose (version 1.29.0 or higher)
+- Git (for cloning the repository)
+
+### Local Development Deployment
+1. Clone the repository:
+    ```bash
+    git clone https://github.com/avivsarig/gtd-task-management.git
+    cd gtd-task-management
+    ```
+
+2. Set up environment variables (optional):
+- Copy `.env.example` to `.env`
+- Modify database credentials and other configuration as needed
+
+3. Start the application:
+    ```bash
+    make up           # Starts backend, frontend, and PostgreSQL services
+    make db-migrate   # Applies database migrations
+    ```
+
+4. Access the application:
 - Frontend: http://localhost:5173
-- Backend API: http://localhost:8000/docs
+- Backend API: http://localhost:8000
+- Swagger Docs: http://localhost:8000/docs
 
-## Key Commands
-
+### Stopping the Application
 ```bash
-make help          # Show all commands
-make up/down       # Start/stop services
-make logs          # View logs
-make db-shell      # PostgreSQL shell
-
-# Testing
-make test          # Backend unit tests (87 passing)
-make test-cov      # With coverage report
-
-# Code Quality
-make lint          # Run all linters
-make format        # Auto-format all code
+make down           # Stops and removes containers
+make clean          # Removes all containers and volumes
 ```
 
-See [CODE_QUALITY.md](CODE_QUALITY.md) for linter details and pre-commit hook setup.
-
-## Project Status
-
-**Phase 1: ~60% Complete** (Foundation + Inbox + Dashboard)
-
-✅ Implemented:
-- Backend: Inbox, Tasks, Projects, Notes APIs
-- Frontend: Dashboard with Capture | Inbox | Tasks | Notes
-- GTD workflow: Cmd+K capture → Inbox → convert to Task/Note
-- Status management (Next/Waiting/Someday)
-- 87 unit tests, 25 integration tests
-
-🚧 Next:
-- Context tagging
-- Full-text search
-- Weekly review page
-
-See [.claude/status.md](.claude/status.md) for detailed progress.
-
-## Architecture
-
-- **Backend:** FastAPI + PostgreSQL (3-layer clean architecture)
-- **Frontend:** React 19 + Vite + Tailwind v4 + shadcn/ui
-- **Infrastructure:** Docker Compose
-
-**GTD Workflow:**
-1. **Capture** → Universal inbox (zero classification)
-2. **Process** → Convert to task/note/project during review
-3. **Organize** → Next/Waiting/Someday lists + contexts
-4. **Review** → Weekly review with inbox zero
-5. **Engage** → Work from organized lists
-
-## Documentation
-
-**Implementation:**
-- [backend/README.md](backend/README.md) - API & database
-- [frontend/README.md](frontend/README.md) - UI components
-
-**Development:**
-- [CLAUDE.md](CLAUDE.md) - AI development guide
-- [backend/CLAUDE.md](backend/CLAUDE.md) - Backend architecture & patterns
-- [frontend/CLAUDE.md](frontend/CLAUDE.md) - Frontend architecture & GTD compliance
-
-**Requirements:**
-- [.claude/](.claude/) - User stories, technical requirements, data model
-
-**Testing:**
-- [TESTING.md](TESTING.md) - Testing guide & framework
-
----
-
-## Documentation Maintenance
-
-**Structure:**
-- Main README: overview + quick start + links only
-- Subdirectory READMEs: implementation specifics
-- CLAUDE.md files: AI development guidance
-
-**Rules:**
-- Single source of truth - link, don't duplicate
-- Remove deprecated content immediately
-- Examples must be minimal and current
-- Each README scannable in <2 minutes
-
-**Before committing doc changes:**
-- [ ] Removed duplicate content?
-- [ ] Updated cross-references?
-- [ ] Verified all commands work?
-- [ ] Kept token count minimal?
+### Troubleshooting
+- Ensure Docker is running
+- Check container logs with docker-compose logs
+- Verify network ports are not in use by other services

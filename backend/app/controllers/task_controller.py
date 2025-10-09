@@ -1,6 +1,6 @@
 """Task controller - Business logic layer for Task operations."""
 
-from datetime import datetime
+from datetime import date, datetime
 from uuid import UUID
 
 from sqlalchemy.orm import Session
@@ -10,21 +10,42 @@ from app.repositories import task_repository
 from app.schemas.task import TaskCreate, TaskStatus, TaskUpdate
 
 
-def list_tasks(db: Session) -> list[Task]:
+def list_tasks(
+    db: Session,
+    status: TaskStatus | None = None,
+    project_id: UUID | None = None,
+    context_id: UUID | None = None,
+    scheduled_after: date | None = None,
+    scheduled_before: date | None = None,
+) -> list[Task]:
     """
-    Get list of all active (non-deleted) tasks.
+    Get list of all active (non-deleted) tasks with optional filters.
 
     Business logic:
     - Only return non-deleted tasks
     - Ordered by created_at descending
+    - Apply filters as specified
 
     Args:
         db: Database session
+        status: Filter by task status (next/waiting/someday)
+        project_id: Filter by project ID
+        context_id: Filter by context ID
+        scheduled_after: Filter tasks scheduled after this date
+        scheduled_before: Filter tasks scheduled before this date
 
     Returns:
-        List of Task objects
+        List of Task objects matching filters
     """
-    return task_repository.get_all(db, include_deleted=False)
+    return task_repository.get_all(
+        db,
+        include_deleted=False,
+        status=status,
+        project_id=project_id,
+        context_id=context_id,
+        scheduled_after=scheduled_after,
+        scheduled_before=scheduled_before,
+    )
 
 
 def get_task(db: Session, task_id: UUID) -> Task | None:

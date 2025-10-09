@@ -1,7 +1,7 @@
 """Note model - Reference material and supporting information."""
 
 from sqlalchemy import TIMESTAMP, Column, ForeignKey, String, Text
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import TSVECTOR, UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func, text
 
@@ -23,6 +23,9 @@ class Note(Base):
     created_at = Column(TIMESTAMP, nullable=False, server_default=func.now())
     updated_at = Column(TIMESTAMP, nullable=False, server_default=func.now())
     deleted_at = Column(TIMESTAMP, nullable=True)
+
+    # Full-text search vector (generated column from migration)
+    search_vector = Column(TSVECTOR)
 
     # Relationships
     project = relationship("Project", back_populates="notes")

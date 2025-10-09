@@ -1,7 +1,7 @@
 """Project model - Collections of tasks working toward an outcome."""
 
 from sqlalchemy import TIMESTAMP, Column, String, Text
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import TSVECTOR, UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func, text
 
@@ -24,6 +24,9 @@ class Project(Base):
     archived_at = Column(TIMESTAMP, nullable=True)
     last_activity_at = Column(TIMESTAMP, nullable=True)
     deleted_at = Column(TIMESTAMP, nullable=True)
+
+    # Full-text search vector (generated column from migration)
+    search_vector = Column(TSVECTOR)
 
     # Relationships
     tasks = relationship("Task", back_populates="project", foreign_keys="Task.project_id")

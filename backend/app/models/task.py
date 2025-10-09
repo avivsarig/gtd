@@ -1,7 +1,7 @@
 """Task model - Core GTD actionable items."""
 
 from sqlalchemy import TIMESTAMP, Column, Date, ForeignKey, String, Text, Time
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import TSVECTOR, UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func, text
 
@@ -32,6 +32,9 @@ class Task(Base):
     completed_at = Column(TIMESTAMP, nullable=True)
     archived_at = Column(TIMESTAMP, nullable=True)
     deleted_at = Column(TIMESTAMP, nullable=True)
+
+    # Full-text search vector (generated column from migration)
+    search_vector = Column(TSVECTOR)
 
     # Relationships
     project = relationship("Project", back_populates="tasks", foreign_keys=[project_id])

@@ -1,20 +1,35 @@
 """Task repository - Data access layer for Task operations."""
 
+from datetime import date
 from uuid import UUID
 
 from sqlalchemy.orm import Session
 
+from app.models.associations import task_contexts
 from app.models.task import Task
-from app.schemas.task import TaskCreate, TaskUpdate
+from app.schemas.task import TaskCreate, TaskStatus, TaskUpdate
 
 
-def get_all(db: Session, include_deleted: bool = False) -> list[Task]:
+def get_all(
+    db: Session,
+    include_deleted: bool = False,
+    status: TaskStatus | None = None,
+    project_id: UUID | None = None,
+    context_id: UUID | None = None,
+    scheduled_after: date | None = None,
+    scheduled_before: date | None = None,
+) -> list[Task]:
     """
-    Get all tasks from database.
+    Get all tasks from database with optional filters.
 
     Args:
         db: Database session
         include_deleted: If True, include soft-deleted tasks (default: False)
+        status: Filter by task status (next/waiting/someday)
+        project_id: Filter by project ID
+        context_id: Filter by context ID (tasks with this context)
+        scheduled_after: Filter tasks scheduled after this date (inclusive)
+        scheduled_before: Filter tasks scheduled before this date (inclusive)
 
     Returns:
         List of Task objects ordered by created_at descending
@@ -23,6 +38,23 @@ def get_all(db: Session, include_deleted: bool = False) -> list[Task]:
 
     if not include_deleted:
         query = query.filter(Task.deleted_at == None)
+
+    # Apply filters
+    if status is not None:
+        query = query.filter(Task.status == status)
+
+    if project_id is not None:
+        query = query.filter(Task.project_id == project_id)
+
+    if context_id is not None:
+        # Join with task_contexts association table
+        query = query.join(task_contexts).filter(task_contexts.c.context_id == context_id)
+
+    if scheduled_after is not None:
+        query = query.filter(Task.scheduled_date >= scheduled_after)
+
+    if scheduled_before is not None:
+        query = query.filter(Task.scheduled_date <= scheduled_before)
 
     return query.order_by(Task.created_at.desc()).all()
 
