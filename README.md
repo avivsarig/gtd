@@ -1,11 +1,17 @@
 # GTD Task Management System
 
 A **Getting Things Done (GTD)**-based task management system to help users organize tasks according to the GTD methodology:
-1. **Capture** — Collect everything into a universal inbox  
-2. **Clarify** — Process inbox items into tasks or notes  
-3. **Organize** — Sort tasks into Next / Waiting / Someday lists, attach context or project  
-4. **Reflect** — Weekly review with “inbox zero” discipline  
+1. **Capture** — Collect everything into a universal inbox
+2. **Clarify** — Process inbox items into tasks or notes
+3. **Organize** — Sort tasks into Next / Waiting / Someday lists, attach context or project
+4. **Reflect** — Weekly review with "inbox zero" discipline
 5. **Engage** — Work from the organized lists
+
+## Prerequisites
+
+- Docker 20.10.0+
+- Docker Compose 1.29.0+
+- Git
 
 ## Architectural Summary
 
@@ -14,6 +20,18 @@ This is a fullstack app based on:
 - **Frontend:** React (TypeScript) - (see [Frontend README](/frontend/README.md))
 - **Database:** PostgreSQL with Alembic migrations
 - **Containerization:** Docker Compose for orchestrating all components
+
+## Features
+
+- Universal inbox capture with Cmd+K
+- Inbox processing (convert to tasks/notes/projects)
+- Task management with filtering by status, context, project, and dates
+- Projects with statistics and task assignment
+- Notes with markdown support and project links
+- Contexts (@home, @computer, @phone)
+- Full-text search across tasks, notes, and projects
+
+See [Project Status](.claude/status.md) for development roadmap.
 
 ## Quick Start
 
@@ -30,6 +48,10 @@ make db-migrate   # Apply latest database migrations
 Then open [frontend](http://localhost:5173) in your browser
 The backend API is available at [http://localhost:8000](http://localhost:8000), and has built-in [Swagger UI documentation](http://localhost:8000/docs)
 
+## Development
+
+See [Makefile](Makefile) for all available commands including linting, formatting, and testing.
+
 ## Repository Structure
 
 ```bash
@@ -41,42 +63,29 @@ The backend API is available at [http://localhost:8000](http://localhost:8000), 
 └── Makefile                    # Common dev commands (run, lint, test, etc.)
 ```
 
-## Deployment Instructions
+## Troubleshooting
 
-### Prerequisites
-- Docker (version 20.10.0 or higher)
-- Docker Compose (version 1.29.0 or higher)
-- Git (for cloning the repository)
-
-### Local Development Deployment
-1. Clone the repository:
-    ```bash
-    git clone https://github.com/avivsarig/gtd-task-management.git
-    cd gtd-task-management
-    ```
-
-2. Set up environment variables (optional):
-- Copy `.env.example` to `.env`
-- Modify database credentials and other configuration as needed
-
-3. Start the application:
-    ```bash
-    make up           # Starts backend, frontend, and PostgreSQL services
-    make db-migrate   # Applies database migrations
-    ```
-
-4. Access the application:
-- Frontend: http://localhost:5173
-- Backend API: http://localhost:8000
-- Swagger Docs: http://localhost:8000/docs
-
-### Stopping the Application
+**Services not starting:**
 ```bash
-make down           # Stops and removes containers
-make clean          # Removes all containers and volumes
+docker compose ps    # Check service status
+docker compose logs  # View all logs
 ```
 
-### Troubleshooting
-- Ensure Docker is running
-- Check container logs with docker-compose logs
-- Verify network ports are not in use by other services
+**Database issues:**
+```bash
+make db-migrate      # Apply migrations
+make db-reset        # Reset database (⚠️ deletes data)
+```
+
+**Port conflicts:**
+- Backend (8000), Frontend (5173), PostgreSQL (5432)
+- Check with: `docker ps` or `lsof -i :<port>`
+
+## Documentation
+
+- [Backend Documentation](backend/README.md) - API architecture and endpoints
+- [Frontend Documentation](frontend/README.md) - React components and tech stack
+- [Backend Testing](backend/tests/README.md) - Testing guide and examples
+- [Frontend Testing](frontend/tests/README.md) - Component testing guide
+- [Project Status](.claude/status.md) - Current development state and roadmap
+- [API Documentation](http://localhost:8000/docs) - Interactive Swagger UI (when running)
