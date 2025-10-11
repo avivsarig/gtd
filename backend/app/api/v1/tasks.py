@@ -25,8 +25,12 @@ def list_tasks(
     status: TaskStatus | None = Query(None, description="Filter by task status"),
     project_id: UUID | None = Query(None, description="Filter by project ID"),
     context_id: UUID | None = Query(None, description="Filter by context ID"),
-    scheduled_after: date | None = Query(None, description="Filter tasks scheduled after this date"),
-    scheduled_before: date | None = Query(None, description="Filter tasks scheduled before this date"),
+    scheduled_after: date | None = Query(
+        None, description="Filter tasks scheduled after this date"
+    ),
+    scheduled_before: date | None = Query(
+        None, description="Filter tasks scheduled before this date"
+    ),
     db: Session = Depends(get_db),
 ):
     """

@@ -9,6 +9,7 @@ import { useState } from "react"
 import { type Context, type CreateContextInput } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { ItemCard } from "@/components/ItemCard"
+import { EmptyState } from "@/components/EmptyState"
 import { Plus, X } from "lucide-react"
 
 interface ContextManagerProps {
@@ -169,9 +170,7 @@ export function ContextManager({
 
       {/* Contexts List */}
       {contexts.length === 0 ? (
-        <p className="text-muted-foreground py-8 text-center">
-          No contexts yet. Create one to get started!
-        </p>
+        <EmptyState message="No contexts yet. Create one to get started!" />
       ) : (
         <div className="space-y-2">
           {contexts.map((context) => (

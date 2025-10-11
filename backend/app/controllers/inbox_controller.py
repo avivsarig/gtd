@@ -116,9 +116,7 @@ def delete_inbox_item(db: Session, item_id: UUID) -> InboxItem | None:
     return inbox_repository.soft_delete(db, item)
 
 
-def convert_to_task(
-    db: Session, item_id: UUID, convert_data: ConvertToTaskRequest
-) -> Task | None:
+def convert_to_task(db: Session, item_id: UUID, convert_data: ConvertToTaskRequest) -> Task | None:
     """
     Convert an inbox item to a task (GTD processing workflow).
 
@@ -145,7 +143,9 @@ def convert_to_task(
         title=convert_data.title or item.content,
         description=convert_data.description,
         project_id=convert_data.project_id,
-        scheduled_date=date.fromisoformat(convert_data.scheduled_date) if convert_data.scheduled_date else None,
+        scheduled_date=(
+            date.fromisoformat(convert_data.scheduled_date) if convert_data.scheduled_date else None
+        ),
     )
 
     # Create the task
@@ -157,9 +157,7 @@ def convert_to_task(
     return task
 
 
-def convert_to_note(
-    db: Session, item_id: UUID, convert_data: ConvertToNoteRequest
-) -> Note | None:
+def convert_to_note(db: Session, item_id: UUID, convert_data: ConvertToNoteRequest) -> Note | None:
     """
     Convert an inbox item to a note (GTD processing workflow).
 

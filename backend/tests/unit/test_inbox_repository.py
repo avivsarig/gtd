@@ -1,6 +1,6 @@
 """Unit tests for InboxItem repository."""
 
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from unittest.mock import Mock
 from uuid import uuid4
 
@@ -109,6 +109,7 @@ class TestCreate:
         item_data = InboxItemCreate(content="New inbox thought")
 
         mock_db = Mock()
+
         # Simulate database adding ID and timestamp
         def mock_refresh(item):
             item.id = uuid4()

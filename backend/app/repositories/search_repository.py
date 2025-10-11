@@ -72,7 +72,9 @@ def search_all(db: Session, query: str, limit: int = 50) -> list[dict]:
             Project.outcome_statement.label("snippet"),
             func.ts_rank(Project.search_vector, tsquery).label("rank"),
             Project.created_at,
-            literal_column("NULL::uuid").label("project_id"),  # Projects don't have a parent project
+            literal_column("NULL::uuid").label(
+                "project_id"
+            ),  # Projects don't have a parent project
         )
         .filter(Project.deleted_at.is_(None))
         .filter(Project.search_vector.op("@@")(tsquery))

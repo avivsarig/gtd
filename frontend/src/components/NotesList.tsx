@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { type Note, type Project } from "@/lib/api"
 import { ItemCard } from "@/components/ItemCard"
+import { EmptyState } from "@/components/EmptyState"
 
 interface NotesListProps {
   notes: Note[]
@@ -28,11 +29,7 @@ export function NotesList({
   }
 
   if (notes.length === 0) {
-    return (
-      <div className="text-muted-foreground py-8 text-center">
-        No notes yet. Create one to get started!
-      </div>
-    )
+    return <EmptyState message="No notes yet. Create one to get started!" />
   }
 
   return (

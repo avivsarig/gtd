@@ -54,9 +54,7 @@ def create_context(context_data: ContextCreate, db: Session = Depends(get_db)):
 
 
 @router.put("/{context_id}", response_model=ContextResponse)
-def update_context(
-    context_id: UUID, context_data: ContextUpdate, db: Session = Depends(get_db)
-):
+def update_context(context_id: UUID, context_data: ContextUpdate, db: Session = Depends(get_db)):
     """
     Update an existing context.
 

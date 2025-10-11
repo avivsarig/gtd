@@ -1,6 +1,5 @@
 """Unit tests for InboxItem controller."""
 
-from datetime import datetime, UTC
 from unittest.mock import Mock, patch
 from uuid import uuid4
 
@@ -14,7 +13,6 @@ from app.schemas.inbox import (
     ConvertToProjectRequest,
     ConvertToTaskRequest,
     InboxItemCreate,
-    InboxItemUpdate,
 )
 
 
@@ -140,7 +138,9 @@ class TestConvertToNote:
 
         # Mock inbox item with multi-line content
         mock_item = Mock(
-            spec=InboxItem, id=item_id, content="Meeting notes\nAttendees: Alice, Bob\nTopic: Q4 planning"
+            spec=InboxItem,
+            id=item_id,
+            content="Meeting notes\nAttendees: Alice, Bob\nTopic: Q4 planning",
         )
         mock_inbox_repo.get_by_id.return_value = mock_item
 

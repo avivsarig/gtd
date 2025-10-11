@@ -92,9 +92,7 @@ def create_inbox_item(item_data: InboxItemCreate, db: Session = Depends(get_db))
 
 
 @router.put("/{item_id}", response_model=InboxItemResponse)
-def update_inbox_item(
-    item_id: UUID, item_data: InboxItemUpdate, db: Session = Depends(get_db)
-):
+def update_inbox_item(item_id: UUID, item_data: InboxItemUpdate, db: Session = Depends(get_db)):
     """
     Update an existing inbox item.
 

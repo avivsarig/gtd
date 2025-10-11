@@ -8,6 +8,7 @@ import { ItemCard } from "@/components/ItemCard"
 import { StatusSelect } from "@/components/StatusSelect"
 import { ProjectSelect } from "@/components/ProjectSelect"
 import { ContextSelect } from "@/components/ContextSelect"
+import { EmptyState } from "@/components/EmptyState"
 import { Button } from "@/components/ui/button"
 import { Check, Circle } from "lucide-react"
 
@@ -35,11 +36,7 @@ export function TaskList({
   onDelete,
 }: TaskListProps) {
   if (tasks.length === 0) {
-    return (
-      <div className="text-muted-foreground py-8 text-center">
-        No tasks yet. Create one to get started!
-      </div>
-    )
+    return <EmptyState message="No tasks yet. Create one to get started!" />
   }
 
   return (

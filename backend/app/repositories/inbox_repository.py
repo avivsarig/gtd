@@ -1,6 +1,6 @@
 """InboxItem repository - Data access layer for InboxItem operations."""
 
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy.orm import Session
@@ -9,7 +9,9 @@ from app.models.inbox_item import InboxItem
 from app.schemas.inbox import InboxItemCreate, InboxItemUpdate
 
 
-def get_all(db: Session, include_processed: bool = False, include_deleted: bool = False) -> list[InboxItem]:
+def get_all(
+    db: Session, include_processed: bool = False, include_deleted: bool = False
+) -> list[InboxItem]:
     """
     Get all inbox items from database.
 

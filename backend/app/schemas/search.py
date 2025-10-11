@@ -26,4 +26,6 @@ class SearchResponse(BaseModel):
 
     query: str = Field(..., description="The search query that was executed")
     total_results: int = Field(..., description="Total number of results found")
-    results: list[SearchResultItem] = Field(..., description="List of search results ordered by relevance")
+    results: list[SearchResultItem] = Field(
+        ..., description="List of search results ordered by relevance"
+    )
