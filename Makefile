@@ -1,4 +1,4 @@
-.PHONY: help build up down restart clean logs logs-be logs-fe db-shell db-migrate db-reset dev fresh status lint lint-fe lint-be format format-fe format-be test test-all test-unit test-int test-cov test-fast
+.PHONY: help build up down restart clean logs logs-be logs-fe db-shell db-migrate db-reset dev fresh status lint lint-fe lint-be format format-fe format-be test test-all test-unit test-int test-cov test-fast test-fe test-fe-watch test-fe-ui test-fe-cov
 
 help:
 	@echo "GTD Task Management - Makefile Commands"
@@ -26,6 +26,10 @@ help:
 	@echo "make test-int    - Run integration tests (requires PostgreSQL)"
 	@echo "make test-cov    - Run tests with coverage report"
 	@echo "make test-fast   - Run fast tests (exclude slow tests)"
+	@echo "make test-fe     - Run frontend tests"
+	@echo "make test-fe-watch - Run frontend tests in watch mode"
+	@echo "make test-fe-ui  - Run frontend tests with interactive UI"
+	@echo "make test-fe-cov - Run frontend tests with coverage report"
 	@echo ""
 
 build:
@@ -150,3 +154,20 @@ test-watch:
 test-fast:
 	@echo "Running fast tests (excluding slow tests)..."
 	docker compose exec backend pytest -m "not slow" -x
+
+# Frontend tests
+test-fe:
+	@echo "Running frontend tests..."
+	docker compose exec frontend npm test
+
+test-fe-watch:
+	@echo "Running frontend tests in watch mode..."
+	docker compose exec frontend npm run test:watch
+
+test-fe-ui:
+	@echo "Running frontend tests with interactive UI..."
+	docker compose exec frontend npm run test:ui
+
+test-fe-cov:
+	@echo "Running frontend tests with coverage..."
+	docker compose exec frontend npm run test:coverage
