@@ -92,7 +92,7 @@ export function Inbox() {
           break
       }
     },
-    [items, focusedIndex, processingId]
+    [items, focusedIndex, processingId],
   )
 
   useEffect(() => {
@@ -171,7 +171,7 @@ export function Inbox() {
   if (items.length === 0) {
     return (
       <div className="p-8 text-center">
-        <h2 className="text-2xl font-bold mb-2">Inbox Zero! 🎉</h2>
+        <h2 className="mb-2 text-2xl font-bold">Inbox Zero! 🎉</h2>
         <p className="text-muted-foreground">
           All items processed. Press Cmd+K to capture new thoughts.
         </p>
@@ -186,8 +186,9 @@ export function Inbox() {
         <p className="text-muted-foreground">
           {items.length} {items.length === 1 ? "item" : "items"} to process
         </p>
-        <p className="text-xs text-muted-foreground mt-2">
-          Navigate: J/K or ↑/↓ • Convert: T (task), N (note), P (project) • D (delete)
+        <p className="text-muted-foreground mt-2 text-xs">
+          Navigate: J/K or ↑/↓ • Convert: T (task), N (note), P (project) • D
+          (delete)
         </p>
       </div>
 
@@ -203,7 +204,7 @@ export function Inbox() {
               }}
               onDelete={() => handleDelete(item.id)}
               deleteConfirmMessage="Delete inbox item?"
-              className={isFocused ? "ring-2 ring-primary" : ""}
+              className={isFocused ? "ring-primary ring-2" : ""}
               actions={
                 <>
                   <Button
@@ -212,7 +213,7 @@ export function Inbox() {
                     onClick={() => handleConvertToTask(item)}
                     disabled={processingId === item.id}
                   >
-                    <CheckSquare className="h-4 w-4 mr-2" />
+                    <CheckSquare className="mr-2 h-4 w-4" />
                     Task (T)
                   </Button>
                   <Button
@@ -221,18 +222,18 @@ export function Inbox() {
                     onClick={() => handleConvertToNote(item)}
                     disabled={processingId === item.id}
                   >
-                    <FileText className="h-4 w-4 mr-2" />
+                    <FileText className="mr-2 h-4 w-4" />
                     Note (N)
                   </Button>
                 </>
               }
             >
               <p className="text-base whitespace-pre-wrap">{item.content}</p>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-muted-foreground mt-1 text-xs">
                 {new Date(item.created_at).toLocaleString()}
               </p>
               {processingId === item.id && (
-                <p className="text-xs text-muted-foreground mt-2">
+                <p className="text-muted-foreground mt-2 text-xs">
                   Processing...
                 </p>
               )}

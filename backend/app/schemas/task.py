@@ -25,6 +25,7 @@ class TaskCreate(BaseModel):
     scheduled_time: time | None = None
     due_date: date | None = None
     project_id: UUID | None = None
+    context_id: UUID | None = None
     blocked_by_task_id: UUID | None = None
 
 
@@ -38,6 +39,7 @@ class TaskUpdate(BaseModel):
     scheduled_time: time | None = None
     due_date: date | None = None
     project_id: UUID | None = None
+    context_id: UUID | None = None
     blocked_by_task_id: UUID | None = None
 
 
@@ -54,6 +56,7 @@ class TaskResponse(BaseModel):
     scheduled_time: time | None = None
     due_date: date | None = None
     project_id: UUID | None = None
+    context_id: UUID | None = None
     blocked_by_task_id: UUID | None = None
     created_at: datetime
     updated_at: datetime

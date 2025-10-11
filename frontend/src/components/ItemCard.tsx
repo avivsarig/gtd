@@ -5,7 +5,7 @@
  * Standard: Title/Content + Edit + Delete buttons, then custom content
  */
 
-import { ReactNode } from "react"
+import { type ReactNode } from "react"
 import { Button } from "@/components/ui/button"
 import { Pencil, Trash2 } from "lucide-react"
 
@@ -41,14 +41,14 @@ export function ItemCard({
 
   return (
     <div
-      className={`border rounded-lg p-4 hover:bg-accent/50 transition-colors ${className}`}
+      className={`hover:bg-accent/50 rounded-lg border p-4 transition-colors ${className}`}
     >
       <div className="flex items-start gap-3">
         {/* Main Content */}
-        <div className="flex-1 min-w-0">{children}</div>
+        <div className="min-w-0 flex-1">{children}</div>
 
         {/* Standard Actions: Custom Actions + Edit + Delete (rightmost) */}
-        <div className="flex items-center gap-1 flex-shrink-0">
+        <div className="flex flex-shrink-0 items-center gap-1">
           {/* Additional custom actions */}
           {actions}
           {onEdit && (
@@ -67,7 +67,7 @@ export function ItemCard({
               size="icon"
               variant="ghost"
               onClick={handleDelete}
-              className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+              className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 w-8"
               title="Delete"
             >
               <Trash2 className="h-4 w-4" />

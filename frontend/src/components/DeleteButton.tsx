@@ -38,7 +38,7 @@ export function DeleteButton({
       className="text-destructive hover:text-destructive hover:bg-destructive/10"
       title={iconOnly ? label : undefined}
     >
-      <Trash2 className={iconOnly ? "h-4 w-4" : "h-4 w-4 mr-1"} />
+      <Trash2 className={iconOnly ? "h-4 w-4" : "mr-1 h-4 w-4"} />
       {!iconOnly && label}
     </Button>
   )

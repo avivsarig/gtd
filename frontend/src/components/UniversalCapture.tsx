@@ -22,7 +22,11 @@ interface UniversalCaptureProps {
   onSuccess?: () => void
 }
 
-export function UniversalCapture({ open, onOpenChange, onSuccess }: UniversalCaptureProps) {
+export function UniversalCapture({
+  open,
+  onOpenChange,
+  onSuccess,
+}: UniversalCaptureProps) {
   const [content, setContent] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -81,9 +85,7 @@ export function UniversalCapture({ open, onOpenChange, onSuccess }: UniversalCap
             disabled={isSubmitting}
           />
 
-          {error && (
-            <p className="text-sm text-red-500">{error}</p>
-          )}
+          {error && <p className="text-sm text-red-500">{error}</p>}
 
           <div className="flex justify-end gap-2">
             <Button

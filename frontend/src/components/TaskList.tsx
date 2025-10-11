@@ -1,42 +1,36 @@
-import { type Task, type TaskStatus, type Project } from "@/lib/api"
+import {
+  type Task,
+  type TaskStatus,
+  type Project,
+  type Context,
+} from "@/lib/api"
 import { ItemCard } from "@/components/ItemCard"
+import { StatusSelect } from "@/components/StatusSelect"
+import { ProjectSelect } from "@/components/ProjectSelect"
+import { ContextSelect } from "@/components/ContextSelect"
 import { Button } from "@/components/ui/button"
 import { Check, Circle } from "lucide-react"
 
 interface TaskListProps {
   tasks: Task[]
   projects: Project[]
+  contexts: Context[]
   onUpdateStatus: (taskId: string, status: TaskStatus) => void
   onToggleComplete: (task: Task) => void
   onUpdateProject: (taskId: string, projectId: string | null) => void
+  onUpdateContext: (taskId: string, contextId: string | null) => void
   onEdit?: (task: Task) => void
   onDelete?: (taskId: string) => void
 }
 
-const STATUS_OPTIONS: { value: TaskStatus; label: string; color: string }[] = [
-  {
-    value: "next",
-    label: "Next",
-    color: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-  },
-  {
-    value: "waiting",
-    label: "Waiting",
-    color: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
-  },
-  {
-    value: "someday",
-    label: "Someday",
-    color: "bg-gray-500/20 text-gray-400 border-gray-500/30",
-  },
-]
-
 export function TaskList({
   tasks,
   projects,
+  contexts,
   onUpdateStatus,
   onToggleComplete,
   onUpdateProject,
+  onUpdateContext,
   onEdit,
   onDelete,
 }: TaskListProps) {
@@ -67,7 +61,9 @@ export function TaskList({
                   ? "text-green-500 hover:text-green-600"
                   : "text-muted-foreground hover:text-foreground"
               }`}
-              title={task.completed_at ? "Mark as incomplete" : "Mark as complete"}
+              title={
+                task.completed_at ? "Mark as incomplete" : "Mark as complete"
+              }
             >
               {task.completed_at ? (
                 <Check className="h-5 w-5" />
@@ -90,41 +86,29 @@ export function TaskList({
             </p>
           )}
 
-          <div className="mt-3 flex items-center gap-2 flex-wrap">
+          <div className="mt-3 flex flex-wrap items-center gap-2">
             {/* Status Selector */}
-            <select
+            <StatusSelect
               value={task.status}
-              onChange={(e) =>
-                onUpdateStatus(task.id, e.target.value as TaskStatus)
-              }
-              className={`cursor-pointer rounded border px-2 py-1 text-xs font-medium ${
-                STATUS_OPTIONS.find((opt) => opt.value === task.status)?.color
-              }`}
+              onChange={(status) => onUpdateStatus(task.id, status)}
               disabled={!!task.completed_at}
-            >
-              {STATUS_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+            />
 
             {/* Project Selector */}
-            <select
-              value={task.project_id || ""}
-              onChange={(e) =>
-                onUpdateProject(task.id, e.target.value || null)
-              }
-              className="cursor-pointer rounded border border-purple-500/30 bg-purple-500/20 px-2 py-1 text-xs font-medium text-purple-400"
+            <ProjectSelect
+              value={task.project_id}
+              projects={projects}
+              onChange={(projectId) => onUpdateProject(task.id, projectId)}
               disabled={!!task.completed_at}
-            >
-              <option value="">No Project</option>
-              {projects.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.name}
-                </option>
-              ))}
-            </select>
+            />
+
+            {/* Context Selector */}
+            <ContextSelect
+              value={task.context_id}
+              contexts={contexts}
+              onChange={(contextId) => onUpdateContext(task.id, contextId)}
+              disabled={!!task.completed_at}
+            />
 
             {/* Metadata */}
             <span className="text-muted-foreground text-xs">

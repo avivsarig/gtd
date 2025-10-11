@@ -12,6 +12,7 @@ export interface Task {
   description?: string
   status: TaskStatus
   project_id?: string | null
+  context_id?: string | null
   completed_at?: string | null
   created_at: string
   updated_at: string
@@ -28,6 +29,7 @@ export interface UpdateTaskInput {
   description?: string
   status?: TaskStatus
   project_id?: string | null
+  context_id?: string | null
 }
 
 /**
@@ -314,7 +316,9 @@ export interface ConvertToProjectInput {
 /**
  * Get all inbox items (unprocessed by default)
  */
-export async function getInboxItems(includeProcessed = false): Promise<InboxItem[]> {
+export async function getInboxItems(
+  includeProcessed = false,
+): Promise<InboxItem[]> {
   const url = includeProcessed
     ? `${API_BASE_URL}/api/v1/inbox/?include_processed=true`
     : `${API_BASE_URL}/api/v1/inbox/`
@@ -339,7 +343,9 @@ export async function getInboxCount(): Promise<{ count: number }> {
 /**
  * Create a new inbox item (universal capture)
  */
-export async function createInboxItem(input: CreateInboxItemInput): Promise<InboxItem> {
+export async function createInboxItem(
+  input: CreateInboxItemInput,
+): Promise<InboxItem> {
   const response = await fetch(`${API_BASE_URL}/api/v1/inbox/`, {
     method: "POST",
     headers: {
@@ -372,13 +378,16 @@ export async function convertInboxToTask(
   id: string,
   input: ConvertToTaskInput = {},
 ): Promise<Task> {
-  const response = await fetch(`${API_BASE_URL}/api/v1/inbox/${id}/convert-to-task`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/inbox/${id}/convert-to-task`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(input),
     },
-    body: JSON.stringify(input),
-  })
+  )
   if (!response.ok) {
     throw new Error("Failed to convert inbox item to task")
   }
@@ -392,13 +401,16 @@ export async function convertInboxToNote(
   id: string,
   input: ConvertToNoteInput = {},
 ): Promise<Note> {
-  const response = await fetch(`${API_BASE_URL}/api/v1/inbox/${id}/convert-to-note`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/inbox/${id}/convert-to-note`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(input),
     },
-    body: JSON.stringify(input),
-  })
+  )
   if (!response.ok) {
     throw new Error("Failed to convert inbox item to note")
   }
@@ -412,7 +424,77 @@ export async function convertInboxToProject(
   id: string,
   input: ConvertToProjectInput = {},
 ): Promise<Project> {
-  const response = await fetch(`${API_BASE_URL}/api/v1/inbox/${id}/convert-to-project`, {
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/inbox/${id}/convert-to-project`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(input),
+    },
+  )
+  if (!response.ok) {
+    throw new Error("Failed to convert inbox item to project")
+  }
+  return response.json()
+}
+
+/**
+ * Contexts
+ */
+export interface Context {
+  id: string
+  name: string
+  description?: string | null
+  icon?: string | null
+  sort_order: number
+  created_at: string
+}
+
+export interface CreateContextInput {
+  name: string
+  description?: string
+  icon?: string
+  sort_order?: number
+}
+
+export interface UpdateContextInput {
+  name?: string
+  description?: string
+  icon?: string
+  sort_order?: number
+}
+
+/**
+ * Fetch all contexts
+ */
+export async function getContexts(): Promise<Context[]> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/contexts/`)
+  if (!response.ok) {
+    throw new Error("Failed to fetch contexts")
+  }
+  return response.json()
+}
+
+/**
+ * Get a single context by ID
+ */
+export async function getContext(id: string): Promise<Context> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/contexts/${id}`)
+  if (!response.ok) {
+    throw new Error("Failed to fetch context")
+  }
+  return response.json()
+}
+
+/**
+ * Create a new context
+ */
+export async function createContext(
+  input: CreateContextInput,
+): Promise<Context> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/contexts/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -420,9 +502,41 @@ export async function convertInboxToProject(
     body: JSON.stringify(input),
   })
   if (!response.ok) {
-    throw new Error("Failed to convert inbox item to project")
+    throw new Error("Failed to create context")
   }
   return response.json()
+}
+
+/**
+ * Update a context
+ */
+export async function updateContext(
+  id: string,
+  input: UpdateContextInput,
+): Promise<Context> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/contexts/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(input),
+  })
+  if (!response.ok) {
+    throw new Error("Failed to update context")
+  }
+  return response.json()
+}
+
+/**
+ * Delete a context
+ */
+export async function deleteContext(id: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/contexts/${id}`, {
+    method: "DELETE",
+  })
+  if (!response.ok) {
+    throw new Error("Failed to delete context")
+  }
 }
 
 /**

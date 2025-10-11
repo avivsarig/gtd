@@ -16,8 +16,8 @@ A **Getting Things Done (GTD)**-based task management system to help users organ
 ## Architectural Summary
 
 This is a fullstack app based on:
-- **Backend:** FastAPI (Python) - (see [Backend README](/backend/README.md))
-- **Frontend:** React (TypeScript) - (see [Frontend README](/frontend/README.md))
+- **Backend:** FastAPI (Python)
+- **Frontend:** React (TypeScript)
 - **Database:** PostgreSQL with Alembic migrations
 - **Containerization:** Docker Compose for orchestrating all components
 
@@ -83,9 +83,5 @@ make db-reset        # Reset database (⚠️ deletes data)
 
 ## Documentation
 
-- [Backend Documentation](backend/README.md) - API architecture and endpoints
-- [Frontend Documentation](frontend/README.md) - React components and tech stack
-- [Backend Testing](backend/tests/README.md) - Testing guide and examples
-- [Frontend Testing](frontend/tests/README.md) - Component testing guide
 - [Project Status](.claude/status.md) - Current development state and roadmap
 - [API Documentation](http://localhost:8000/docs) - Interactive Swagger UI (when running)

@@ -29,20 +29,26 @@ import {
   deleteInboxItem,
   convertInboxToTask,
   convertInboxToNote,
+  getContexts,
+  createContext,
+  deleteContext,
   type Task,
   type TaskStatus,
   type Project,
   type Note,
   type InboxItem,
+  type Context,
+  type CreateContextInput,
 } from "@/lib/api"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { DeleteButton } from "@/components/DeleteButton"
+import { ContextManager } from "@/components/ContextManager"
 import { FileText, CheckSquare } from "lucide-react"
 
 export function Home() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [projects, setProjects] = useState<Project[]>([])
+  const [contexts, setContexts] = useState<Context[]>([])
   const [notes, setNotes] = useState<Note[]>([])
   const [inboxItems, setInboxItems] = useState<InboxItem[]>([])
   const [showUniversalCapture, setShowUniversalCapture] = useState(false)
@@ -86,11 +92,21 @@ export function Home() {
     }
   }
 
+  const loadContexts = async () => {
+    try {
+      const data = await getContexts()
+      setContexts(data)
+    } catch (err) {
+      console.error("Failed to load contexts:", err)
+    }
+  }
+
   useEffect(() => {
     void loadTasks()
     void loadProjects()
     void loadNotes()
     void loadInbox()
+    void loadContexts()
   }, [])
 
   // Global keyboard shortcuts
@@ -149,6 +165,20 @@ export function Home() {
       )
     } catch (err) {
       console.error("Failed to update task project:", err)
+    }
+  }
+
+  const handleUpdateContext = async (
+    taskId: string,
+    contextId: string | null,
+  ) => {
+    try {
+      const updatedTask = await updateTask(taskId, { context_id: contextId })
+      setTasks((prev) =>
+        prev.map((task) => (task.id === taskId ? updatedTask : task)),
+      )
+    } catch (err) {
+      console.error("Failed to update task context:", err)
     }
   }
 
@@ -257,9 +287,31 @@ export function Home() {
     }
   }
 
+  // Context handlers
+  const handleCreateContext = async (data: CreateContextInput) => {
+    try {
+      await createContext(data)
+      void loadContexts()
+    } catch (err) {
+      throw err
+    }
+  }
+
+  const handleDeleteContext = async (contextId: string) => {
+    if (!confirm("Delete this context?")) return
+
+    try {
+      await deleteContext(contextId)
+      void loadContexts()
+    } catch (err) {
+      console.error("Failed to delete context:", err)
+      alert("Failed to delete context")
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="bg-background min-h-screen p-6">
+      <div className="mx-auto max-w-7xl space-y-6">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold">GTD Dashboard</h1>
@@ -269,12 +321,12 @@ export function Home() {
         </div>
 
         {/* Top Row: Quick Capture + Inbox */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {/* Quick Capture */}
           <Card>
             <CardHeader>
               <CardTitle>Quick Capture</CardTitle>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 Capture thoughts instantly to inbox
               </p>
             </CardHeader>
@@ -289,22 +341,23 @@ export function Home() {
               <CardTitle>
                 Inbox
                 {inboxItems.length > 0 && (
-                  <span className="ml-2 text-sm font-normal text-muted-foreground">
-                    ({inboxItems.length} {inboxItems.length === 1 ? "item" : "items"})
+                  <span className="text-muted-foreground ml-2 text-sm font-normal">
+                    ({inboxItems.length}{" "}
+                    {inboxItems.length === 1 ? "item" : "items"})
                   </span>
                 )}
               </CardTitle>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 Process into tasks, notes, or projects
               </p>
             </CardHeader>
             <CardContent>
               {inboxItems.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">
+                <p className="text-muted-foreground py-8 text-center">
                   Inbox Zero! 🎉
                 </p>
               ) : (
-                <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                <div className="max-h-[400px] space-y-2 overflow-y-auto">
                   {inboxItems.map((item) => (
                     <ItemCard
                       key={item.id}
@@ -322,7 +375,7 @@ export function Home() {
                             onClick={() => handleConvertToTask(item)}
                             disabled={processingId === item.id}
                           >
-                            <CheckSquare className="h-3 w-3 mr-1" />
+                            <CheckSquare className="mr-1 h-3 w-3" />
                             Task
                           </Button>
                           <Button
@@ -331,7 +384,7 @@ export function Home() {
                             onClick={() => handleConvertToNote(item)}
                             disabled={processingId === item.id}
                           >
-                            <FileText className="h-3 w-3 mr-1" />
+                            <FileText className="mr-1 h-3 w-3" />
                             Note
                           </Button>
                         </>
@@ -340,7 +393,7 @@ export function Home() {
                       <p className="text-sm whitespace-pre-wrap">
                         {item.content}
                       </p>
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="text-muted-foreground mt-1 text-xs">
                         {new Date(item.created_at).toLocaleString()}
                       </p>
                     </ItemCard>
@@ -352,14 +405,14 @@ export function Home() {
         </div>
 
         {/* Middle Row: Tasks + Notes */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {/* Tasks */}
           <Card>
             <CardHeader>
               <CardTitle>
                 Tasks
                 {tasks.length > 0 && (
-                  <span className="ml-2 text-sm font-normal text-muted-foreground">
+                  <span className="text-muted-foreground ml-2 text-sm font-normal">
                     ({tasks.filter((t) => !t.completed_at).length} active)
                   </span>
                 )}
@@ -369,10 +422,12 @@ export function Home() {
               <TaskList
                 tasks={tasks}
                 projects={projects}
+                contexts={contexts}
                 onUpdateStatus={handleUpdateStatus}
                 onToggleComplete={handleToggleComplete}
                 onUpdateProject={handleUpdateProject}
-                onEdit={(task) => {
+                onUpdateContext={handleUpdateContext}
+                onEdit={(_task) => {
                   // TODO: Implement edit functionality for tasks
                   alert("Edit functionality coming soon!")
                 }}
@@ -387,7 +442,7 @@ export function Home() {
               <CardTitle>
                 Notes
                 {notes.length > 0 && (
-                  <span className="ml-2 text-sm font-normal text-muted-foreground">
+                  <span className="text-muted-foreground ml-2 text-sm font-normal">
                     ({notes.length})
                   </span>
                 )}
@@ -410,30 +465,41 @@ export function Home() {
         </div>
 
         {/* Bottom Row: Projects + Contexts */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {/* Projects Placeholder */}
           <Card>
             <CardHeader>
               <CardTitle>Projects</CardTitle>
-              <p className="text-sm text-muted-foreground">Coming soon</p>
+              <p className="text-muted-foreground text-sm">Coming soon</p>
             </CardHeader>
             <CardContent>
-              <p className="text-center text-muted-foreground py-8">
+              <p className="text-muted-foreground py-8 text-center">
                 Projects view will show active projects and their progress
               </p>
             </CardContent>
           </Card>
 
-          {/* Contexts Placeholder */}
+          {/* Contexts */}
           <Card>
             <CardHeader>
-              <CardTitle>Contexts</CardTitle>
-              <p className="text-sm text-muted-foreground">Coming soon</p>
-            </CardHeader>
-            <CardContent>
-              <p className="text-center text-muted-foreground py-8">
-                Filter tasks by context (@home, @computer, @phone, etc.)
+              <CardTitle>
+                Contexts
+                {contexts.length > 0 && (
+                  <span className="text-muted-foreground ml-2 text-sm font-normal">
+                    ({contexts.length})
+                  </span>
+                )}
+              </CardTitle>
+              <p className="text-muted-foreground text-sm">
+                Manage contexts for task filtering
               </p>
+            </CardHeader>
+            <CardContent className="max-h-[400px] overflow-y-auto">
+              <ContextManager
+                contexts={contexts}
+                onCreate={handleCreateContext}
+                onDelete={handleDeleteContext}
+              />
             </CardContent>
           </Card>
         </div>
