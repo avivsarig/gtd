@@ -183,8 +183,6 @@ export function Home() {
   }
 
   const handleDeleteTask = async (taskId: string) => {
-    if (!confirm("Delete this task?")) return
-
     try {
       await deleteTask(taskId)
       setTasks((prev) => prev.filter((task) => task.id !== taskId))
@@ -248,8 +246,6 @@ export function Home() {
 
   // Inbox handlers
   const handleDeleteInboxItem = async (id: string) => {
-    if (!confirm("Delete this inbox item?")) return
-
     try {
       setProcessingId(id)
       await deleteInboxItem(id)
@@ -298,8 +294,6 @@ export function Home() {
   }
 
   const handleDeleteContext = async (contextId: string) => {
-    if (!confirm("Delete this context?")) return
-
     try {
       await deleteContext(contextId)
       void loadContexts()

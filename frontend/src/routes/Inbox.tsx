@@ -101,8 +101,6 @@ export function Inbox() {
   }, [handleKeyDown])
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this inbox item?")) return
-
     try {
       setProcessingId(id)
       await deleteInboxItem(id)
