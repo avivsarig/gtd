@@ -1,8 +1,8 @@
 """Context model - Tags for filtering tasks by location/tool."""
 
 from sqlalchemy import TIMESTAMP, Column, Integer, String, Text
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func, text
+from uuid import uuid4
 
 from app.db.database import Base
 
@@ -12,7 +12,7 @@ class Context(Base):
 
     __tablename__ = "contexts"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
     name = Column(String(50), nullable=False, unique=True)
     description = Column(Text, nullable=True)
     icon = Column(String(50), nullable=True)

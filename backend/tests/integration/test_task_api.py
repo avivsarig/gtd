@@ -72,7 +72,7 @@ class TestTaskStatusManagement:
         """Should return 404 when completing nonexistent task."""
         from uuid import uuid4
 
-        fake_id = uuid4()
+        fake_id = str(uuid4())
         response = client.post(f"/api/v1/tasks/{fake_id}/complete")
 
         assert response.status_code == 404
@@ -150,7 +150,7 @@ class TestBlockedTaskStatusRules:
         """Should automatically set status to waiting when creating blocked task."""
         # Create blocking task
         blocking_response = client.post("/api/v1/tasks/", json={"title": "Blocking task"})
-        blocking_id = blocking_response.json()["id"]
+        blocking_id = str(blocking_response.json()["id"])
 
         # Create blocked task with status=next
         blocked_response = client.post(
@@ -169,8 +169,8 @@ class TestBlockedTaskStatusRules:
         task1_response = client.post("/api/v1/tasks/", json={"title": "Task 1"})
         task2_response = client.post("/api/v1/tasks/", json={"title": "Task 2", "status": "next"})
 
-        task1_id = task1_response.json()["id"]
-        task2_id = task2_response.json()["id"]
+        task1_id = str(task1_response.json()["id"])
+        task2_id = str(task2_response.json()["id"])
 
         # Update task 2 to be blocked by task 1
         update_response = client.put(

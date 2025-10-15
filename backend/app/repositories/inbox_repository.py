@@ -26,10 +26,10 @@ def get_all(
     query = db.query(InboxItem)
 
     if not include_processed:
-        query = query.filter(InboxItem.processed_at == None)
+        query = query.filter(InboxItem.processed_at is None)
 
     if not include_deleted:
-        query = query.filter(InboxItem.deleted_at == None)
+        query = query.filter(InboxItem.deleted_at is None)
 
     return query.order_by(InboxItem.created_at.asc()).all()
 
@@ -45,7 +45,7 @@ def get_by_id(db: Session, item_id: UUID) -> InboxItem | None:
     Returns:
         InboxItem object if found and not deleted, None otherwise
     """
-    return db.query(InboxItem).filter(InboxItem.id == item_id, InboxItem.deleted_at == None).first()
+    return db.query(InboxItem).filter(InboxItem.id == item_id, InboxItem.deleted_at is None).first()
 
 
 def create(db: Session, item_data: InboxItemCreate) -> InboxItem:
@@ -130,6 +130,6 @@ def count_unprocessed(db: Session) -> int:
     """
     return (
         db.query(InboxItem)
-        .filter(InboxItem.processed_at == None, InboxItem.deleted_at == None)
+        .filter(InboxItem.processed_at is None, InboxItem.deleted_at is None)
         .count()
     )

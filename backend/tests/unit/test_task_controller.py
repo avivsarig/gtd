@@ -22,11 +22,19 @@ class TestListTasks:
         with patch(
             "app.controllers.task_controller.task_repository.get_all", return_value=mock_tasks
         ) as mock_get_all:
-            result = task_controller.list_tasks(mock_db)
+            created_task = task_controller.list_tasks(mock_db)
 
             # Verify repository was called correctly
-            mock_get_all.assert_called_once_with(mock_db, include_deleted=False)
-            assert result == mock_tasks
+            mock_get_all.assert_called_once_with(
+                mock_db,
+                include_deleted=False,
+                status=None,
+                project_id=None,
+                context_id=None,
+                scheduled_after=None,
+                scheduled_before=None,
+            )
+            assert created_task == mock_tasks
 
     def test_list_tasks_returns_repository_result(self):
         """Should return exactly what repository returns."""
@@ -35,10 +43,10 @@ class TestListTasks:
 
         with patch(
             "app.controllers.task_controller.task_repository.get_all", return_value=expected_tasks
-        ) as mock_get_all:
-            result = task_controller.list_tasks(mock_db)
+        ):
+            created_task = task_controller.list_tasks(mock_db)
 
-            assert result == expected_tasks
+            assert created_task == expected_tasks
 
 
 class TestCreateTask:
@@ -55,10 +63,10 @@ class TestCreateTask:
         with patch(
             "app.controllers.task_controller.task_repository.create", return_value=mock_task
         ) as mock_create:
-            result = task_controller.create_task(mock_db, task_data)
+            created_task = task_controller.create_task(mock_db, task_data)
 
             mock_create.assert_called_once_with(mock_db, task_data)
-            assert result == mock_task
+            assert created_task == mock_task
 
     def test_create_task_with_blocked_by_sets_waiting_status(self):
         """Should automatically set status to 'waiting' if task is blocked."""
@@ -80,7 +88,7 @@ class TestCreateTask:
         with patch(
             "app.controllers.task_controller.task_repository.create", return_value=mock_task
         ) as mock_create:
-            result = task_controller.create_task(mock_db, task_data)
+            created_task = task_controller.create_task(mock_db, task_data)
 
             # Verify status was changed to 'waiting'
             assert task_data.status == TaskStatus.WAITING
@@ -97,7 +105,7 @@ class TestCreateTask:
         with patch(
             "app.controllers.task_controller.task_repository.create", return_value=mock_task
         ) as mock_create:
-            result = task_controller.create_task(mock_db, task_data)
+            created_task = task_controller.create_task(mock_db, task_data)
 
             # Verify status was NOT changed
             assert task_data.status == TaskStatus.NEXT
@@ -114,7 +122,7 @@ class TestCreateTask:
         with patch(
             "app.controllers.task_controller.task_repository.create", return_value=mock_task
         ) as mock_create:
-            result = task_controller.create_task(mock_db, task_data)
+            created_task = task_controller.create_task(mock_db, task_data)
 
             # Default status from schema should be 'next'
             assert task_data.status == TaskStatus.NEXT
@@ -135,10 +143,10 @@ class TestGetTask:
         with patch(
             "app.controllers.task_controller.task_repository.get_by_id", return_value=mock_task
         ) as mock_get:
-            result = task_controller.get_task(mock_db, task_id)
+            created_task = task_controller.get_task(mock_db, task_id)
 
             mock_get.assert_called_once_with(mock_db, task_id)
-            assert result == mock_task
+            assert created_task == mock_task
 
     def test_get_task_returns_none_when_not_found(self):
         """Should return None when task doesn't exist."""
@@ -150,9 +158,9 @@ class TestGetTask:
         with patch(
             "app.controllers.task_controller.task_repository.get_by_id", return_value=None
         ) as mock_get:
-            result = task_controller.get_task(mock_db, task_id)
+            created_task = task_controller.get_task(mock_db, task_id)
 
-            assert result is None
+            assert created_task is None
 
 
 class TestUpdateTask:
@@ -175,11 +183,11 @@ class TestUpdateTask:
             with patch(
                 "app.controllers.task_controller.task_repository.update", return_value=mock_task
             ) as mock_update:
-                result = task_controller.update_task(mock_db, task_id, update_data)
+                created_task = task_controller.update_task(mock_db, task_id, update_data)
 
                 mock_get.assert_called_once_with(mock_db, task_id)
                 mock_update.assert_called_once_with(mock_db, mock_task, update_data)
-                assert result == mock_task
+                assert created_task == mock_task
 
     def test_update_task_returns_none_when_not_found(self):
         """Should return None if task doesn't exist."""
@@ -194,9 +202,9 @@ class TestUpdateTask:
         with patch(
             "app.controllers.task_controller.task_repository.get_by_id", return_value=None
         ) as mock_get:
-            result = task_controller.update_task(mock_db, task_id, update_data)
+            created_task = task_controller.update_task(mock_db, task_id, update_data)
 
-            assert result is None
+            assert created_task is None
             # Should not call update if task not found
             mock_get.assert_called_once()
 
@@ -219,7 +227,7 @@ class TestUpdateTask:
             with patch(
                 "app.controllers.task_controller.task_repository.update", return_value=mock_task
             ) as mock_update:
-                result = task_controller.update_task(mock_db, task_id, update_data)
+                created_task = task_controller.update_task(mock_db, task_id, update_data)
 
                 # Verify status was auto-set to waiting
                 assert update_data.status == TaskStatus.WAITING
@@ -240,6 +248,8 @@ class TestUpdateTask:
             "app.controllers.task_controller.task_repository.get_by_id", return_value=mock_task
         ):
             with patch(
+                "app.controllers.task_controller.task_repository.get_by_id", return_value=mock_task
+            ), patch(
                 "app.controllers.task_controller.task_repository.update", return_value=mock_task
             ):
                 task_controller.update_task(mock_db, task_id, update_data)
@@ -266,11 +276,11 @@ class TestDeleteTask:
                 "app.controllers.task_controller.task_repository.soft_delete",
                 return_value=mock_task,
             ) as mock_delete:
-                result = task_controller.delete_task(mock_db, task_id)
+                created_task = task_controller.delete_task(mock_db, task_id)
 
                 mock_get.assert_called_once_with(mock_db, task_id)
                 mock_delete.assert_called_once_with(mock_db, mock_task)
-                assert result == mock_task
+                assert created_task == mock_task
 
     def test_delete_task_returns_none_when_not_found(self):
         """Should return None if task doesn't exist."""
@@ -282,9 +292,9 @@ class TestDeleteTask:
         with patch(
             "app.controllers.task_controller.task_repository.get_by_id", return_value=None
         ) as mock_get:
-            result = task_controller.delete_task(mock_db, task_id)
+            created_task = task_controller.delete_task(mock_db, task_id)
 
-            assert result is None
+            assert created_task is None
             # Should not call soft_delete if task not found
             mock_get.assert_called_once()
 
@@ -302,16 +312,15 @@ class TestCompleteTask:
 
         with patch(
             "app.controllers.task_controller.task_repository.get_by_id", return_value=mock_task
-        ):
-            with patch("app.controllers.task_controller.datetime") as mock_datetime:
-                mock_now = datetime(2025, 10, 5, 12, 0, 0)
-                mock_datetime.utcnow.return_value = mock_now
+        ), patch("app.controllers.task_controller.datetime") as mock_datetime:
+            mock_now = datetime(2025, 10, 5, 12, 0, 0)
+            mock_datetime.utcnow.return_value = mock_now
 
-                result = task_controller.complete_task(mock_db, task_id)
+            task_controller.complete_task(mock_db, task_id)
 
-                assert mock_task.completed_at == mock_now
-                mock_db.commit.assert_called_once()
-                mock_db.refresh.assert_called_once_with(mock_task)
+            assert mock_task.completed_at == mock_now
+            mock_db.commit.assert_called_once()
+            mock_db.refresh.assert_called_once_with(mock_task)
 
     def test_complete_task_returns_none_when_not_found(self):
         """Should return None if task doesn't exist."""
@@ -321,9 +330,9 @@ class TestCompleteTask:
         task_id = uuid4()
 
         with patch("app.controllers.task_controller.task_repository.get_by_id", return_value=None):
-            result = task_controller.complete_task(mock_db, task_id)
+            created_task = task_controller.complete_task(mock_db, task_id)
 
-            assert result is None
+            assert created_task is None
             mock_db.commit.assert_not_called()
 
 
@@ -341,7 +350,7 @@ class TestUncompleteTask:
         with patch(
             "app.controllers.task_controller.task_repository.get_by_id", return_value=mock_task
         ):
-            result = task_controller.uncomplete_task(mock_db, task_id)
+            created_task = task_controller.uncomplete_task(mock_db, task_id)
 
             assert mock_task.completed_at is None
             mock_db.commit.assert_called_once()
@@ -355,9 +364,9 @@ class TestUncompleteTask:
         task_id = uuid4()
 
         with patch("app.controllers.task_controller.task_repository.get_by_id", return_value=None):
-            result = task_controller.uncomplete_task(mock_db, task_id)
+            created_task = task_controller.uncomplete_task(mock_db, task_id)
 
-            assert result is None
+            assert created_task is None
             mock_db.commit.assert_not_called()
 
 
@@ -393,9 +402,9 @@ class TestBulkUpdateStatus:
                 mock_now = datetime(2025, 10, 5, 12, 0, 0)
                 mock_datetime.utcnow.return_value = mock_now
 
-                result = task_controller.bulk_update_status(mock_db, task_ids, TaskStatus.WAITING)
+                updated_tasks = task_controller.bulk_update_status(mock_db, task_ids, TaskStatus.WAITING)
 
-                assert len(result) == 3
+                assert len(updated_tasks) == 3
                 assert mock_task1.status == TaskStatus.WAITING.value
                 assert mock_task2.status == TaskStatus.WAITING.value
                 assert mock_task3.status == TaskStatus.WAITING.value
@@ -428,20 +437,20 @@ class TestBulkUpdateStatus:
             with patch("app.controllers.task_controller.datetime") as mock_datetime:
                 mock_datetime.utcnow.return_value = datetime.utcnow()
 
-                result = task_controller.bulk_update_status(
+                updated_tasks = task_controller.bulk_update_status(
                     mock_db, [task_id1, task_id2, task_id3], TaskStatus.SOMEDAY
                 )
 
                 # Should only return 2 tasks (1 and 3)
-                assert len(result) == 2
-                assert mock_task1 in result
-                assert mock_task3 in result
+                assert len(updated_tasks) == 2
+                assert mock_task1 in updated_tasks
+                assert mock_task3 in updated_tasks
 
     def test_bulk_update_status_handles_empty_list(self):
         """Should handle empty task list gracefully."""
         mock_db = Mock()
 
-        result = task_controller.bulk_update_status(mock_db, [], TaskStatus.NEXT)
+        updated_tasks = task_controller.bulk_update_status(mock_db, [], TaskStatus.NEXT)
 
-        assert len(result) == 0
+        assert len(updated_tasks) == 0
         mock_db.commit.assert_called_once()

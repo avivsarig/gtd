@@ -1,9 +1,9 @@
 """Task model - Core GTD actionable items."""
 
 from sqlalchemy import TIMESTAMP, Column, Date, ForeignKey, String, Text, Time
-from sqlalchemy.dialects.postgresql import TSVECTOR, UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func, text
+from uuid import uuid4
 
 from app.db.database import Base
 from app.models.associations import task_contexts
@@ -14,7 +14,7 @@ class Task(Base):
 
     __tablename__ = "tasks"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
     title = Column(String(500), nullable=False)
     description = Column(Text, nullable=True)
     status = Column(String(20), nullable=False, server_default=text("'next'"))
@@ -22,10 +22,10 @@ class Task(Base):
     scheduled_time = Column(Time, nullable=True)
     due_date = Column(Date, nullable=True)
     project_id = Column(
-        UUID(as_uuid=True), ForeignKey("projects.id", ondelete="SET NULL"), nullable=True
+        String(36), ForeignKey("projects.id", ondelete="SET NULL"), nullable=True
     )
     blocked_by_task_id = Column(
-        UUID(as_uuid=True), ForeignKey("tasks.id", ondelete="SET NULL"), nullable=True
+        String(36), ForeignKey("tasks.id", ondelete="SET NULL"), nullable=True
     )
     created_at = Column(TIMESTAMP, nullable=False, server_default=func.now())
     updated_at = Column(TIMESTAMP, nullable=False, server_default=func.now())
@@ -33,8 +33,7 @@ class Task(Base):
     archived_at = Column(TIMESTAMP, nullable=True)
     deleted_at = Column(TIMESTAMP, nullable=True)
 
-    # Full-text search vector (generated column from migration)
-    search_vector = Column(TSVECTOR)
+    # Removed TSVECTOR for SQLite compatibility
 
     # Relationships
     project = relationship("Project", back_populates="tasks", foreign_keys=[project_id])

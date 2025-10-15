@@ -17,7 +17,7 @@ class ProjectFactory(factory.Factory):
     class Meta:
         model = Project
 
-    id = factory.LazyFunction(uuid4)
+    id = factory.LazyFunction(lambda: str(uuid4()))
     name = factory.Sequence(lambda n: f"Project {n}")
     outcome_statement = factory.Faker("sentence")
     status = fuzzy.FuzzyChoice(["active", "on_hold", "completed"])
@@ -36,7 +36,7 @@ class TaskFactory(factory.Factory):
     class Meta:
         model = Task
 
-    id = factory.LazyFunction(uuid4)
+    id = factory.LazyFunction(lambda: str(uuid4()))
     title = factory.Faker("sentence", nb_words=4)
     description = factory.Faker("paragraph")
     status = fuzzy.FuzzyChoice(["next", "waiting", "someday"])
@@ -58,7 +58,7 @@ class NoteFactory(factory.Factory):
     class Meta:
         model = Note
 
-    id = factory.LazyFunction(uuid4)
+    id = factory.LazyFunction(lambda: str(uuid4()))
     title = factory.Faker("sentence", nb_words=3)
     content = factory.Faker("paragraph", nb_sentences=5)
     project_id = None
