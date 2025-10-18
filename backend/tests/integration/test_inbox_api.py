@@ -317,7 +317,7 @@ class TestInboxProcessedFilter:
         items = list_response.json()
         item_ids = [item["id"] for item in items]
 
-        assert item_id in items
+        assert item_id in item_ids
         # Find the processed item and verify processed_at is set
         processed_item = next(item for item in items if item["id"] == item_id)
         assert processed_item["processed_at"] is not None

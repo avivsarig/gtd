@@ -31,7 +31,7 @@ def get_all(
     query = db.query(Note)
 
     if not include_deleted:
-        query = query.filter(Note.deleted_at.is_(None))
+        query = query.filter(Note.deleted_at == None)  # noqa: E712
 
     if project_id:
         query = query.filter(Note.project_id == _uuid_to_str(project_id))
@@ -50,7 +50,10 @@ def get_by_id(db: Session, note_id: UUID) -> Note | None:
     Returns:
         Note object if found and not deleted, None otherwise
     """
-    return db.query(Note).filter(Note.id == _uuid_to_str(note_id), Note.deleted_at.is_(None)).first()
+    result = db.query(Note).filter(Note.id == _uuid_to_str(note_id)).first()
+    if result and result.deleted_at is None:
+        return result
+    return None
 
 
 def create(db: Session, note_data: NoteCreate) -> Note:

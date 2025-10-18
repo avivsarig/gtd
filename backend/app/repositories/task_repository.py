@@ -42,7 +42,7 @@ def get_all(
     query = db.query(Task)
 
     if not include_deleted:
-        query = query.filter(Task.deleted_at is None)
+        query = query.filter(Task.deleted_at == None)  # noqa: E712
 
     # Apply filters
     if status is not None:
@@ -75,7 +75,10 @@ def get_by_id(db: Session, task_id: UUID) -> Task | None:
     Returns:
         Task object if found, None otherwise
     """
-    return db.query(Task).filter(Task.id == _uuid_to_str(task_id), Task.deleted_at is None).first()
+    result = db.query(Task).filter(Task.id == _uuid_to_str(task_id)).first()
+    if result and result.deleted_at is None:
+        return result
+    return None
 
 
 def create(db: Session, task_data: TaskCreate) -> Task:

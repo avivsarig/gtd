@@ -46,7 +46,10 @@ def get_by_id(db: Session, project_id: UUID) -> Project | None:
     Returns:
         Project object if found and not deleted, None otherwise
     """
-    return db.query(Project).filter(Project.id == _uuid_to_str(project_id), Project.deleted_at.is_(None)).first()
+    result = db.query(Project).filter(Project.id == _uuid_to_str(project_id)).first()
+    if result and result.deleted_at is None:
+        return result
+    return None
 
 
 def create(db: Session, project_data: ProjectCreate) -> Project:
@@ -121,7 +124,7 @@ def get_task_stats(db: Session, project_id: UUID) -> dict:
     project_id_str = _uuid_to_str(project_id)
     total = (
         db.query(func.count(Task.id))
-        .filter(Task.project_id == project_id_str, Task.deleted_at.is_(None))
+        .filter(Task.project_id == project_id_str, Task.deleted_at == None)  # noqa: E712
         .scalar()
         or 0
     )
@@ -129,7 +132,9 @@ def get_task_stats(db: Session, project_id: UUID) -> dict:
     completed = (
         db.query(func.count(Task.id))
         .filter(
-            Task.project_id == project_id_str, Task.completed_at.isnot(None), Task.deleted_at.is_(None)
+            Task.project_id == project_id_str,
+            Task.completed_at != None,  # noqa: E712
+            Task.deleted_at == None,  # noqa: E712
         )
         .scalar()
         or 0
@@ -140,8 +145,8 @@ def get_task_stats(db: Session, project_id: UUID) -> dict:
         .filter(
             Task.project_id == project_id_str,
             Task.status == "next",
-            Task.completed_at.is_(None),
-            Task.deleted_at.is_(None),
+            Task.completed_at == None,  # noqa: E712
+            Task.deleted_at == None,  # noqa: E712
         )
         .scalar()
         or 0

@@ -178,7 +178,7 @@ class TestGetById:
         """Should return task when found."""
 
         task_id = uuid4()
-        mock_task = Mock(spec=Task, id=task_id, title="Found task")
+        mock_task = Mock(spec=Task, id=task_id, title="Found task", deleted_at=None)
 
         # Mock database session
         mock_db = Mock()
@@ -212,16 +212,20 @@ class TestGetById:
         """Should not return deleted tasks."""
 
         task_id = uuid4()
+        from datetime import datetime
 
-        # Mock database session - return None for deleted task
+        # Mock a deleted task
+        mock_task = Mock(spec=Task, id=task_id, title="Deleted task", deleted_at=datetime.now())
+
+        # Mock database session
         mock_db = Mock()
         mock_query = mock_db.query.return_value
         mock_filter = mock_query.filter.return_value
-        mock_filter.first.return_value = None
+        mock_filter.first.return_value = mock_task
 
         result = task_repository.get_by_id(mock_db, task_id)
 
-        # Verify filter includes deleted_at check
+        # Verify deleted tasks are filtered out
         mock_query.filter.assert_called_once()
         assert result is None
 
