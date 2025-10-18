@@ -11,6 +11,11 @@ from app.models.task import Task
 from app.schemas.project import ProjectCreate, ProjectUpdate
 
 
+def _uuid_to_str(uuid_val: UUID | None) -> str | None:
+    """Convert UUID object to string, or return None if input is None."""
+    return str(uuid_val) if uuid_val is not None else None
+
+
 def get_all(db: Session, include_deleted: bool = False) -> list[Project]:
     """
     Get all projects.
@@ -41,7 +46,7 @@ def get_by_id(db: Session, project_id: UUID) -> Project | None:
     Returns:
         Project object if found and not deleted, None otherwise
     """
-    return db.query(Project).filter(Project.id == project_id, Project.deleted_at.is_(None)).first()
+    return db.query(Project).filter(Project.id == _uuid_to_str(project_id), Project.deleted_at.is_(None)).first()
 
 
 def create(db: Session, project_data: ProjectCreate) -> Project:
@@ -113,9 +118,10 @@ def get_task_stats(db: Session, project_id: UUID) -> dict:
     Returns:
         Dictionary with task_count, completed_task_count, next_task_count
     """
+    project_id_str = _uuid_to_str(project_id)
     total = (
         db.query(func.count(Task.id))
-        .filter(Task.project_id == project_id, Task.deleted_at.is_(None))
+        .filter(Task.project_id == project_id_str, Task.deleted_at.is_(None))
         .scalar()
         or 0
     )
@@ -123,7 +129,7 @@ def get_task_stats(db: Session, project_id: UUID) -> dict:
     completed = (
         db.query(func.count(Task.id))
         .filter(
-            Task.project_id == project_id, Task.completed_at.isnot(None), Task.deleted_at.is_(None)
+            Task.project_id == project_id_str, Task.completed_at.isnot(None), Task.deleted_at.is_(None)
         )
         .scalar()
         or 0
@@ -132,7 +138,7 @@ def get_task_stats(db: Session, project_id: UUID) -> dict:
     next_tasks = (
         db.query(func.count(Task.id))
         .filter(
-            Task.project_id == project_id,
+            Task.project_id == project_id_str,
             Task.status == "next",
             Task.completed_at.is_(None),
             Task.deleted_at.is_(None),

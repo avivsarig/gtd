@@ -10,6 +10,11 @@ from app.models.task import Task
 from app.schemas.task import TaskCreate, TaskStatus, TaskUpdate
 
 
+def _uuid_to_str(uuid_val: UUID | None) -> str | None:
+    """Convert UUID object to string, or return None if input is None."""
+    return str(uuid_val) if uuid_val is not None else None
+
+
 def get_all(
     db: Session,
     include_deleted: bool = False,
@@ -41,14 +46,14 @@ def get_all(
 
     # Apply filters
     if status is not None:
-        query = query.filter(Task.status == status)
+        query = query.filter(Task.status == status.value)
 
     if project_id is not None:
-        query = query.filter(Task.project_id == project_id)
+        query = query.filter(Task.project_id == _uuid_to_str(project_id))
 
     if context_id is not None:
         # Join with task_contexts association table
-        query = query.join(task_contexts).filter(task_contexts.c.context_id == context_id)
+        query = query.join(task_contexts).filter(task_contexts.c.context_id == _uuid_to_str(context_id))
 
     if scheduled_after is not None:
         query = query.filter(Task.scheduled_date >= scheduled_after)
@@ -70,7 +75,7 @@ def get_by_id(db: Session, task_id: UUID) -> Task | None:
     Returns:
         Task object if found, None otherwise
     """
-    return db.query(Task).filter(Task.id == task_id, Task.deleted_at is None).first()
+    return db.query(Task).filter(Task.id == _uuid_to_str(task_id), Task.deleted_at is None).first()
 
 
 def create(db: Session, task_data: TaskCreate) -> Task:
@@ -87,12 +92,12 @@ def create(db: Session, task_data: TaskCreate) -> Task:
     db_task = Task(
         title=task_data.title,
         description=task_data.description,
-        status=task_data.status,
+        status=task_data.status.value,
         scheduled_date=task_data.scheduled_date,
         scheduled_time=task_data.scheduled_time,
         due_date=task_data.due_date,
-        project_id=task_data.project_id,
-        blocked_by_task_id=task_data.blocked_by_task_id,
+        project_id=_uuid_to_str(task_data.project_id),
+        blocked_by_task_id=_uuid_to_str(task_data.blocked_by_task_id),
     )
     db.add(db_task)
     db.commit()
@@ -116,6 +121,12 @@ def update(db: Session, task: Task, task_data: TaskUpdate) -> Task:
     update_dict = task_data.model_dump(exclude_unset=True)
 
     for field, value in update_dict.items():
+        # Convert UUID fields to strings for SQLite compatibility
+        if field in ("project_id", "blocked_by_task_id") and value is not None:
+            value = _uuid_to_str(value)
+        # Convert status enum to its string value
+        elif field == "status" and value is not None:
+            value = value.value
         setattr(task, field, value)
 
     db.commit()

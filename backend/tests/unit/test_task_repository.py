@@ -152,6 +152,7 @@ class TestCreate:
             result = task_repository.create(mock_db, task_data)
 
             # Verify Task was constructed with correct data
+            # UUIDs are converted to strings for SQLite compatibility
             MockTask.assert_called_once_with(
                 title="Complete task",
                 description="Task description",
@@ -159,8 +160,8 @@ class TestCreate:
                 scheduled_date=date(2025, 10, 15),
                 scheduled_time=None,
                 due_date=date(2025, 10, 20),
-                project_id=project_id,
-                blocked_by_task_id=blocked_by_id,
+                project_id=str(project_id),
+                blocked_by_task_id=str(blocked_by_id),
             )
 
         # Verify database operations

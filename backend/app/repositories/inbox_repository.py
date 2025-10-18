@@ -9,6 +9,11 @@ from app.models.inbox_item import InboxItem
 from app.schemas.inbox import InboxItemCreate, InboxItemUpdate
 
 
+def _uuid_to_str(uuid_val: UUID | None) -> str | None:
+    """Convert UUID object to string, or return None if input is None."""
+    return str(uuid_val) if uuid_val is not None else None
+
+
 def get_all(
     db: Session, include_processed: bool = False, include_deleted: bool = False
 ) -> list[InboxItem]:
@@ -45,7 +50,7 @@ def get_by_id(db: Session, item_id: UUID) -> InboxItem | None:
     Returns:
         InboxItem object if found and not deleted, None otherwise
     """
-    return db.query(InboxItem).filter(InboxItem.id == item_id, InboxItem.deleted_at is None).first()
+    return db.query(InboxItem).filter(InboxItem.id == _uuid_to_str(item_id), InboxItem.deleted_at is None).first()
 
 
 def create(db: Session, item_data: InboxItemCreate) -> InboxItem:

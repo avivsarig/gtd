@@ -9,6 +9,11 @@ from app.models.note import Note
 from app.schemas.note import NoteCreate, NoteUpdate
 
 
+def _uuid_to_str(uuid_val: UUID | None) -> str | None:
+    """Convert UUID object to string, or return None if input is None."""
+    return str(uuid_val) if uuid_val is not None else None
+
+
 def get_all(
     db: Session, include_deleted: bool = False, project_id: UUID | None = None
 ) -> list[Note]:
@@ -29,7 +34,7 @@ def get_all(
         query = query.filter(Note.deleted_at.is_(None))
 
     if project_id:
-        query = query.filter(Note.project_id == project_id)
+        query = query.filter(Note.project_id == _uuid_to_str(project_id))
 
     return query.order_by(Note.updated_at.desc()).all()
 
@@ -45,7 +50,7 @@ def get_by_id(db: Session, note_id: UUID) -> Note | None:
     Returns:
         Note object if found and not deleted, None otherwise
     """
-    return db.query(Note).filter(Note.id == note_id, Note.deleted_at.is_(None)).first()
+    return db.query(Note).filter(Note.id == _uuid_to_str(note_id), Note.deleted_at.is_(None)).first()
 
 
 def create(db: Session, note_data: NoteCreate) -> Note:
@@ -59,7 +64,11 @@ def create(db: Session, note_data: NoteCreate) -> Note:
     Returns:
         Created Note object
     """
-    note = Note(**note_data.model_dump())
+    note_dict = note_data.model_dump()
+    # Convert UUID fields to strings for SQLite compatibility
+    if note_dict.get("project_id") is not None:
+        note_dict["project_id"] = _uuid_to_str(note_dict["project_id"])
+    note = Note(**note_dict)
     db.add(note)
     db.commit()
     db.refresh(note)
@@ -81,6 +90,9 @@ def update(db: Session, note: Note, note_data: NoteUpdate) -> Note:
     update_dict = note_data.model_dump(exclude_unset=True)
 
     for field, value in update_dict.items():
+        # Convert UUID fields to strings for SQLite compatibility
+        if field == "project_id" and value is not None:
+            value = _uuid_to_str(value)
         setattr(note, field, value)
 
     note.updated_at = datetime.now(UTC)
