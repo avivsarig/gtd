@@ -147,6 +147,7 @@ test-fe:
 test-cov:
 	@echo "$(GREEN)Generating backend test coverage:$(NC)"
 	$(DC) exec $(BE) pytest tests/unit \
+		--quiet \
 		--cov=app --cov-report=term-missing \
 		--cov-report=html --cov-report=xml \
 		--cov-fail-under=60
