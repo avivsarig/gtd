@@ -1,7 +1,8 @@
 """Task model - Core GTD actionable items."""
 
 from sqlalchemy import TIMESTAMP, Column, Date, ForeignKey, String, Text, Time
-from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import TSVECTOR
+from sqlalchemy.orm import deferred, relationship
 from sqlalchemy.sql import func, text
 from uuid import uuid4
 
@@ -33,7 +34,14 @@ class Task(Base):
     archived_at = Column(TIMESTAMP, nullable=True)
     deleted_at = Column(TIMESTAMP, nullable=True)
 
-    # Removed TSVECTOR for SQLite compatibility
+    # PostgreSQL full-text search (deferred for SQLite compatibility)
+    # Generated column - exclude from mapper to prevent insert/update errors
+    search_vector = Column(TSVECTOR)
+
+    # Mapper configuration - exclude search_vector from INSERT/UPDATE
+    __mapper_args__ = {
+        "exclude_properties": ["search_vector"]
+    }
 
     # Relationships
     project = relationship("Project", back_populates="tasks", foreign_keys=[project_id])

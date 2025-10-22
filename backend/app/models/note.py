@@ -1,7 +1,8 @@
 """Note model - Reference material and supporting information."""
 
 from sqlalchemy import TIMESTAMP, Column, ForeignKey, String, Text
-from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import TSVECTOR
+from sqlalchemy.orm import deferred, relationship
 from sqlalchemy.sql import func, text
 from uuid import uuid4
 
@@ -24,7 +25,14 @@ class Note(Base):
     updated_at = Column(TIMESTAMP, nullable=False, server_default=func.now())
     deleted_at = Column(TIMESTAMP, nullable=True)
 
-    # Removed TSVECTOR for SQLite compatibility
+    # PostgreSQL full-text search (deferred for SQLite compatibility)
+    # Generated column - exclude from mapper to prevent insert/update errors
+    search_vector = Column(TSVECTOR)
+
+    # Mapper configuration - exclude search_vector from INSERT/UPDATE
+    __mapper_args__ = {
+        "exclude_properties": ["search_vector"]
+    }
 
     # Relationships
     project = relationship("Project", back_populates="notes")

@@ -15,6 +15,7 @@ NC := \033[0m
 .PHONY: help setup up down restart clean status \
 		logs logs-be logs-fe \
 		db-migrate db-reset db-shell \
+		test-db-up test-db-down test-db-reset test-db-shell \
 		lint lint-be lint-fe format format-be format-fe \
 		test test-be test-be-unit test-be-int test-fe test-cov
 
@@ -37,6 +38,11 @@ help:
 	@echo "  db-migrate Run ALL database migrations"
 	@echo "  db-reset   Reset entire database (DESTRUCTIVE!)"
 	@echo "  db-shell   Open database shell"
+	@echo "\n$(GREEN)Test Database:$(NC)"
+	@echo "  test-db-up     Start test database"
+	@echo "  test-db-down   Stop test database"
+	@echo "  test-db-reset  Reset test database (DESTRUCTIVE!)"
+	@echo "  test-db-shell  Open test database shell"
 	@echo "\n$(GREEN)Code Quality:$(NC)"
 	@echo "  lint       Run ALL linters (backend and frontend)"
 	@echo "  lint-be    Run backend linters"
@@ -107,6 +113,41 @@ db-reset:
 
 db-shell:
 	$(DC) exec $(DB) psql -U gtd -d gtd
+
+# Test Database Management
+test-db-up:
+	$(DC) up -d postgres-test
+	@echo "$(GREEN)Test database started on port 5433$(NC)"
+	@echo "$(YELLOW)Waiting for test database to be ready...$(NC)"
+	@sleep 3
+	@echo "$(GREEN)Running migrations on test database...$(NC)"
+	@$(DC) exec -e DATABASE_URL=$(shell grep DATABASE_TEST_URL .env | cut -d '=' -f2) $(BE) alembic upgrade head
+	@echo "$(GREEN)Test database is ready!$(NC)"
+
+test-db-down:
+	$(DC) stop postgres-test
+	@echo "$(GREEN)Test database stopped$(NC)"
+
+test-db-reset:
+	@read -p "$(YELLOW)DESTRUCTIVE: Reset test database? ALL TEST DATA WILL BE LOST! (y/N)$(NC) " confirm; \
+	if [ "$$confirm" = "y" ] || [ "$$confirm" = "Y" ]; then \
+		$(DC) stop postgres-test; \
+		$(DC) rm -f postgres-test; \
+		docker volume rm gtd_postgres-test-data 2>/dev/null || true; \
+		$(DC) up -d postgres-test; \
+		sleep 3; \
+		$(DC) exec -e DATABASE_URL=$(shell grep DATABASE_TEST_URL .env | cut -d '=' -f2) $(BE) alembic upgrade head; \
+		echo "$(GREEN)Test database completely reset.$(NC)"; \
+	else \
+		echo "$(YELLOW)Test database reset cancelled.$(NC)"; \
+	fi
+
+test-db-migrate:
+	@echo "$(GREEN)Running migrations on test database...$(NC)"
+	@$(DC) exec -e DATABASE_URL=$(shell grep DATABASE_TEST_URL .env | cut -d '=' -f2) $(BE) alembic upgrade head
+
+test-db-shell:
+	$(DC) exec postgres-test psql -U gtd_test -d gtd_test
 
 # Code Quality
 lint: lint-be lint-fe

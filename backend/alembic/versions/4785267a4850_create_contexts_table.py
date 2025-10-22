@@ -19,17 +19,25 @@ depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
+    from sqlalchemy.dialects import postgresql
+
     op.create_table(
         'contexts',
-        sa.Column('id', sa.String(36), primary_key=True),  # UUID as string for SQLite compatibility
+        sa.Column('id', postgresql.UUID(), primary_key=True, server_default=sa.text('gen_random_uuid()')),
         sa.Column('name', sa.String(length=50), nullable=False),
         sa.Column('description', sa.Text(), nullable=True),
         sa.Column('icon', sa.String(length=50), nullable=True),
         sa.Column('sort_order', sa.Integer(), nullable=False, server_default='0'),
-        sa.Column('created_at', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=False),
+        sa.Column('created_at', sa.TIMESTAMP(), server_default=sa.text('now()'), nullable=False),
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('name'),
-        # Removed PostgreSQL-specific regex constraint for cross-database compatibility
+    )
+
+    # Add check constraint for context name format
+    op.create_check_constraint(
+        'context_name_format',
+        'contexts',
+        sa.text("name ~ '^@[a-z0-9_]+$'")
     )
 
     op.create_index('idx_contexts_name', 'contexts', ['name'])

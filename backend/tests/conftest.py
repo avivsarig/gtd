@@ -1,5 +1,6 @@
 """Pytest configuration and shared fixtures."""
 
+import os
 from datetime import UTC, datetime
 
 import pytest
@@ -8,18 +9,21 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from app.core.config import settings
 from app.db.database import Base, get_db
 from app.main import app
+from app.models.context import Context
 from app.models.note import Note
 from app.models.project import Project
 from app.models.task import Task
-from app.models.context import Context
 
 
 @pytest.fixture(scope="function")
 def db_session():
     """
     Create a fresh in-memory SQLite database for each test.
+
+    Use this fixture for unit tests that need fast, isolated database access.
 
     Yields:
         SQLAlchemy Session for testing
@@ -48,6 +52,49 @@ def db_session():
 
 
 @pytest.fixture(scope="function")
+def db_session_postgres():
+    """
+    Create a PostgreSQL database session for integration tests.
+
+    This fixture connects to the test PostgreSQL database and cleans up
+    all data after each test to ensure test isolation.
+
+    Use this fixture for integration tests that need PostgreSQL-specific
+    features or realistic database behavior.
+
+    Note: This assumes the test database schema is already set up.
+    Run migrations on the test database before running tests.
+
+    Yields:
+        SQLAlchemy Session connected to test PostgreSQL database
+    """
+    from sqlalchemy import text
+
+    # Use test database URL from settings
+    test_db_url = settings.DATABASE_TEST_URL
+
+    # Create engine for test database
+    engine = create_engine(test_db_url)
+
+    # Create session factory
+    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+    # Create session
+    session = TestingSessionLocal()
+
+    try:
+        yield session
+    finally:
+        # Clean up all data after test (keep schema intact)
+        session.rollback()
+        with engine.begin() as conn:
+            # Truncate all tables to clean up test data
+            conn.execute(text("TRUNCATE tasks, notes, projects, contexts, inbox_items, task_contexts, note_task_links CASCADE"))
+        session.close()
+        engine.dispose()
+
+
+@pytest.fixture(scope="function")
 def db(db_session):
     """Alias for db_session for convenience."""
     return db_session
@@ -56,10 +103,12 @@ def db(db_session):
 @pytest.fixture(scope="function")
 def client(db_session):
     """
-    Create a test client with database dependency override.
+    Create a test client with SQLite database dependency override.
+
+    Use this fixture for unit/API tests that don't require PostgreSQL.
 
     Args:
-        db_session: Test database session fixture
+        db_session: Test database session fixture (SQLite)
 
     Yields:
         FastAPI TestClient
@@ -68,6 +117,34 @@ def client(db_session):
     def override_get_db():
         try:
             yield db_session
+        finally:
+            pass
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    with TestClient(app) as test_client:
+        yield test_client
+
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture(scope="function")
+def client_postgres(db_session_postgres):
+    """
+    Create a test client with PostgreSQL database dependency override.
+
+    Use this fixture for integration tests that require PostgreSQL.
+
+    Args:
+        db_session_postgres: Test database session fixture (PostgreSQL)
+
+    Yields:
+        FastAPI TestClient
+    """
+
+    def override_get_db():
+        try:
+            yield db_session_postgres
         finally:
             pass
 

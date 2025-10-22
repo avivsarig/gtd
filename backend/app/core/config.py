@@ -12,6 +12,7 @@ class Settings(BaseSettings):
 
     # Database
     DATABASE_URL: str = "postgresql://gtd:gtd_dev@postgres:5432/gtd"
+    DATABASE_TEST_URL: str = "postgresql://gtd_test:gtd_test@postgres-test:5432/gtd_test"
 
     # API
     API_V1_PREFIX: str = "/api/v1"

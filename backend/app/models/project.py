@@ -1,7 +1,8 @@
 """Project model - Collections of tasks working toward an outcome."""
 
 from sqlalchemy import TIMESTAMP, Column, String, Text
-from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import TSVECTOR
+from sqlalchemy.orm import deferred, relationship
 from sqlalchemy.sql import func, text
 from uuid import uuid4
 
@@ -25,7 +26,14 @@ class Project(Base):
     last_activity_at = Column(TIMESTAMP, nullable=True)
     deleted_at = Column(TIMESTAMP, nullable=True)
 
-    # Removed TSVECTOR for SQLite compatibility
+    # PostgreSQL full-text search (deferred for SQLite compatibility)
+    # Generated column - exclude from mapper to prevent insert/update errors
+    search_vector = Column(TSVECTOR)
+
+    # Mapper configuration - exclude search_vector from INSERT/UPDATE
+    __mapper_args__ = {
+        "exclude_properties": ["search_vector"]
+    }
 
     # Relationships
     tasks = relationship("Task", back_populates="project", foreign_keys="Task.project_id")
