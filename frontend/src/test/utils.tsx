@@ -5,7 +5,7 @@
  */
 
 import { render, type RenderOptions } from "@testing-library/react"
-import  { type ReactElement } from "react"
+import { type ReactElement } from "react"
 
 interface CustomRenderOptions extends Omit<RenderOptions, "wrapper"> {
   // Add custom options here as needed

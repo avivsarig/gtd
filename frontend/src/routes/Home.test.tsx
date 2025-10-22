@@ -31,7 +31,9 @@ describe("Home", () => {
       render(<Home />)
 
       expect(screen.getByText("GTD Dashboard")).toBeInTheDocument()
-      expect(screen.getByText(/Press Cmd\+K for quick capture/)).toBeInTheDocument()
+      expect(
+        screen.getByText(/Press Cmd\+K for quick capture/),
+      ).toBeInTheDocument()
     })
 
     it("renders all main sections", async () => {
@@ -278,7 +280,9 @@ describe("Home", () => {
         expect(screen.getByText("Test Task")).toBeInTheDocument()
       })
 
-      const completeButton = screen.getByRole("button", { name: /mark as complete/i })
+      const completeButton = screen.getByRole("button", {
+        name: /mark as complete/i,
+      })
       await user.click(completeButton)
 
       await waitFor(() => {
@@ -300,7 +304,9 @@ describe("Home", () => {
         expect(screen.getByText("Completed Task")).toBeInTheDocument()
       })
 
-      const incompleteButton = screen.getByRole("button", { name: /mark as incomplete/i })
+      const incompleteButton = screen.getByRole("button", {
+        name: /mark as incomplete/i,
+      })
       await user.click(incompleteButton)
 
       await waitFor(() => {
@@ -403,9 +409,12 @@ describe("Home", () => {
       await user.click(taskButton)
 
       await waitFor(() => {
-        expect(vi.mocked(api.convertInboxToTask)).toHaveBeenCalledWith(item.id, {
-          title: item.content,
-        })
+        expect(vi.mocked(api.convertInboxToTask)).toHaveBeenCalledWith(
+          item.id,
+          {
+            title: item.content,
+          },
+        )
       })
     })
 
@@ -425,13 +434,18 @@ describe("Home", () => {
       // Get all note buttons and click the first one (for this inbox item)
       const noteButtons = screen.getAllByRole("button", { name: /note/i })
       // Filter to get inbox item actions (not the "+ New Note" button)
-      const noteButton = noteButtons.find(btn => btn.innerHTML.includes("FileText")) || noteButtons[0]
+      const noteButton =
+        noteButtons.find((btn) => btn.innerHTML.includes("FileText")) ||
+        noteButtons[0]
       await user.click(noteButton)
 
       await waitFor(() => {
-        expect(vi.mocked(api.convertInboxToNote)).toHaveBeenCalledWith(item.id, {
-          content: item.content,
-        })
+        expect(vi.mocked(api.convertInboxToNote)).toHaveBeenCalledWith(
+          item.id,
+          {
+            content: item.content,
+          },
+        )
       })
     })
 
@@ -465,7 +479,7 @@ describe("Home", () => {
 
       vi.mocked(api.getInboxItems).mockResolvedValue([item])
       vi.mocked(api.convertInboxToTask).mockRejectedValue(
-        new Error("Conversion failed")
+        new Error("Conversion failed"),
       )
 
       // Mock alert
@@ -667,9 +681,7 @@ describe("Home", () => {
 
       // Form should close
       await waitFor(() => {
-        expect(
-          screen.queryByLabelText("Title *")
-        ).not.toBeInTheDocument()
+        expect(screen.queryByLabelText("Title *")).not.toBeInTheDocument()
       })
     })
 
@@ -691,9 +703,7 @@ describe("Home", () => {
       await user.click(submitButton)
 
       await waitFor(() => {
-        expect(
-          screen.queryByLabelText("Title *")
-        ).not.toBeInTheDocument()
+        expect(screen.queryByLabelText("Title *")).not.toBeInTheDocument()
       })
     })
   })
@@ -728,7 +738,9 @@ describe("Home", () => {
 
       // Get the Task button for the inbox item (not any other task button)
       const taskButtons = screen.getAllByRole("button", { name: /task/i })
-      const inboxTaskButton = taskButtons.find(btn => btn.innerHTML.includes("CheckSquare")) || taskButtons[0]
+      const inboxTaskButton =
+        taskButtons.find((btn) => btn.innerHTML.includes("CheckSquare")) ||
+        taskButtons[0]
       await user.click(inboxTaskButton)
 
       await waitFor(() => {
@@ -753,7 +765,9 @@ describe("Home", () => {
 
       // Get the Note button for the inbox item
       const noteButtons = screen.getAllByRole("button", { name: /note/i })
-      const inboxNoteButton = noteButtons.find(btn => btn.innerHTML.includes("FileText")) || noteButtons[0]
+      const inboxNoteButton =
+        noteButtons.find((btn) => btn.innerHTML.includes("FileText")) ||
+        noteButtons[0]
       await user.click(inboxNoteButton)
 
       await waitFor(() => {

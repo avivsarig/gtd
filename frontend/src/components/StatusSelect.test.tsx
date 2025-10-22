@@ -6,30 +6,20 @@ import { StatusSelect, STATUS_OPTIONS } from "./StatusSelect"
 describe("StatusSelect", () => {
   describe("rendering", () => {
     it("renders select with all status options", () => {
-      render(
-        <StatusSelect
-          value="next"
-          onChange={vi.fn()}
-        />
-      )
+      render(<StatusSelect value="next" onChange={vi.fn()} />)
 
       const select = screen.getByLabelText("Task status")
       expect(select).toBeInTheDocument()
 
       STATUS_OPTIONS.forEach((option) => {
         expect(
-          screen.getByRole("option", { name: option.label })
+          screen.getByRole("option", { name: option.label }),
         ).toBeInTheDocument()
       })
     })
 
     it("renders with correct initial value", () => {
-      render(
-        <StatusSelect
-          value="waiting"
-          onChange={vi.fn()}
-        />
-      )
+      render(<StatusSelect value="waiting" onChange={vi.fn()} />)
 
       const select = screen.getByLabelText("Task status") as HTMLSelectElement
       expect(select.value).toBe("waiting")
@@ -37,30 +27,17 @@ describe("StatusSelect", () => {
 
     it("applies color styling based on selected status", () => {
       const { rerender } = render(
-        <StatusSelect
-          value="next"
-          onChange={vi.fn()}
-        />
+        <StatusSelect value="next" onChange={vi.fn()} />,
       )
 
       const select = screen.getByLabelText("Task status")
       expect(select).toHaveClass("bg-blue-500/20")
 
-      rerender(
-        <StatusSelect
-          value="waiting"
-          onChange={vi.fn()}
-        />
-      )
+      rerender(<StatusSelect value="waiting" onChange={vi.fn()} />)
 
       expect(select).toHaveClass("bg-yellow-500/20")
 
-      rerender(
-        <StatusSelect
-          value="someday"
-          onChange={vi.fn()}
-        />
-      )
+      rerender(<StatusSelect value="someday" onChange={vi.fn()} />)
 
       expect(select).toHaveClass("bg-gray-500/20")
     })
@@ -71,12 +48,7 @@ describe("StatusSelect", () => {
       const user = userEvent.setup()
       const mockOnChange = vi.fn()
 
-      render(
-        <StatusSelect
-          value="next"
-          onChange={mockOnChange}
-        />
-      )
+      render(<StatusSelect value="next" onChange={mockOnChange} />)
 
       const select = screen.getByLabelText("Task status")
       await user.selectOptions(select, "waiting")
@@ -89,10 +61,7 @@ describe("StatusSelect", () => {
       const mockOnChange = vi.fn()
 
       const { rerender } = render(
-        <StatusSelect
-          value="next"
-          onChange={mockOnChange}
-        />
+        <StatusSelect value="next" onChange={mockOnChange} />,
       )
 
       const select = screen.getByLabelText("Task status")
@@ -101,23 +70,13 @@ describe("StatusSelect", () => {
       expect(mockOnChange).toHaveBeenCalledWith("waiting")
 
       mockOnChange.mockClear()
-      rerender(
-        <StatusSelect
-          value="waiting"
-          onChange={mockOnChange}
-        />
-      )
+      rerender(<StatusSelect value="waiting" onChange={mockOnChange} />)
 
       await user.selectOptions(select, "someday")
       expect(mockOnChange).toHaveBeenCalledWith("someday")
 
       mockOnChange.mockClear()
-      rerender(
-        <StatusSelect
-          value="someday"
-          onChange={mockOnChange}
-        />
-      )
+      rerender(<StatusSelect value="someday" onChange={mockOnChange} />)
 
       await user.selectOptions(select, "next")
       expect(mockOnChange).toHaveBeenCalledWith("next")
@@ -126,26 +85,14 @@ describe("StatusSelect", () => {
 
   describe("disabled state", () => {
     it("renders disabled when disabled prop is true", () => {
-      render(
-        <StatusSelect
-          value="next"
-          onChange={vi.fn()}
-          disabled={true}
-        />
-      )
+      render(<StatusSelect value="next" onChange={vi.fn()} disabled={true} />)
 
       const select = screen.getByLabelText("Task status")
       expect(select).toBeDisabled()
     })
 
     it("applies disabled styling", () => {
-      render(
-        <StatusSelect
-          value="next"
-          onChange={vi.fn()}
-          disabled={true}
-        />
-      )
+      render(<StatusSelect value="next" onChange={vi.fn()} disabled={true} />)
 
       const select = screen.getByLabelText("Task status")
       expect(select).toHaveClass("disabled:cursor-not-allowed")
@@ -157,11 +104,7 @@ describe("StatusSelect", () => {
       const mockOnChange = vi.fn()
 
       render(
-        <StatusSelect
-          value="next"
-          onChange={mockOnChange}
-          disabled={true}
-        />
+        <StatusSelect value="next" onChange={mockOnChange} disabled={true} />,
       )
 
       const select = screen.getByLabelText("Task status")
@@ -174,26 +117,16 @@ describe("StatusSelect", () => {
     })
 
     it("renders enabled by default", () => {
-      render(
-        <StatusSelect
-          value="next"
-          onChange={vi.fn()}
-        />
-      )
+      render(<StatusSelect value="next" onChange={vi.fn()} />)
 
       const select = screen.getByLabelText("Task status")
-      expect(select).not.toBeDisabled()
+      expect(select).toBeEnabled()
     })
   })
 
   describe("accessibility", () => {
     it("has proper aria-label", () => {
-      render(
-        <StatusSelect
-          value="next"
-          onChange={vi.fn()}
-        />
-      )
+      render(<StatusSelect value="next" onChange={vi.fn()} />)
 
       expect(screen.getByLabelText("Task status")).toBeInTheDocument()
     })
@@ -202,12 +135,7 @@ describe("StatusSelect", () => {
       const user = userEvent.setup()
       const mockOnChange = vi.fn()
 
-      render(
-        <StatusSelect
-          value="next"
-          onChange={mockOnChange}
-        />
-      )
+      render(<StatusSelect value="next" onChange={mockOnChange} />)
 
       const select = screen.getByLabelText("Task status") as HTMLSelectElement
       select.focus()
@@ -226,12 +154,7 @@ describe("StatusSelect", () => {
       const user = userEvent.setup()
       const mockOnChange = vi.fn()
 
-      render(
-        <StatusSelect
-          value="next"
-          onChange={mockOnChange}
-        />
-      )
+      render(<StatusSelect value="next" onChange={mockOnChange} />)
 
       const select = screen.getByLabelText("Task status")
 
@@ -250,10 +173,7 @@ describe("StatusSelect", () => {
       const mockOnChange = vi.fn()
 
       const { rerender } = render(
-        <StatusSelect
-          value="next"
-          onChange={mockOnChange}
-        />
+        <StatusSelect value="next" onChange={mockOnChange} />,
       )
 
       const select = screen.getByLabelText("Task status") as HTMLSelectElement
@@ -261,12 +181,7 @@ describe("StatusSelect", () => {
 
       await user.selectOptions(select, "waiting")
 
-      rerender(
-        <StatusSelect
-          value="waiting"
-          onChange={mockOnChange}
-        />
-      )
+      rerender(<StatusSelect value="waiting" onChange={mockOnChange} />)
 
       expect(select.value).toBe("waiting")
     })

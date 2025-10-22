@@ -5,7 +5,7 @@
  * Pattern inspired by backend's Factory Boy approach.
  */
 
-import  {
+import {
   type Task,
   type TaskStatus,
   type Project,

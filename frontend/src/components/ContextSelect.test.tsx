@@ -18,14 +18,16 @@ describe("ContextSelect", () => {
           value={null}
           contexts={mockContexts}
           onChange={vi.fn()}
-        />
+        />,
       )
 
       mockContexts.forEach((context) => {
         expect(
           screen.getByRole("option", {
-            name: new RegExp(`${context.icon}.*${context.name}|${context.name}`)
-          })
+            name: new RegExp(
+              `${context.icon}.*${context.name}|${context.name}`,
+            ),
+          }),
         ).toBeInTheDocument()
       })
     })
@@ -36,11 +38,11 @@ describe("ContextSelect", () => {
           value={null}
           contexts={mockContexts}
           onChange={vi.fn()}
-        />
+        />,
       )
 
       expect(
-        screen.getByRole("option", { name: "No Context" })
+        screen.getByRole("option", { name: "No Context" }),
       ).toBeInTheDocument()
     })
 
@@ -52,10 +54,12 @@ describe("ContextSelect", () => {
           value={contextId}
           contexts={mockContexts}
           onChange={vi.fn()}
-        />
+        />,
       )
 
-      const select = screen.getByLabelText("Context assignment") as HTMLSelectElement
+      const select = screen.getByLabelText(
+        "Context assignment",
+      ) as HTMLSelectElement
       expect(select.value).toBe(contextId)
     })
 
@@ -65,10 +69,12 @@ describe("ContextSelect", () => {
           value={null}
           contexts={mockContexts}
           onChange={vi.fn()}
-        />
+        />,
       )
 
-      const select = screen.getByLabelText("Context assignment") as HTMLSelectElement
+      const select = screen.getByLabelText(
+        "Context assignment",
+      ) as HTMLSelectElement
       expect(select.value).toBe("")
     })
 
@@ -78,10 +84,12 @@ describe("ContextSelect", () => {
           value={undefined}
           contexts={mockContexts}
           onChange={vi.fn()}
-        />
+        />,
       )
 
-      const select = screen.getByLabelText("Context assignment") as HTMLSelectElement
+      const select = screen.getByLabelText(
+        "Context assignment",
+      ) as HTMLSelectElement
       expect(select.value).toBe("")
     })
 
@@ -91,14 +99,16 @@ describe("ContextSelect", () => {
           value={null}
           contexts={mockContexts}
           onChange={vi.fn()}
-        />
+        />,
       )
 
       mockContexts.forEach((context) => {
         if (context.icon) {
           // Icon is part of the option text, check for option with icon+name
           expect(
-            screen.getByRole("option", { name: new RegExp(`${context.icon}.*${context.name}`) })
+            screen.getByRole("option", {
+              name: new RegExp(`${context.icon}.*${context.name}`),
+            }),
           ).toBeInTheDocument()
         }
       })
@@ -112,12 +122,10 @@ describe("ContextSelect", () => {
           value={null}
           contexts={[contextWithoutIcon]}
           onChange={vi.fn()}
-        />
+        />,
       )
 
-      expect(
-        screen.getByRole("option", { name: "Work" })
-      ).toBeInTheDocument()
+      expect(screen.getByRole("option", { name: "Work" })).toBeInTheDocument()
     })
 
     it("applies green color styling", () => {
@@ -126,7 +134,7 @@ describe("ContextSelect", () => {
           value={null}
           contexts={mockContexts}
           onChange={vi.fn()}
-        />
+        />,
       )
 
       const select = screen.getByLabelText("Context assignment")
@@ -145,7 +153,7 @@ describe("ContextSelect", () => {
           value={null}
           contexts={mockContexts}
           onChange={mockOnChange}
-        />
+        />,
       )
 
       const select = screen.getByLabelText("Context assignment")
@@ -163,7 +171,7 @@ describe("ContextSelect", () => {
           value={mockContexts[0].id}
           contexts={mockContexts}
           onChange={mockOnChange}
-        />
+        />,
       )
 
       const select = screen.getByLabelText("Context assignment")
@@ -181,7 +189,7 @@ describe("ContextSelect", () => {
           value={mockContexts[0].id}
           contexts={mockContexts}
           onChange={mockOnChange}
-        />
+        />,
       )
 
       const select = screen.getByLabelText("Context assignment")
@@ -195,7 +203,7 @@ describe("ContextSelect", () => {
           value={mockContexts[1].id}
           contexts={mockContexts}
           onChange={mockOnChange}
-        />
+        />,
       )
 
       await user.selectOptions(select, mockContexts[2].id)
@@ -211,7 +219,7 @@ describe("ContextSelect", () => {
           contexts={mockContexts}
           onChange={vi.fn()}
           disabled={true}
-        />
+        />,
       )
 
       const select = screen.getByLabelText("Context assignment")
@@ -225,7 +233,7 @@ describe("ContextSelect", () => {
           contexts={mockContexts}
           onChange={vi.fn()}
           disabled={true}
-        />
+        />,
       )
 
       const select = screen.getByLabelText("Context assignment")
@@ -243,7 +251,7 @@ describe("ContextSelect", () => {
           contexts={mockContexts}
           onChange={mockOnChange}
           disabled={true}
-        />
+        />,
       )
 
       const select = screen.getByLabelText("Context assignment")
@@ -263,26 +271,20 @@ describe("ContextSelect", () => {
           value={null}
           contexts={mockContexts}
           onChange={vi.fn()}
-        />
+        />,
       )
 
       const select = screen.getByLabelText("Context assignment")
-      expect(select).not.toBeDisabled()
+      expect(select).toBeEnabled()
     })
   })
 
   describe("empty contexts list", () => {
     it("renders only 'No Context' when contexts list is empty", () => {
-      render(
-        <ContextSelect
-          value={null}
-          contexts={[]}
-          onChange={vi.fn()}
-        />
-      )
+      render(<ContextSelect value={null} contexts={[]} onChange={vi.fn()} />)
 
       expect(
-        screen.getByRole("option", { name: "No Context" })
+        screen.getByRole("option", { name: "No Context" }),
       ).toBeInTheDocument()
 
       const options = screen.getAllByRole("option")
@@ -297,12 +299,10 @@ describe("ContextSelect", () => {
           value={null}
           contexts={mockContexts}
           onChange={vi.fn()}
-        />
+        />,
       )
 
-      expect(
-        screen.getByLabelText("Context assignment")
-      ).toBeInTheDocument()
+      expect(screen.getByLabelText("Context assignment")).toBeInTheDocument()
     })
 
     it("supports keyboard navigation", async () => {
@@ -314,10 +314,12 @@ describe("ContextSelect", () => {
           value={null}
           contexts={mockContexts}
           onChange={mockOnChange}
-        />
+        />,
       )
 
-      const select = screen.getByLabelText("Context assignment") as HTMLSelectElement
+      const select = screen.getByLabelText(
+        "Context assignment",
+      ) as HTMLSelectElement
       select.focus()
 
       // Native select elements handle keyboard navigation natively
@@ -336,10 +338,12 @@ describe("ContextSelect", () => {
           value="non-existent-id"
           contexts={mockContexts}
           onChange={vi.fn()}
-        />
+        />,
       )
 
-      const select = screen.getByLabelText("Context assignment") as HTMLSelectElement
+      const select = screen.getByLabelText(
+        "Context assignment",
+      ) as HTMLSelectElement
       // HTML select normalizes invalid values to first valid value (empty string in this case)
       expect(select.value).toBe("")
     })
@@ -351,11 +355,11 @@ describe("ContextSelect", () => {
           value={null}
           contexts={mockContexts}
           onChange={vi.fn()}
-        />
+        />,
       )
 
       expect(
-        screen.queryByRole("option", { name: /Shopping/ })
+        screen.queryByRole("option", { name: /Shopping/ }),
       ).not.toBeInTheDocument()
 
       rerender(
@@ -363,28 +367,29 @@ describe("ContextSelect", () => {
           value={null}
           contexts={[...mockContexts, newContext]}
           onChange={vi.fn()}
-        />
+        />,
       )
 
       expect(
-        screen.getByRole("option", { name: /Shopping/ })
+        screen.getByRole("option", { name: /Shopping/ }),
       ).toBeInTheDocument()
     })
 
     it("handles contexts with empty icon", () => {
-      const contextWithEmptyIcon = createMockContext({ name: "NoIcon", icon: "" })
+      const contextWithEmptyIcon = createMockContext({
+        name: "NoIcon",
+        icon: "",
+      })
 
       render(
         <ContextSelect
           value={null}
           contexts={[contextWithEmptyIcon]}
           onChange={vi.fn()}
-        />
+        />,
       )
 
-      expect(
-        screen.getByRole("option", { name: "NoIcon" })
-      ).toBeInTheDocument()
+      expect(screen.getByRole("option", { name: "NoIcon" })).toBeInTheDocument()
     })
   })
 })

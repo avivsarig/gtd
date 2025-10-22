@@ -18,12 +18,12 @@ describe("ProjectSelect", () => {
           value={null}
           projects={mockProjects}
           onChange={vi.fn()}
-        />
+        />,
       )
 
       mockProjects.forEach((project) => {
         expect(
-          screen.getByRole("option", { name: project.name })
+          screen.getByRole("option", { name: project.name }),
         ).toBeInTheDocument()
       })
     })
@@ -34,11 +34,11 @@ describe("ProjectSelect", () => {
           value={null}
           projects={mockProjects}
           onChange={vi.fn()}
-        />
+        />,
       )
 
       expect(
-        screen.getByRole("option", { name: "No Project" })
+        screen.getByRole("option", { name: "No Project" }),
       ).toBeInTheDocument()
     })
 
@@ -50,10 +50,12 @@ describe("ProjectSelect", () => {
           value={projectId}
           projects={mockProjects}
           onChange={vi.fn()}
-        />
+        />,
       )
 
-      const select = screen.getByLabelText("Project assignment") as HTMLSelectElement
+      const select = screen.getByLabelText(
+        "Project assignment",
+      ) as HTMLSelectElement
       expect(select.value).toBe(projectId)
     })
 
@@ -63,10 +65,12 @@ describe("ProjectSelect", () => {
           value={null}
           projects={mockProjects}
           onChange={vi.fn()}
-        />
+        />,
       )
 
-      const select = screen.getByLabelText("Project assignment") as HTMLSelectElement
+      const select = screen.getByLabelText(
+        "Project assignment",
+      ) as HTMLSelectElement
       expect(select.value).toBe("")
     })
 
@@ -76,10 +80,12 @@ describe("ProjectSelect", () => {
           value={undefined}
           projects={mockProjects}
           onChange={vi.fn()}
-        />
+        />,
       )
 
-      const select = screen.getByLabelText("Project assignment") as HTMLSelectElement
+      const select = screen.getByLabelText(
+        "Project assignment",
+      ) as HTMLSelectElement
       expect(select.value).toBe("")
     })
 
@@ -89,7 +95,7 @@ describe("ProjectSelect", () => {
           value={null}
           projects={mockProjects}
           onChange={vi.fn()}
-        />
+        />,
       )
 
       const select = screen.getByLabelText("Project assignment")
@@ -108,7 +114,7 @@ describe("ProjectSelect", () => {
           value={null}
           projects={mockProjects}
           onChange={mockOnChange}
-        />
+        />,
       )
 
       const select = screen.getByLabelText("Project assignment")
@@ -126,7 +132,7 @@ describe("ProjectSelect", () => {
           value={mockProjects[0].id}
           projects={mockProjects}
           onChange={mockOnChange}
-        />
+        />,
       )
 
       const select = screen.getByLabelText("Project assignment")
@@ -144,7 +150,7 @@ describe("ProjectSelect", () => {
           value={mockProjects[0].id}
           projects={mockProjects}
           onChange={mockOnChange}
-        />
+        />,
       )
 
       const select = screen.getByLabelText("Project assignment")
@@ -158,7 +164,7 @@ describe("ProjectSelect", () => {
           value={mockProjects[1].id}
           projects={mockProjects}
           onChange={mockOnChange}
-        />
+        />,
       )
 
       await user.selectOptions(select, mockProjects[2].id)
@@ -174,7 +180,7 @@ describe("ProjectSelect", () => {
           projects={mockProjects}
           onChange={vi.fn()}
           disabled={true}
-        />
+        />,
       )
 
       const select = screen.getByLabelText("Project assignment")
@@ -188,7 +194,7 @@ describe("ProjectSelect", () => {
           projects={mockProjects}
           onChange={vi.fn()}
           disabled={true}
-        />
+        />,
       )
 
       const select = screen.getByLabelText("Project assignment")
@@ -206,7 +212,7 @@ describe("ProjectSelect", () => {
           projects={mockProjects}
           onChange={mockOnChange}
           disabled={true}
-        />
+        />,
       )
 
       const select = screen.getByLabelText("Project assignment")
@@ -226,26 +232,20 @@ describe("ProjectSelect", () => {
           value={null}
           projects={mockProjects}
           onChange={vi.fn()}
-        />
+        />,
       )
 
       const select = screen.getByLabelText("Project assignment")
-      expect(select).not.toBeDisabled()
+      expect(select).toBeEnabled()
     })
   })
 
   describe("empty projects list", () => {
     it("renders only 'No Project' when projects list is empty", () => {
-      render(
-        <ProjectSelect
-          value={null}
-          projects={[]}
-          onChange={vi.fn()}
-        />
-      )
+      render(<ProjectSelect value={null} projects={[]} onChange={vi.fn()} />)
 
       expect(
-        screen.getByRole("option", { name: "No Project" })
+        screen.getByRole("option", { name: "No Project" }),
       ).toBeInTheDocument()
 
       const options = screen.getAllByRole("option")
@@ -260,12 +260,10 @@ describe("ProjectSelect", () => {
           value={null}
           projects={mockProjects}
           onChange={vi.fn()}
-        />
+        />,
       )
 
-      expect(
-        screen.getByLabelText("Project assignment")
-      ).toBeInTheDocument()
+      expect(screen.getByLabelText("Project assignment")).toBeInTheDocument()
     })
 
     it("supports keyboard navigation", async () => {
@@ -277,10 +275,12 @@ describe("ProjectSelect", () => {
           value={null}
           projects={mockProjects}
           onChange={mockOnChange}
-        />
+        />,
       )
 
-      const select = screen.getByLabelText("Project assignment") as HTMLSelectElement
+      const select = screen.getByLabelText(
+        "Project assignment",
+      ) as HTMLSelectElement
       select.focus()
 
       // Native select elements handle keyboard navigation natively
@@ -299,10 +299,12 @@ describe("ProjectSelect", () => {
           value="non-existent-id"
           projects={mockProjects}
           onChange={vi.fn()}
-        />
+        />,
       )
 
-      const select = screen.getByLabelText("Project assignment") as HTMLSelectElement
+      const select = screen.getByLabelText(
+        "Project assignment",
+      ) as HTMLSelectElement
       // HTML select normalizes invalid values to first valid value (empty string in this case)
       expect(select.value).toBe("")
     })
@@ -314,11 +316,11 @@ describe("ProjectSelect", () => {
           value={null}
           projects={mockProjects}
           onChange={vi.fn()}
-        />
+        />,
       )
 
       expect(
-        screen.queryByRole("option", { name: "New Project" })
+        screen.queryByRole("option", { name: "New Project" }),
       ).not.toBeInTheDocument()
 
       rerender(
@@ -326,11 +328,11 @@ describe("ProjectSelect", () => {
           value={null}
           projects={[...mockProjects, newProject]}
           onChange={vi.fn()}
-        />
+        />,
       )
 
       expect(
-        screen.getByRole("option", { name: "New Project" })
+        screen.getByRole("option", { name: "New Project" }),
       ).toBeInTheDocument()
     })
   })

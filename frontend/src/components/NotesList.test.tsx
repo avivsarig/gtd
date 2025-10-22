@@ -15,11 +15,11 @@ describe("NotesList", () => {
           projects={[]}
           onEdit={vi.fn()}
           onDelete={vi.fn()}
-        />
+        />,
       )
 
       expect(
-        screen.getByText("No notes yet. Create one to get started!")
+        screen.getByText("No notes yet. Create one to get started!"),
       ).toBeInTheDocument()
     })
 
@@ -36,7 +36,7 @@ describe("NotesList", () => {
           projects={[]}
           onEdit={vi.fn()}
           onDelete={vi.fn()}
-        />
+        />,
       )
 
       expect(screen.getByText("Note 1")).toBeInTheDocument()
@@ -56,14 +56,17 @@ describe("NotesList", () => {
           projects={[mockProject]}
           onEdit={vi.fn()}
           onDelete={vi.fn()}
-        />
+        />,
       )
 
       expect(screen.getByText(mockProject.name)).toBeInTheDocument()
     })
 
     it("does not render project badge when note has no project", () => {
-      const note = createMockNote({ title: "Standalone Note", project_id: null })
+      const note = createMockNote({
+        title: "Standalone Note",
+        project_id: null,
+      })
 
       render(
         <NotesList
@@ -71,7 +74,7 @@ describe("NotesList", () => {
           projects={[]}
           onEdit={vi.fn()}
           onDelete={vi.fn()}
-        />
+        />,
       )
 
       expect(screen.queryByText(/project/i)).not.toBeInTheDocument()
@@ -91,7 +94,7 @@ describe("NotesList", () => {
           projects={[]}
           onEdit={vi.fn()}
           onDelete={vi.fn()}
-        />
+        />,
       )
 
       expect(screen.queryByText("This is the content")).not.toBeInTheDocument()
@@ -110,7 +113,7 @@ describe("NotesList", () => {
           projects={[]}
           onEdit={vi.fn()}
           onDelete={vi.fn()}
-        />
+        />,
       )
 
       const titleButton = screen.getByRole("button", { name: "Test Note" })
@@ -132,7 +135,7 @@ describe("NotesList", () => {
           projects={[]}
           onEdit={vi.fn()}
           onDelete={vi.fn()}
-        />
+        />,
       )
 
       const titleButton = screen.getByRole("button", { name: "Test Note" })
@@ -142,9 +145,7 @@ describe("NotesList", () => {
 
       await user.click(titleButton)
 
-      expect(
-        screen.queryByText("This is the content")
-      ).not.toBeInTheDocument()
+      expect(screen.queryByText("This is the content")).not.toBeInTheDocument()
     })
 
     it("shows updated_at timestamp when expanded", async () => {
@@ -158,7 +159,7 @@ describe("NotesList", () => {
           projects={[]}
           onEdit={vi.fn()}
           onDelete={vi.fn()}
-        />
+        />,
       )
 
       const titleButton = screen.getByRole("button", { name: "Test Note" })
@@ -184,7 +185,7 @@ describe("NotesList", () => {
           projects={[]}
           onEdit={vi.fn()}
           onDelete={vi.fn()}
-        />
+        />,
       )
 
       const titleButton1 = screen.getByRole("button", { name: "Note 1" })
@@ -213,7 +214,7 @@ describe("NotesList", () => {
           projects={[]}
           onEdit={vi.fn()}
           onDelete={vi.fn()}
-        />
+        />,
       )
 
       const editButtons = screen.getAllByRole("button", { name: /edit/i })
@@ -232,7 +233,7 @@ describe("NotesList", () => {
           projects={[]}
           onEdit={vi.fn()}
           onDelete={vi.fn()}
-        />
+        />,
       )
 
       const deleteButtons = screen.getAllByRole("button", { name: /delete/i })
@@ -250,7 +251,7 @@ describe("NotesList", () => {
           projects={[]}
           onEdit={mockEdit}
           onDelete={vi.fn()}
-        />
+        />,
       )
 
       const editButton = screen.getByRole("button", { name: /edit/i })
@@ -273,7 +274,7 @@ describe("NotesList", () => {
           projects={[]}
           onEdit={vi.fn()}
           onDelete={mockDelete}
-        />
+        />,
       )
 
       const deleteButton = screen.getByRole("button", { name: /delete/i })
@@ -302,7 +303,7 @@ describe("NotesList", () => {
           projects={[mockProject]}
           onEdit={vi.fn()}
           onDelete={vi.fn()}
-        />
+        />,
       )
 
       const projectBadges = screen.getAllByText(mockProject.name)
@@ -330,7 +331,7 @@ describe("NotesList", () => {
           projects={[project1, project2]}
           onEdit={vi.fn()}
           onDelete={vi.fn()}
-        />
+        />,
       )
 
       expect(screen.getByText("Project 1")).toBeInTheDocument()
@@ -349,7 +350,7 @@ describe("NotesList", () => {
           projects={[mockProject]}
           onEdit={vi.fn()}
           onDelete={vi.fn()}
-        />
+        />,
       )
 
       expect(screen.getByText("Test Note")).toBeInTheDocument()
@@ -372,7 +373,7 @@ describe("NotesList", () => {
           projects={[]}
           onEdit={vi.fn()}
           onDelete={vi.fn()}
-        />
+        />,
       )
 
       const titleButton = screen.getByRole("button", { name: "Formatted Note" })
@@ -396,7 +397,7 @@ describe("NotesList", () => {
           projects={[]}
           onEdit={vi.fn()}
           onDelete={vi.fn()}
-        />
+        />,
       )
 
       const titleButton = screen.getByRole("button", { name: "Empty Note" })
@@ -417,7 +418,7 @@ describe("NotesList", () => {
           projects={[]}
           onEdit={vi.fn()}
           onDelete={vi.fn()}
-        />
+        />,
       )
 
       const titleButton = screen.getByRole("button", { name: "Test Note" })
@@ -433,11 +434,13 @@ describe("NotesList", () => {
           projects={[]}
           onEdit={vi.fn()}
           onDelete={vi.fn()}
-        />
+        />,
       )
 
       // Check that delete button exists (confirm message will be in ItemCard)
-      expect(screen.getByRole("button", { name: /delete/i })).toBeInTheDocument()
+      expect(
+        screen.getByRole("button", { name: /delete/i }),
+      ).toBeInTheDocument()
     })
   })
 })

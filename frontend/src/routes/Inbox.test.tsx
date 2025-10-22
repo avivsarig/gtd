@@ -38,11 +38,9 @@ describe("Inbox", () => {
       render(<Inbox />)
 
       await waitFor(() => {
+        expect(screen.getByText(/Navigate: J\/K or ↑\/↓/)).toBeInTheDocument()
         expect(
-          screen.getByText(/Navigate: J\/K or ↑\/↓/)
-        ).toBeInTheDocument()
-        expect(
-          screen.getByText(/Convert: T \(task\), N \(note\), P \(project\)/)
+          screen.getByText(/Convert: T \(task\), N \(note\), P \(project\)/),
         ).toBeInTheDocument()
       })
     })
@@ -146,9 +144,7 @@ describe("Inbox", () => {
 
       await waitFor(() => {
         expect(screen.getByText("Inbox Zero! 🎉")).toBeInTheDocument()
-        expect(
-          screen.getByText(/All items processed/)
-        ).toBeInTheDocument()
+        expect(screen.getByText(/All items processed/)).toBeInTheDocument()
       })
     })
 
@@ -217,8 +213,12 @@ describe("Inbox", () => {
       render(<Inbox />)
 
       await waitFor(() => {
-        expect(screen.getByRole("button", { name: /task/i })).toBeInTheDocument()
-        expect(screen.getByRole("button", { name: /note/i })).toBeInTheDocument()
+        expect(
+          screen.getByRole("button", { name: /task/i }),
+        ).toBeInTheDocument()
+        expect(
+          screen.getByRole("button", { name: /note/i }),
+        ).toBeInTheDocument()
       })
     })
   })
@@ -242,7 +242,7 @@ describe("Inbox", () => {
       await waitFor(() => {
         expect(vi.mocked(api.convertInboxToTask)).toHaveBeenCalledWith(
           item.id,
-          { title: item.content }
+          { title: item.content },
         )
       })
     })
@@ -300,7 +300,7 @@ describe("Inbox", () => {
       const item = createMockInboxItem({ content: "Item" })
       vi.mocked(api.getInboxItems).mockResolvedValue([item])
       vi.mocked(api.convertInboxToTask).mockRejectedValue(
-        new Error("Conversion failed")
+        new Error("Conversion failed"),
       )
 
       const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {})
@@ -370,7 +370,7 @@ describe("Inbox", () => {
       await waitFor(() => {
         expect(vi.mocked(api.convertInboxToNote)).toHaveBeenCalledWith(
           item.id,
-          { content: item.content }
+          { content: item.content },
         )
       })
 
@@ -477,7 +477,7 @@ describe("Inbox", () => {
       const item = createMockInboxItem({ content: "Item" })
       vi.mocked(api.getInboxItems).mockResolvedValue([item])
       vi.mocked(api.deleteInboxItem).mockRejectedValue(
-        new Error("Deletion failed")
+        new Error("Deletion failed"),
       )
 
       const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {})
@@ -647,7 +647,7 @@ describe("Inbox", () => {
       await waitFor(() => {
         expect(vi.mocked(api.convertInboxToTask)).toHaveBeenCalledWith(
           item.id,
-          { title: item.content }
+          { title: item.content },
         )
       })
 
@@ -673,7 +673,7 @@ describe("Inbox", () => {
       await waitFor(() => {
         expect(vi.mocked(api.convertInboxToNote)).toHaveBeenCalledWith(
           item.id,
-          { content: item.content }
+          { content: item.content },
         )
       })
 
@@ -711,14 +711,12 @@ describe("Inbox", () => {
       // This would be tested if there were input elements in the Inbox component
       // For now, verify the component doesn't have editable inputs
       const inputs = screen.queryAllByRole("textbox")
-      expect(inputs.length).toBe(0)
+      expect(inputs).toHaveLength(0)
     })
 
     it("prevents navigation beyond last item", async () => {
       const user = userEvent.setup()
-      const items = [
-        createMockInboxItem({ content: "Only item" }),
-      ]
+      const items = [createMockInboxItem({ content: "Only item" })]
       vi.mocked(api.getInboxItems).mockResolvedValue(items)
 
       render(<Inbox />)
@@ -737,9 +735,7 @@ describe("Inbox", () => {
 
     it("prevents navigation before first item", async () => {
       const user = userEvent.setup()
-      const items = [
-        createMockInboxItem({ content: "Only item" }),
-      ]
+      const items = [createMockInboxItem({ content: "Only item" })]
       vi.mocked(api.getInboxItems).mockResolvedValue(items)
 
       render(<Inbox />)

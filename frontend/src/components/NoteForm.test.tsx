@@ -13,12 +13,7 @@ describe("NoteForm", () => {
     it("renders form with title and content inputs", () => {
       const mockSubmit = vi.fn()
 
-      render(
-        <NoteForm
-          projects={projects}
-          onSubmit={mockSubmit}
-        />
-      )
+      render(<NoteForm projects={projects} onSubmit={mockSubmit} />)
 
       expect(screen.getByLabelText("Title *")).toBeInTheDocument()
       expect(screen.getByLabelText("Content")).toBeInTheDocument()
@@ -27,12 +22,7 @@ describe("NoteForm", () => {
     it("renders project selector", () => {
       const mockSubmit = vi.fn()
 
-      render(
-        <NoteForm
-          projects={projects}
-          onSubmit={mockSubmit}
-        />
-      )
+      render(<NoteForm projects={projects} onSubmit={mockSubmit} />)
 
       expect(screen.getByLabelText("Project")).toBeInTheDocument()
     })
@@ -40,15 +30,10 @@ describe("NoteForm", () => {
     it("renders submit button", () => {
       const mockSubmit = vi.fn()
 
-      render(
-        <NoteForm
-          projects={projects}
-          onSubmit={mockSubmit}
-        />
-      )
+      render(<NoteForm projects={projects} onSubmit={mockSubmit} />)
 
       expect(
-        screen.getByRole("button", { name: "Create Note" })
+        screen.getByRole("button", { name: "Create Note" }),
       ).toBeInTheDocument()
     })
 
@@ -61,26 +46,19 @@ describe("NoteForm", () => {
           projects={projects}
           onSubmit={mockSubmit}
           onCancel={mockCancel}
-        />
+        />,
       )
 
-      expect(
-        screen.getByRole("button", { name: "Cancel" })
-      ).toBeInTheDocument()
+      expect(screen.getByRole("button", { name: "Cancel" })).toBeInTheDocument()
     })
 
     it("does not render cancel button when onCancel not provided", () => {
       const mockSubmit = vi.fn()
 
-      render(
-        <NoteForm
-          projects={projects}
-          onSubmit={mockSubmit}
-        />
-      )
+      render(<NoteForm projects={projects} onSubmit={mockSubmit} />)
 
       expect(
-        screen.queryByRole("button", { name: "Cancel" })
+        screen.queryByRole("button", { name: "Cancel" }),
       ).not.toBeInTheDocument()
     })
   })
@@ -90,12 +68,7 @@ describe("NoteForm", () => {
       const user = userEvent.setup()
       const mockSubmit = vi.fn().mockResolvedValue(undefined)
 
-      render(
-        <NoteForm
-          projects={projects}
-          onSubmit={mockSubmit}
-        />
-      )
+      render(<NoteForm projects={projects} onSubmit={mockSubmit} />)
 
       const titleInput = screen.getByLabelText("Title *")
       const contentInput = screen.getByLabelText("Content")
@@ -118,12 +91,7 @@ describe("NoteForm", () => {
       const user = userEvent.setup()
       const mockSubmit = vi.fn().mockResolvedValue(undefined)
 
-      render(
-        <NoteForm
-          projects={projects}
-          onSubmit={mockSubmit}
-        />
-      )
+      render(<NoteForm projects={projects} onSubmit={mockSubmit} />)
 
       const titleInput = screen.getByLabelText("Title *")
       const projectSelect = screen.getByLabelText("Project")
@@ -146,12 +114,7 @@ describe("NoteForm", () => {
       const user = userEvent.setup()
       const mockSubmit = vi.fn().mockResolvedValue(undefined)
 
-      render(
-        <NoteForm
-          projects={projects}
-          onSubmit={mockSubmit}
-        />
-      )
+      render(<NoteForm projects={projects} onSubmit={mockSubmit} />)
 
       const titleInput = screen.getByLabelText("Title *")
       const contentInput = screen.getByLabelText("Content")
@@ -174,12 +137,7 @@ describe("NoteForm", () => {
       const user = userEvent.setup()
       const mockSubmit = vi.fn().mockResolvedValue(undefined)
 
-      render(
-        <NoteForm
-          projects={projects}
-          onSubmit={mockSubmit}
-        />
-      )
+      render(<NoteForm projects={projects} onSubmit={mockSubmit} />)
 
       const titleInput = screen.getByLabelText("Title *")
       const submitButton = screen.getByRole("button", { name: "Create Note" })
@@ -192,7 +150,7 @@ describe("NoteForm", () => {
           expect.objectContaining({
             title: "New Note",
             content: undefined,
-          })
+          }),
         )
       })
     })
@@ -201,16 +159,15 @@ describe("NoteForm", () => {
       const user = userEvent.setup()
       const mockSubmit = vi.fn().mockResolvedValue(undefined)
 
-      render(
-        <NoteForm
-          projects={projects}
-          onSubmit={mockSubmit}
-        />
-      )
+      render(<NoteForm projects={projects} onSubmit={mockSubmit} />)
 
       const titleInput = screen.getByLabelText("Title *") as HTMLInputElement
-      const contentInput = screen.getByLabelText("Content") as HTMLTextAreaElement
-      const projectSelect = screen.getByLabelText("Project") as HTMLSelectElement
+      const contentInput = screen.getByLabelText(
+        "Content",
+      ) as HTMLTextAreaElement
+      const projectSelect = screen.getByLabelText(
+        "Project",
+      ) as HTMLSelectElement
       const submitButton = screen.getByRole("button", { name: "Create Note" })
 
       await user.type(titleInput, "New Note")
@@ -236,17 +193,15 @@ describe("NoteForm", () => {
 
       const mockSubmit = vi.fn()
 
-      render(
-        <NoteForm
-          note={note}
-          projects={projects}
-          onSubmit={mockSubmit}
-        />
-      )
+      render(<NoteForm note={note} projects={projects} onSubmit={mockSubmit} />)
 
       const titleInput = screen.getByLabelText("Title *") as HTMLInputElement
-      const contentInput = screen.getByLabelText("Content") as HTMLTextAreaElement
-      const projectSelect = screen.getByLabelText("Project") as HTMLSelectElement
+      const contentInput = screen.getByLabelText(
+        "Content",
+      ) as HTMLTextAreaElement
+      const projectSelect = screen.getByLabelText(
+        "Project",
+      ) as HTMLSelectElement
 
       expect(titleInput.value).toBe("Existing Note")
       expect(contentInput.value).toBe("Existing content")
@@ -257,16 +212,10 @@ describe("NoteForm", () => {
       const note = createMockNote()
       const mockSubmit = vi.fn()
 
-      render(
-        <NoteForm
-          note={note}
-          projects={projects}
-          onSubmit={mockSubmit}
-        />
-      )
+      render(<NoteForm note={note} projects={projects} onSubmit={mockSubmit} />)
 
       expect(
-        screen.getByRole("button", { name: "Update Note" })
+        screen.getByRole("button", { name: "Update Note" }),
       ).toBeInTheDocument()
     })
 
@@ -278,13 +227,7 @@ describe("NoteForm", () => {
       })
       const mockSubmit = vi.fn().mockResolvedValue(undefined)
 
-      render(
-        <NoteForm
-          note={note}
-          projects={projects}
-          onSubmit={mockSubmit}
-        />
-      )
+      render(<NoteForm note={note} projects={projects} onSubmit={mockSubmit} />)
 
       const titleInput = screen.getByLabelText("Title *")
       const contentInput = screen.getByLabelText("Content")
@@ -313,13 +256,7 @@ describe("NoteForm", () => {
       })
       const mockSubmit = vi.fn().mockResolvedValue(undefined)
 
-      render(
-        <NoteForm
-          note={note}
-          projects={projects}
-          onSubmit={mockSubmit}
-        />
-      )
+      render(<NoteForm note={note} projects={projects} onSubmit={mockSubmit} />)
 
       const titleInput = screen.getByLabelText("Title *") as HTMLInputElement
       const submitButton = screen.getByRole("button", { name: "Update Note" })
@@ -339,22 +276,14 @@ describe("NoteForm", () => {
       const mockSubmit = vi.fn()
 
       const { rerender } = render(
-        <NoteForm
-          note={note1}
-          projects={projects}
-          onSubmit={mockSubmit}
-        />
+        <NoteForm note={note1} projects={projects} onSubmit={mockSubmit} />,
       )
 
       const titleInput = screen.getByLabelText("Title *") as HTMLInputElement
       expect(titleInput.value).toBe("Note 1")
 
       rerender(
-        <NoteForm
-          note={note2}
-          projects={projects}
-          onSubmit={mockSubmit}
-        />
+        <NoteForm note={note2} projects={projects} onSubmit={mockSubmit} />,
       )
 
       expect(titleInput.value).toBe("Note 2")
@@ -365,12 +294,7 @@ describe("NoteForm", () => {
     it("disables submit button when title is empty", () => {
       const mockSubmit = vi.fn()
 
-      render(
-        <NoteForm
-          projects={projects}
-          onSubmit={mockSubmit}
-        />
-      )
+      render(<NoteForm projects={projects} onSubmit={mockSubmit} />)
 
       const submitButton = screen.getByRole("button", { name: "Create Note" })
       expect(submitButton).toBeDisabled()
@@ -380,12 +304,7 @@ describe("NoteForm", () => {
       const user = userEvent.setup()
       const mockSubmit = vi.fn()
 
-      render(
-        <NoteForm
-          projects={projects}
-          onSubmit={mockSubmit}
-        />
-      )
+      render(<NoteForm projects={projects} onSubmit={mockSubmit} />)
 
       const titleInput = screen.getByLabelText("Title *")
       const submitButton = screen.getByRole("button", { name: "Create Note" })
@@ -401,12 +320,7 @@ describe("NoteForm", () => {
       const user = userEvent.setup()
       const mockSubmit = vi.fn()
 
-      render(
-        <NoteForm
-          projects={projects}
-          onSubmit={mockSubmit}
-        />
-      )
+      render(<NoteForm projects={projects} onSubmit={mockSubmit} />)
 
       const titleInput = screen.getByLabelText("Title *")
       const submitButton = screen.getByRole("button", { name: "Create Note" })
@@ -420,12 +334,7 @@ describe("NoteForm", () => {
       const user = userEvent.setup()
       const mockSubmit = vi.fn()
 
-      render(
-        <NoteForm
-          projects={projects}
-          onSubmit={mockSubmit}
-        />
-      )
+      render(<NoteForm projects={projects} onSubmit={mockSubmit} />)
 
       const form = screen.getByLabelText("Title *").closest("form")!
       const submitButton = screen.getByRole("button", { name: "Create Note" })
@@ -446,7 +355,7 @@ describe("NoteForm", () => {
           projects={projects}
           onSubmit={mockSubmit}
           onCancel={mockCancel}
-        />
+        />,
       )
 
       const cancelButton = screen.getByRole("button", { name: "Cancel" })
@@ -465,7 +374,7 @@ describe("NoteForm", () => {
           onSubmit={mockSubmit}
           onCancel={mockCancel}
           isLoading={true}
-        />
+        />,
       )
 
       const cancelButton = screen.getByRole("button", { name: "Cancel" })
@@ -478,11 +387,7 @@ describe("NoteForm", () => {
       const mockSubmit = vi.fn()
 
       render(
-        <NoteForm
-          projects={projects}
-          onSubmit={mockSubmit}
-          isLoading={true}
-        />
+        <NoteForm projects={projects} onSubmit={mockSubmit} isLoading={true} />,
       )
 
       const titleInput = screen.getByLabelText("Title *")
@@ -498,15 +403,11 @@ describe("NoteForm", () => {
       const mockSubmit = vi.fn()
 
       render(
-        <NoteForm
-          projects={projects}
-          onSubmit={mockSubmit}
-          isLoading={true}
-        />
+        <NoteForm projects={projects} onSubmit={mockSubmit} isLoading={true} />,
       )
 
       expect(
-        screen.getByRole("button", { name: "Saving..." })
+        screen.getByRole("button", { name: "Saving..." }),
       ).toBeInTheDocument()
     })
 
@@ -514,11 +415,7 @@ describe("NoteForm", () => {
       const mockSubmit = vi.fn()
 
       render(
-        <NoteForm
-          projects={projects}
-          onSubmit={mockSubmit}
-          isLoading={true}
-        />
+        <NoteForm projects={projects} onSubmit={mockSubmit} isLoading={true} />,
       )
 
       const submitButton = screen.getByRole("button", { name: "Saving..." })
@@ -530,33 +427,23 @@ describe("NoteForm", () => {
     it("displays all available projects", () => {
       const mockSubmit = vi.fn()
 
-      render(
-        <NoteForm
-          projects={projects}
-          onSubmit={mockSubmit}
-        />
-      )
+      render(<NoteForm projects={projects} onSubmit={mockSubmit} />)
 
       expect(
-        screen.getByRole("option", { name: "Project 1" })
+        screen.getByRole("option", { name: "Project 1" }),
       ).toBeInTheDocument()
       expect(
-        screen.getByRole("option", { name: "Project 2" })
+        screen.getByRole("option", { name: "Project 2" }),
       ).toBeInTheDocument()
     })
 
     it("displays No Project option", () => {
       const mockSubmit = vi.fn()
 
-      render(
-        <NoteForm
-          projects={projects}
-          onSubmit={mockSubmit}
-        />
-      )
+      render(<NoteForm projects={projects} onSubmit={mockSubmit} />)
 
       expect(
-        screen.getByRole("option", { name: "No Project" })
+        screen.getByRole("option", { name: "No Project" }),
       ).toBeInTheDocument()
     })
 
@@ -564,12 +451,7 @@ describe("NoteForm", () => {
       const user = userEvent.setup()
       const mockSubmit = vi.fn().mockResolvedValue(undefined)
 
-      render(
-        <NoteForm
-          projects={projects}
-          onSubmit={mockSubmit}
-        />
-      )
+      render(<NoteForm projects={projects} onSubmit={mockSubmit} />)
 
       const projectSelect = screen.getByLabelText("Project")
       const titleInput = screen.getByLabelText("Title *")
@@ -583,7 +465,7 @@ describe("NoteForm", () => {
         expect(mockSubmit).toHaveBeenCalledWith(
           expect.objectContaining({
             project_id: mockProject1.id,
-          })
+          }),
         )
       })
     })
@@ -593,12 +475,7 @@ describe("NoteForm", () => {
     it("focuses on title input on render", () => {
       const mockSubmit = vi.fn()
 
-      render(
-        <NoteForm
-          projects={projects}
-          onSubmit={mockSubmit}
-        />
-      )
+      render(<NoteForm projects={projects} onSubmit={mockSubmit} />)
 
       const titleInput = screen.getByLabelText("Title *")
       expect(titleInput).toHaveFocus()
@@ -607,12 +484,7 @@ describe("NoteForm", () => {
     it("labels are properly associated with inputs", () => {
       const mockSubmit = vi.fn()
 
-      render(
-        <NoteForm
-          projects={projects}
-          onSubmit={mockSubmit}
-        />
-      )
+      render(<NoteForm projects={projects} onSubmit={mockSubmit} />)
 
       expect(screen.getByLabelText("Title *")).toBeInTheDocument()
       expect(screen.getByLabelText("Content")).toBeInTheDocument()

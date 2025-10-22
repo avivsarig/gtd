@@ -2,7 +2,12 @@ import { describe, it, expect, vi } from "vitest"
 import { render, screen } from "@/test/utils"
 import userEvent from "@testing-library/user-event"
 import { TaskList } from "./TaskList"
-import { createMockTask, createCompletedTask, createMockProject, createMockContext } from "@/test/factories"
+import {
+  createMockTask,
+  createCompletedTask,
+  createMockProject,
+  createMockContext,
+} from "@/test/factories"
 
 describe("TaskList", () => {
   const mockProject = createMockProject()
@@ -19,11 +24,11 @@ describe("TaskList", () => {
           onToggleComplete={vi.fn()}
           onUpdateProject={vi.fn()}
           onUpdateContext={vi.fn()}
-        />
+        />,
       )
 
       expect(
-        screen.getByText("No tasks yet. Create one to get started!")
+        screen.getByText("No tasks yet. Create one to get started!"),
       ).toBeInTheDocument()
     })
 
@@ -42,7 +47,7 @@ describe("TaskList", () => {
           onToggleComplete={vi.fn()}
           onUpdateProject={vi.fn()}
           onUpdateContext={vi.fn()}
-        />
+        />,
       )
 
       expect(screen.getByText("My Task")).toBeInTheDocument()
@@ -65,7 +70,7 @@ describe("TaskList", () => {
           onToggleComplete={vi.fn()}
           onUpdateProject={vi.fn()}
           onUpdateContext={vi.fn()}
-        />
+        />,
       )
 
       expect(screen.getByText("Task 1")).toBeInTheDocument()
@@ -87,7 +92,7 @@ describe("TaskList", () => {
           onToggleComplete={vi.fn()}
           onUpdateProject={vi.fn()}
           onUpdateContext={vi.fn()}
-        />
+        />,
       )
 
       const button = screen.getByRole("button", {
@@ -108,7 +113,7 @@ describe("TaskList", () => {
           onToggleComplete={vi.fn()}
           onUpdateProject={vi.fn()}
           onUpdateContext={vi.fn()}
-        />
+        />,
       )
 
       const button = screen.getByRole("button", {
@@ -129,7 +134,7 @@ describe("TaskList", () => {
           onToggleComplete={vi.fn()}
           onUpdateProject={vi.fn()}
           onUpdateContext={vi.fn()}
-        />
+        />,
       )
 
       const title = screen.getByText("Completed Task")
@@ -150,7 +155,7 @@ describe("TaskList", () => {
           onToggleComplete={mockToggleComplete}
           onUpdateProject={vi.fn()}
           onUpdateContext={vi.fn()}
-        />
+        />,
       )
 
       const button = screen.getByRole("button", {
@@ -173,7 +178,7 @@ describe("TaskList", () => {
           onToggleComplete={vi.fn()}
           onUpdateProject={vi.fn()}
           onUpdateContext={vi.fn()}
-        />
+        />,
       )
 
       const statusSelect = screen.getByLabelText("Task status")
@@ -192,7 +197,7 @@ describe("TaskList", () => {
           onToggleComplete={vi.fn()}
           onUpdateProject={vi.fn()}
           onUpdateContext={vi.fn()}
-        />
+        />,
       )
 
       const projectSelect = screen.getByLabelText("Project assignment")
@@ -211,7 +216,7 @@ describe("TaskList", () => {
           onToggleComplete={vi.fn()}
           onUpdateProject={vi.fn()}
           onUpdateContext={vi.fn()}
-        />
+        />,
       )
 
       const contextSelect = screen.getByLabelText("Context assignment")
@@ -234,7 +239,7 @@ describe("TaskList", () => {
           onToggleComplete={vi.fn()}
           onUpdateProject={vi.fn()}
           onUpdateContext={vi.fn()}
-        />
+        />,
       )
 
       const statusSelect = screen.getByLabelText("Task status")
@@ -257,11 +262,11 @@ describe("TaskList", () => {
           onToggleComplete={vi.fn()}
           onUpdateProject={vi.fn()}
           onUpdateContext={vi.fn()}
-        />
+        />,
       )
 
       expect(
-        screen.getByRole("option", { name: mockProject.name })
+        screen.getByRole("option", { name: mockProject.name }),
       ).toBeInTheDocument()
     })
 
@@ -279,7 +284,7 @@ describe("TaskList", () => {
           onToggleComplete={vi.fn()}
           onUpdateProject={mockUpdateProject}
           onUpdateContext={vi.fn()}
-        />
+        />,
       )
 
       const projectSelect = screen.getByLabelText("Project assignment")
@@ -302,7 +307,7 @@ describe("TaskList", () => {
           onToggleComplete={vi.fn()}
           onUpdateProject={mockUpdateProject}
           onUpdateContext={vi.fn()}
-        />
+        />,
       )
 
       const projectSelect = screen.getByLabelText("Project assignment")
@@ -325,12 +330,12 @@ describe("TaskList", () => {
           onToggleComplete={vi.fn()}
           onUpdateProject={vi.fn()}
           onUpdateContext={vi.fn()}
-        />
+        />,
       )
 
       // Context options include icon + name in the option text
       expect(
-        screen.getByRole("option", { name: new RegExp(`${mockContext.name}`) })
+        screen.getByRole("option", { name: new RegExp(`${mockContext.name}`) }),
       ).toBeInTheDocument()
     })
 
@@ -348,7 +353,7 @@ describe("TaskList", () => {
           onToggleComplete={vi.fn()}
           onUpdateProject={vi.fn()}
           onUpdateContext={mockUpdateContext}
-        />
+        />,
       )
 
       const contextSelect = screen.getByLabelText("Context assignment")
@@ -372,7 +377,7 @@ describe("TaskList", () => {
           onToggleComplete={vi.fn()}
           onUpdateProject={vi.fn()}
           onUpdateContext={vi.fn()}
-        />
+        />,
       )
 
       expect(screen.getByText(dateString)).toBeInTheDocument()
@@ -390,7 +395,7 @@ describe("TaskList", () => {
           onToggleComplete={vi.fn()}
           onUpdateProject={vi.fn()}
           onUpdateContext={vi.fn()}
-        />
+        />,
       )
 
       // Check that the completion badge is shown
@@ -413,7 +418,7 @@ describe("TaskList", () => {
           onUpdateProject={vi.fn()}
           onUpdateContext={vi.fn()}
           onEdit={mockEdit}
-        />
+        />,
       )
 
       expect(screen.getByRole("button", { name: /edit/i })).toBeInTheDocument()
@@ -431,12 +436,14 @@ describe("TaskList", () => {
           onToggleComplete={vi.fn()}
           onUpdateProject={vi.fn()}
           onUpdateContext={vi.fn()}
-        />
+        />,
       )
 
       // Check that no edit button exists (should only have completion button)
       const buttons = screen.getAllByRole("button")
-      const editButtons = buttons.filter((btn) => btn.textContent?.includes("Edit"))
+      const editButtons = buttons.filter((btn) =>
+        btn.textContent?.includes("Edit"),
+      )
       expect(editButtons).toHaveLength(0)
     })
 
@@ -454,11 +461,11 @@ describe("TaskList", () => {
           onUpdateProject={vi.fn()}
           onUpdateContext={vi.fn()}
           onDelete={mockDelete}
-        />
+        />,
       )
 
       expect(
-        screen.getByRole("button", { name: /delete/i })
+        screen.getByRole("button", { name: /delete/i }),
       ).toBeInTheDocument()
     })
   })
