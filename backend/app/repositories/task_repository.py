@@ -53,7 +53,9 @@ def get_all(
 
     if context_id is not None:
         # Join with task_contexts association table
-        query = query.join(task_contexts).filter(task_contexts.c.context_id == _uuid_to_str(context_id))
+        query = query.join(task_contexts).filter(
+            task_contexts.c.context_id == _uuid_to_str(context_id)
+        )
 
     if scheduled_after is not None:
         query = query.filter(Task.scheduled_date >= scheduled_after)

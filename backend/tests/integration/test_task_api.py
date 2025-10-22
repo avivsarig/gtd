@@ -7,7 +7,9 @@ from sqlalchemy.orm import Session
 class TestTaskStatusManagement:
     """Test status management API endpoints."""
 
-    def test_create_task_with_valid_status(self, client_postgres: TestClient, db_session_postgres: Session):
+    def test_create_task_with_valid_status(
+        self, client_postgres: TestClient, db_session_postgres: Session
+    ):
         """Should create task with valid status."""
         response = client_postgres.post(
             "/api/v1/tasks/", json={"title": "Task with waiting status", "status": "waiting"}
@@ -35,13 +37,17 @@ class TestTaskStatusManagement:
         task_id = create_response.json()["id"]
 
         # Update status to waiting
-        update_response = client_postgres.put(f"/api/v1/tasks/{task_id}", json={"status": "waiting"})
+        update_response = client_postgres.put(
+            f"/api/v1/tasks/{task_id}", json={"status": "waiting"}
+        )
 
         assert update_response.status_code == 200
         data = update_response.json()
         assert data["status"] == "waiting"
 
-    def test_complete_task_sets_completed_at(self, client_postgres: TestClient, db_session_postgres: Session):
+    def test_complete_task_sets_completed_at(
+        self, client_postgres: TestClient, db_session_postgres: Session
+    ):
         """Should set completed_at timestamp when completing task."""
         # Create a task
         create_response = client_postgres.post("/api/v1/tasks/", json={"title": "Task to complete"})
@@ -54,10 +60,14 @@ class TestTaskStatusManagement:
         data = complete_response.json()
         assert data["completed_at"] is not None
 
-    def test_uncomplete_task_clears_completed_at(self, client_postgres: TestClient, db_session_postgres: Session):
+    def test_uncomplete_task_clears_completed_at(
+        self, client_postgres: TestClient, db_session_postgres: Session
+    ):
         """Should clear completed_at when uncompleting task."""
         # Create and complete a task
-        create_response = client_postgres.post("/api/v1/tasks/", json={"title": "Task to uncomplete"})
+        create_response = client_postgres.post(
+            "/api/v1/tasks/", json={"title": "Task to uncomplete"}
+        )
         task_id = create_response.json()["id"]
         client_postgres.post(f"/api/v1/tasks/{task_id}/complete")
 
@@ -82,7 +92,9 @@ class TestTaskStatusManagement:
         # Create 3 tasks
         task_ids = []
         for i in range(3):
-            response = client_postgres.post("/api/v1/tasks/", json={"title": f"Task {i}", "status": "next"})
+            response = client_postgres.post(
+                "/api/v1/tasks/", json={"title": f"Task {i}", "status": "next"}
+            )
             task_ids.append(response.json()["id"])
 
         # Bulk update to waiting
@@ -110,7 +122,9 @@ class TestTaskStatusManagement:
 
         assert response.status_code == 422
 
-    def test_bulk_status_update_ignores_nonexistent_tasks(self, client_postgres: TestClient, db_session_postgres: Session):
+    def test_bulk_status_update_ignores_nonexistent_tasks(
+        self, client_postgres: TestClient, db_session_postgres: Session
+    ):
         """Should silently skip nonexistent tasks in bulk update."""
         from uuid import uuid4
 
@@ -137,7 +151,9 @@ class TestTaskStatusManagement:
 
     def test_bulk_status_update_with_empty_list(self, client_postgres: TestClient):
         """Should handle empty task list in bulk update."""
-        response = client_postgres.post("/api/v1/tasks/bulk/status", json={"task_ids": [], "status": "next"})
+        response = client_postgres.post(
+            "/api/v1/tasks/bulk/status", json={"task_ids": [], "status": "next"}
+        )
 
         # Should fail validation due to min_length=1
         assert response.status_code == 422
@@ -146,7 +162,9 @@ class TestTaskStatusManagement:
 class TestBlockedTaskStatusRules:
     """Test business rules for blocked tasks."""
 
-    def test_create_blocked_task_auto_sets_waiting_status(self, client_postgres: TestClient, db_session_postgres: Session):
+    def test_create_blocked_task_auto_sets_waiting_status(
+        self, client_postgres: TestClient, db_session_postgres: Session
+    ):
         """Should automatically set status to waiting when creating blocked task."""
         # Create blocking task
         blocking_response = client_postgres.post("/api/v1/tasks/", json={"title": "Blocking task"})
@@ -163,11 +181,15 @@ class TestBlockedTaskStatusRules:
         # Should override to waiting
         assert data["status"] == "waiting"
 
-    def test_update_task_with_blocker_sets_waiting_status(self, client_postgres: TestClient, db_session_postgres: Session):
+    def test_update_task_with_blocker_sets_waiting_status(
+        self, client_postgres: TestClient, db_session_postgres: Session
+    ):
         """Should set status to waiting when adding blocker to existing task."""
         # Create two tasks
         task1_response = client_postgres.post("/api/v1/tasks/", json={"title": "Task 1"})
-        task2_response = client_postgres.post("/api/v1/tasks/", json={"title": "Task 2", "status": "next"})
+        task2_response = client_postgres.post(
+            "/api/v1/tasks/", json={"title": "Task 2", "status": "next"}
+        )
 
         task1_id = str(task1_response.json()["id"])
         task2_id = str(task2_response.json()["id"])

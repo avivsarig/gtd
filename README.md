@@ -23,15 +23,23 @@ This is a fullstack app based on:
 
 ## Features
 
-- Universal inbox capture with Cmd+K
-- Inbox processing (convert to tasks/notes/projects)
-- Task management with filtering by status, context, project, and dates
+**Implemented:**
+- Universal inbox capture and processing (convert to tasks/notes/projects)
+- Task management with status filtering (Next/Waiting/Someday)
 - Projects with statistics and task assignment
 - Notes with markdown support and project links
-- Contexts (@home, @computer, @phone)
-- Full-text search across tasks, notes, and projects
+- Context management (@home, @computer, @phone)
+- Full-text search API (UI pending)
+- 581 tests passing (180 backend + 401 frontend)
 
-See [Project Status](.claude/status.md) for development roadmap.
+**Pending:**
+- Global keyboard shortcuts (Cmd+K trigger)
+- Search UI component
+- Context and project filtering UI
+- Calendar/scheduling view
+- Weekly review dashboard
+
+See [Project Status](.claude/status.md) for complete roadmap.
 
 ## Quick Start
 

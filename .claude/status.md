@@ -7,9 +7,9 @@
 ## Overall Completion: ~65%
 
 **Test Coverage:**
-- Backend: 153 tests passing
-- Frontend: 365 tests passing
-- Total: **518 tests passing**
+- Backend: 180 tests passing
+- Frontend: 401 tests passing (15 test files)
+- Total: **581 tests passing**
 
 ---
 
@@ -19,7 +19,7 @@
 - PostgreSQL database with SQLAlchemy ORM
 - 9 database migrations applied (tasks, contexts, notes, projects, inbox, full-text search, triggers)
 - Docker containerization with docker-compose
-- 153 backend tests passing
+- 180 backend tests passing
 
 **APIs Implemented:**
 - Tasks: Full CRUD + status management + completion + bulk updates + filtering
@@ -34,7 +34,7 @@
 - Dark mode by default
 - Routing configured
 - API client with full type safety
-- 365 frontend tests passing (Vitest + React Testing Library)
+- 401 frontend tests passing (Vitest + React Testing Library, 15 test files)
 
 **UI Components:**
 - Home page with task list and notes

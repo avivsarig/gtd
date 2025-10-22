@@ -5,7 +5,6 @@ Note: These tests use PostgreSQL with full-text search support via client_postgr
 
 from datetime import UTC, datetime
 
-import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
@@ -17,7 +16,9 @@ from app.models.task import Task
 class TestSearchAPI:
     """Test /api/v1/search/ endpoint."""
 
-    def test_search_with_valid_query_returns_200(self, client_postgres: TestClient, db_session_postgres: Session):
+    def test_search_with_valid_query_returns_200(
+        self, client_postgres: TestClient, db_session_postgres: Session
+    ):
         """Should return 200 with valid search query."""
         # Create a task to search for
         task = Task(title="Find me", description="Test task", status="next")
@@ -45,7 +46,9 @@ class TestSearchAPI:
 
         assert response.status_code == 422
 
-    def test_search_finds_matching_tasks(self, client_postgres: TestClient, db_session_postgres: Session):
+    def test_search_finds_matching_tasks(
+        self, client_postgres: TestClient, db_session_postgres: Session
+    ):
         """Should find tasks that match the search query."""
         # Create tasks with different content
         task1 = Task(title="Python programming", description="Learn Python", status="next")
@@ -68,7 +71,9 @@ class TestSearchAPI:
         assert "Python programming" in titles
         assert "JavaScript coding" not in titles
 
-    def test_search_finds_matching_notes(self, client_postgres: TestClient, db_session_postgres: Session):
+    def test_search_finds_matching_notes(
+        self, client_postgres: TestClient, db_session_postgres: Session
+    ):
         """Should find notes that match the search query."""
         note = Note(title="Meeting notes", content="Discussion about database design")
         db_session_postgres.add(note)
@@ -85,7 +90,9 @@ class TestSearchAPI:
         assert len(note_results) >= 1
         assert note_results[0]["title"] == "Meeting notes"
 
-    def test_search_finds_matching_projects(self, client_postgres: TestClient, db_session_postgres: Session):
+    def test_search_finds_matching_projects(
+        self, client_postgres: TestClient, db_session_postgres: Session
+    ):
         """Should find projects that match the search query."""
         project = Project(
             name="Website Redesign",
@@ -106,7 +113,9 @@ class TestSearchAPI:
         assert len(project_results) >= 1
         assert project_results[0]["title"] == "Website Redesign"
 
-    def test_search_across_all_types_simultaneously(self, client_postgres: TestClient, db_session_postgres: Session):
+    def test_search_across_all_types_simultaneously(
+        self, client_postgres: TestClient, db_session_postgres: Session
+    ):
         """Should search tasks, notes, and projects in a single query."""
         task = Task(title="Backend development", status="next")
         note = Note(title="Backend architecture", content="System design notes")
@@ -129,11 +138,16 @@ class TestSearchAPI:
         assert "note" in types
         assert "project" in types
 
-    def test_search_excludes_deleted_items(self, client_postgres: TestClient, db_session_postgres: Session):
+    def test_search_excludes_deleted_items(
+        self, client_postgres: TestClient, db_session_postgres: Session
+    ):
         """Should not return soft-deleted items in search results."""
         # Create a task and then soft-delete it
         task = Task(
-            title="Deleted task", description="Should not appear", status="next", deleted_at=datetime.now(UTC)
+            title="Deleted task",
+            description="Should not appear",
+            status="next",
+            deleted_at=datetime.now(UTC),
         )
         db_session_postgres.add(task)
         db_session_postgres.commit()
@@ -146,7 +160,9 @@ class TestSearchAPI:
         task_results = [r for r in data["results"] if r["type"] == "task"]
         assert len(task_results) == 0
 
-    def test_search_respects_limit_parameter(self, client_postgres: TestClient, db_session_postgres: Session):
+    def test_search_respects_limit_parameter(
+        self, client_postgres: TestClient, db_session_postgres: Session
+    ):
         """Should limit results to the specified number."""
         # Create multiple tasks
         for i in range(10):
@@ -161,7 +177,9 @@ class TestSearchAPI:
         data = response.json()
         assert len(data["results"]) <= 3
 
-    def test_search_default_limit_is_50(self, client_postgres: TestClient, db_session_postgres: Session):
+    def test_search_default_limit_is_50(
+        self, client_postgres: TestClient, db_session_postgres: Session
+    ):
         """Should use default limit of 50 when not specified."""
         # Create many tasks (more than 50)
         for i in range(60):
@@ -177,7 +195,9 @@ class TestSearchAPI:
         # Should be capped at 50
         assert len(data["results"]) <= 50
 
-    def test_search_maximum_limit_is_100(self, client_postgres: TestClient, db_session_postgres: Session):
+    def test_search_maximum_limit_is_100(
+        self, client_postgres: TestClient, db_session_postgres: Session
+    ):
         """Should cap limit at 100 even if higher value requested."""
         # Create many tasks (more than 100)
         for i in range(110):
@@ -205,7 +225,9 @@ class TestSearchAPI:
         response = client_postgres.get("/api/v1/search/?q=test&limit=101")
         assert response.status_code == 422
 
-    def test_search_returns_empty_results_when_no_matches(self, client_postgres: TestClient, db_session_postgres: Session):
+    def test_search_returns_empty_results_when_no_matches(
+        self, client_postgres: TestClient, db_session_postgres: Session
+    ):
         """Should return empty results list when nothing matches."""
         response = client_postgres.get("/api/v1/search/?q=nonexistentquery12345")
 
@@ -215,7 +237,9 @@ class TestSearchAPI:
         assert data["total_results"] == 0
         assert data["results"] == []
 
-    def test_search_result_includes_all_required_fields(self, client_postgres: TestClient, db_session_postgres: Session):
+    def test_search_result_includes_all_required_fields(
+        self, client_postgres: TestClient, db_session_postgres: Session
+    ):
         """Should include all required fields in search results."""
         task = Task(title="Complete task", description="Task description", status="next")
         db_session_postgres.add(task)
@@ -236,7 +260,9 @@ class TestSearchAPI:
         assert "created_at" in result
         assert "project_id" in result  # Can be None
 
-    def test_search_snippet_is_limited_to_500_chars(self, client_postgres: TestClient, db_session_postgres: Session):
+    def test_search_snippet_is_limited_to_500_chars(
+        self, client_postgres: TestClient, db_session_postgres: Session
+    ):
         """Should truncate snippets to 500 characters maximum."""
         long_description = "x" * 1000  # 1000 character description
         task = Task(title="Long description", description=long_description, status="next")
@@ -253,7 +279,9 @@ class TestSearchAPI:
         if result["snippet"]:
             assert len(result["snippet"]) <= 500
 
-    def test_search_with_special_characters(self, client_postgres: TestClient, db_session_postgres: Session):
+    def test_search_with_special_characters(
+        self, client_postgres: TestClient, db_session_postgres: Session
+    ):
         """Should handle search queries with special characters."""
         task = Task(title="Email: user@example.com", status="next")
         db_session_postgres.add(task)
@@ -265,7 +293,9 @@ class TestSearchAPI:
         assert response.status_code == 200
         # Should not crash - exact matching behavior depends on PostgreSQL FTS
 
-    def test_search_is_case_insensitive(self, client_postgres: TestClient, db_session_postgres: Session):
+    def test_search_is_case_insensitive(
+        self, client_postgres: TestClient, db_session_postgres: Session
+    ):
         """Should perform case-insensitive search."""
         task = Task(title="Important Meeting", status="next")
         db_session_postgres.add(task)
@@ -285,7 +315,9 @@ class TestSearchAPI:
         data = response.json()
         assert data["total_results"] >= 1
 
-    def test_search_ranks_title_matches_higher_than_description(self, client_postgres: TestClient, db_session_postgres: Session):
+    def test_search_ranks_title_matches_higher_than_description(
+        self, client_postgres: TestClient, db_session_postgres: Session
+    ):
         """Should rank items with query in title higher than in description."""
         task1 = Task(title="Review document", description="Some other content", status="next")
         db_session_postgres.add(task1)
@@ -310,7 +342,9 @@ class TestSearchAPI:
         # task1 should have higher rank (appears first or has higher rank value)
         assert task1_result["rank"] > task2_result["rank"]
 
-    def test_search_with_project_association(self, client_postgres: TestClient, db_session_postgres: Session):
+    def test_search_with_project_association(
+        self, client_postgres: TestClient, db_session_postgres: Session
+    ):
         """Should include project_id in task and note results."""
         project = Project(name="Test Project", status="active")
         db_session_postgres.add(project)
@@ -336,7 +370,9 @@ class TestSearchAPI:
         if note_results:
             assert note_results[0]["project_id"] == str(project.id)
 
-    def test_search_partial_word_matching(self, client_postgres: TestClient, db_session_postgres: Session):
+    def test_search_partial_word_matching(
+        self, client_postgres: TestClient, db_session_postgres: Session
+    ):
         """Should find results with partial word matches."""
         task = Task(title="Programming tutorial", status="next")
         db_session_postgres.add(task)

@@ -10,6 +10,7 @@
 import { useEffect, useState } from "react"
 import { QuickCapture } from "@/components/QuickCapture"
 import { UniversalCapture } from "@/components/UniversalCapture"
+import { SearchBar } from "@/components/SearchBar"
 import { TaskList } from "@/components/TaskList"
 import { NotesList } from "@/components/NotesList"
 import { NoteForm } from "@/components/NoteForm"
@@ -52,6 +53,7 @@ export function Home() {
   const [notes, setNotes] = useState<Note[]>([])
   const [inboxItems, setInboxItems] = useState<InboxItem[]>([])
   const [showUniversalCapture, setShowUniversalCapture] = useState(false)
+  const [showSearchBar, setShowSearchBar] = useState(false)
   const [showNoteForm, setShowNoteForm] = useState(false)
   const [editingNote, setEditingNote] = useState<Note | null>(null)
   const [processingId, setProcessingId] = useState<string | null>(null)
@@ -124,6 +126,12 @@ export function Home() {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault()
         setShowUniversalCapture(true)
+      }
+
+      // Cmd+/ / Ctrl+/ - Search
+      if ((e.metaKey || e.ctrlKey) && e.key === "/") {
+        e.preventDefault()
+        setShowSearchBar(true)
       }
     }
 
@@ -504,6 +512,15 @@ export function Home() {
         open={showUniversalCapture}
         onOpenChange={setShowUniversalCapture}
         onSuccess={loadInbox}
+      />
+
+      {/* Search Modal (Cmd+/) */}
+      <SearchBar
+        open={showSearchBar}
+        onOpenChange={setShowSearchBar}
+        onNavigate={(result) => {
+          console.log("Navigate to:", result)
+        }}
       />
 
       {/* Note Form Modal */}

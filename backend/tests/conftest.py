@@ -1,6 +1,5 @@
 """Pytest configuration and shared fixtures."""
 
-import os
 from datetime import UTC, datetime
 
 import pytest
@@ -12,7 +11,6 @@ from sqlalchemy.pool import StaticPool
 from app.core.config import settings
 from app.db.database import Base, get_db
 from app.main import app
-from app.models.context import Context
 from app.models.note import Note
 from app.models.project import Project
 from app.models.task import Task
@@ -89,7 +87,11 @@ def db_session_postgres():
         session.rollback()
         with engine.begin() as conn:
             # Truncate all tables to clean up test data
-            conn.execute(text("TRUNCATE tasks, notes, projects, contexts, inbox_items, task_contexts, note_task_links CASCADE"))
+            conn.execute(
+                text(
+                    "TRUNCATE tasks, notes, projects, contexts, inbox_items, task_contexts, note_task_links CASCADE"
+                )
+            )
         session.close()
         engine.dispose()
 

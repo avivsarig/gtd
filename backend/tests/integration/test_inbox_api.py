@@ -41,7 +41,9 @@ class TestInboxCRUD:
         # Verify items are ordered oldest first (created_at ASC)
         assert items[0]["content"] == "First thought"
 
-    def test_list_inbox_items_empty(self, client_postgres: TestClient, db_session_postgres: Session):
+    def test_list_inbox_items_empty(
+        self, client_postgres: TestClient, db_session_postgres: Session
+    ):
         """Should return empty list when no inbox items."""
         response = client_postgres.get("/api/v1/inbox/")
 
@@ -52,7 +54,9 @@ class TestInboxCRUD:
     def test_get_inbox_item_by_id(self, client_postgres: TestClient, db_session_postgres: Session):
         """Should retrieve specific inbox item by ID."""
         # Create inbox item
-        create_response = client_postgres.post("/api/v1/inbox/", json={"content": "Specific thought"})
+        create_response = client_postgres.post(
+            "/api/v1/inbox/", json={"content": "Specific thought"}
+        )
         item_id = create_response.json()["id"]
 
         # Get by ID
@@ -73,7 +77,9 @@ class TestInboxCRUD:
     def test_update_inbox_item(self, client_postgres: TestClient, db_session_postgres: Session):
         """Should update inbox item content."""
         # Create inbox item
-        create_response = client_postgres.post("/api/v1/inbox/", json={"content": "Original thought"})
+        create_response = client_postgres.post(
+            "/api/v1/inbox/", json={"content": "Original thought"}
+        )
         item_id = create_response.json()["id"]
 
         # Update content
@@ -118,7 +124,9 @@ class TestInboxCRUD:
 class TestInboxCount:
     """Test unprocessed count endpoint."""
 
-    def test_get_unprocessed_count_zero(self, client_postgres: TestClient, db_session_postgres: Session):
+    def test_get_unprocessed_count_zero(
+        self, client_postgres: TestClient, db_session_postgres: Session
+    ):
         """Should return zero when no unprocessed items."""
         response = client_postgres.get("/api/v1/inbox/count")
 
@@ -143,7 +151,9 @@ class TestInboxCount:
 class TestInboxConversions:
     """Test converting inbox items to tasks, notes, and projects."""
 
-    def test_convert_inbox_to_task_with_defaults(self, client_postgres: TestClient, db_session_postgres: Session):
+    def test_convert_inbox_to_task_with_defaults(
+        self, client_postgres: TestClient, db_session_postgres: Session
+    ):
         """Should convert inbox item to task using content as title."""
         # Create inbox item
         create_response = client_postgres.post("/api/v1/inbox/", json={"content": "Buy groceries"})
@@ -163,10 +173,14 @@ class TestInboxConversions:
         item_ids = [item["id"] for item in inbox_items]
         assert item_id not in item_ids
 
-    def test_convert_inbox_to_task_with_custom_title(self, client_postgres: TestClient, db_session_postgres: Session):
+    def test_convert_inbox_to_task_with_custom_title(
+        self, client_postgres: TestClient, db_session_postgres: Session
+    ):
         """Should use custom title when converting to task."""
         # Create inbox item
-        create_response = client_postgres.post("/api/v1/inbox/", json={"content": "Original content"})
+        create_response = client_postgres.post(
+            "/api/v1/inbox/", json={"content": "Original content"}
+        )
         item_id = create_response.json()["id"]
 
         # Convert with custom title
@@ -180,7 +194,9 @@ class TestInboxConversions:
         assert task_data["title"] == "Custom task title"
         assert task_data["description"] == "Additional details"
 
-    def test_convert_inbox_to_task_with_project(self, client_postgres: TestClient, db_session_postgres: Session):
+    def test_convert_inbox_to_task_with_project(
+        self, client_postgres: TestClient, db_session_postgres: Session
+    ):
         """Should associate task with project when converting."""
         # Create a project first
         project_response = client_postgres.post(
@@ -189,7 +205,9 @@ class TestInboxConversions:
         project_id = project_response.json()["id"]
 
         # Create inbox item
-        create_response = client_postgres.post("/api/v1/inbox/", json={"content": "Fix leaky faucet"})
+        create_response = client_postgres.post(
+            "/api/v1/inbox/", json={"content": "Fix leaky faucet"}
+        )
         item_id = create_response.json()["id"]
 
         # Convert to task with project assignment
@@ -208,7 +226,9 @@ class TestInboxConversions:
 
         assert response.status_code == 404
 
-    def test_convert_inbox_to_note_with_defaults(self, client_postgres: TestClient, db_session_postgres: Session):
+    def test_convert_inbox_to_note_with_defaults(
+        self, client_postgres: TestClient, db_session_postgres: Session
+    ):
         """Should convert inbox item to note."""
         # Create inbox item
         create_response = client_postgres.post(
@@ -225,7 +245,9 @@ class TestInboxConversions:
         assert "Meeting notes" in note_data["title"]
         assert note_data["content"] == "Meeting notes\nKey points discussed"
 
-    def test_convert_inbox_to_note_with_custom_title(self, client_postgres: TestClient, db_session_postgres: Session):
+    def test_convert_inbox_to_note_with_custom_title(
+        self, client_postgres: TestClient, db_session_postgres: Session
+    ):
         """Should use custom title when converting to note."""
         # Create inbox item
         create_response = client_postgres.post("/api/v1/inbox/", json={"content": "Quick note"})
@@ -249,21 +271,29 @@ class TestInboxConversions:
 
         assert response.status_code == 404
 
-    def test_convert_inbox_to_project_with_defaults(self, client_postgres: TestClient, db_session_postgres: Session):
+    def test_convert_inbox_to_project_with_defaults(
+        self, client_postgres: TestClient, db_session_postgres: Session
+    ):
         """Should convert inbox item to project."""
         # Create inbox item
-        create_response = client_postgres.post("/api/v1/inbox/", json={"content": "Website redesign"})
+        create_response = client_postgres.post(
+            "/api/v1/inbox/", json={"content": "Website redesign"}
+        )
         item_id = create_response.json()["id"]
 
         # Convert to project
-        convert_response = client_postgres.post(f"/api/v1/inbox/{item_id}/convert-to-project", json={})
+        convert_response = client_postgres.post(
+            f"/api/v1/inbox/{item_id}/convert-to-project", json={}
+        )
 
         assert convert_response.status_code == 200
         project_data = convert_response.json()
         assert project_data["name"] == "Website redesign"
         assert project_data["status"] == "active"
 
-    def test_convert_inbox_to_project_with_outcome(self, client_postgres: TestClient, db_session_postgres: Session):
+    def test_convert_inbox_to_project_with_outcome(
+        self, client_postgres: TestClient, db_session_postgres: Session
+    ):
         """Should create project with outcome statement."""
         # Create inbox item
         create_response = client_postgres.post("/api/v1/inbox/", json={"content": "Q4 Marketing"})
@@ -291,7 +321,9 @@ class TestInboxConversions:
 class TestInboxProcessedFilter:
     """Test filtering inbox items by processed status."""
 
-    def test_list_excludes_processed_by_default(self, client_postgres: TestClient, db_session_postgres: Session):
+    def test_list_excludes_processed_by_default(
+        self, client_postgres: TestClient, db_session_postgres: Session
+    ):
         """Should exclude processed items from default listing."""
         # Create inbox item and convert it
         create_response = client_postgres.post("/api/v1/inbox/", json={"content": "Process me"})
@@ -305,7 +337,9 @@ class TestInboxProcessedFilter:
 
         assert item_id not in item_ids
 
-    def test_list_includes_processed_when_requested(self, client_postgres: TestClient, db_session_postgres: Session):
+    def test_list_includes_processed_when_requested(
+        self, client_postgres: TestClient, db_session_postgres: Session
+    ):
         """Should include processed items when include_processed=true."""
         # Create inbox item and convert it
         create_response = client_postgres.post("/api/v1/inbox/", json={"content": "Process me"})
@@ -322,7 +356,9 @@ class TestInboxProcessedFilter:
         processed_item = next(item for item in items if item["id"] == item_id)
         assert processed_item["processed_at"] is not None
 
-    def test_count_excludes_processed_items(self, client_postgres: TestClient, db_session_postgres: Session):
+    def test_count_excludes_processed_items(
+        self, client_postgres: TestClient, db_session_postgres: Session
+    ):
         """Should not count processed items in unprocessed count."""
         # Create 3 inbox items
         item1 = client_postgres.post("/api/v1/inbox/", json={"content": "Item 1"}).json()

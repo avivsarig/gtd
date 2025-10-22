@@ -1,8 +1,9 @@
 """InboxItem model - Universal capture bucket for GTD."""
 
-from sqlalchemy import TIMESTAMP, Column, String, Text
-from sqlalchemy.sql import func, text
 from uuid import uuid4
+
+from sqlalchemy import TIMESTAMP, Column, String, Text
+from sqlalchemy.sql import func
 
 from app.db.database import Base
 

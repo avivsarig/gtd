@@ -634,6 +634,36 @@ describe("Home", () => {
       // Should not open another modal (only one should exist from + New Note)
       expect(titleInput).toHaveFocus()
     })
+
+    it("test_cmd_slash_opens_search_modal", async () => {
+      const user = userEvent.setup()
+
+      render(<Home />)
+
+      await user.keyboard("{Meta>}/{/Meta}")
+
+      await waitFor(() => {
+        const searchInput = screen.queryByPlaceholderText(/search/i)
+        expect(searchInput).toBeInTheDocument()
+      })
+    })
+
+    it("test_search_shortcut_ignored_when_typing_in_input", async () => {
+      const user = userEvent.setup()
+
+      render(<Home />)
+
+      const newNoteButton = screen.getByRole("button", { name: /\+ New Note/i })
+      await user.click(newNoteButton)
+
+      const titleInput = screen.getByLabelText("Title *")
+      titleInput.focus()
+
+      await user.keyboard("{Meta>}/{/Meta}")
+
+      expect(titleInput).toHaveFocus()
+      expect(screen.queryByPlaceholderText(/search/i)).not.toBeInTheDocument()
+    })
   })
 
   describe("context management", () => {

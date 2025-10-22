@@ -540,6 +540,45 @@ export async function deleteContext(id: string): Promise<void> {
 }
 
 /**
+ * Search
+ */
+export type SearchResultType = "task" | "note" | "project"
+
+export interface SearchResultItem {
+  id: string
+  type: SearchResultType
+  title: string
+  snippet?: string | null
+  rank: number
+  created_at: string
+  project_id?: string | null
+}
+
+export interface SearchResponse {
+  query: string
+  total_results: number
+  results: SearchResultItem[]
+}
+
+/**
+ * Search across tasks, notes, and projects
+ */
+export async function search(
+  query: string,
+  limit = 50,
+): Promise<SearchResponse> {
+  const params = new URLSearchParams({
+    q: query,
+    limit: limit.toString(),
+  })
+  const response = await fetch(`${API_BASE_URL}/api/v1/search/?${params}`)
+  if (!response.ok) {
+    throw new Error("Search failed")
+  }
+  return response.json()
+}
+
+/**
  * Health check
  */
 export async function healthCheck(): Promise<{ status: string }> {

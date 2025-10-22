@@ -30,7 +30,9 @@ class TestNoteAPI:
         assert data["title"] == "Quick Note"
         assert data["content"] is None
 
-    def test_create_note_with_project(self, client_postgres: TestClient, db_session_postgres: Session):
+    def test_create_note_with_project(
+        self, client_postgres: TestClient, db_session_postgres: Session
+    ):
         """Should create note associated with a project."""
         # Create a project first
         project_response = client_postgres.post("/api/v1/projects/", json={"name": "Test Project"})
@@ -90,8 +92,12 @@ class TestNoteAPI:
         project2_id = project2_response.json()["id"]
 
         # Create notes for different projects
-        client_postgres.post("/api/v1/notes/", json={"title": "Note P1-1", "project_id": project1_id})
-        client_postgres.post("/api/v1/notes/", json={"title": "Note P1-2", "project_id": project1_id})
+        client_postgres.post(
+            "/api/v1/notes/", json={"title": "Note P1-1", "project_id": project1_id}
+        )
+        client_postgres.post(
+            "/api/v1/notes/", json={"title": "Note P1-2", "project_id": project1_id}
+        )
         client_postgres.post("/api/v1/notes/", json={"title": "Note P2", "project_id": project2_id})
         client_postgres.post("/api/v1/notes/", json={"title": "Note No Project"})
 
@@ -153,7 +159,9 @@ class TestNoteAPI:
         note_id = create_response.json()["id"]
 
         # Update only title
-        update_response = client_postgres.put(f"/api/v1/notes/{note_id}", json={"title": "New Title"})
+        update_response = client_postgres.put(
+            f"/api/v1/notes/{note_id}", json={"title": "New Title"}
+        )
 
         assert update_response.status_code == 200
         data = update_response.json()

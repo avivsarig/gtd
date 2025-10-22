@@ -247,10 +247,14 @@ class TestUpdateTask:
         with patch(
             "app.controllers.task_controller.task_repository.get_by_id", return_value=mock_task
         ):
-            with patch(
-                "app.controllers.task_controller.task_repository.get_by_id", return_value=mock_task
-            ), patch(
-                "app.controllers.task_controller.task_repository.update", return_value=mock_task
+            with (
+                patch(
+                    "app.controllers.task_controller.task_repository.get_by_id",
+                    return_value=mock_task,
+                ),
+                patch(
+                    "app.controllers.task_controller.task_repository.update", return_value=mock_task
+                ),
             ):
                 task_controller.update_task(mock_db, task_id, update_data)
 
@@ -310,9 +314,12 @@ class TestCompleteTask:
         task_id = uuid4()
         mock_task = Mock(spec=Task, id=task_id, completed_at=None)
 
-        with patch(
-            "app.controllers.task_controller.task_repository.get_by_id", return_value=mock_task
-        ), patch("app.controllers.task_controller.datetime") as mock_datetime:
+        with (
+            patch(
+                "app.controllers.task_controller.task_repository.get_by_id", return_value=mock_task
+            ),
+            patch("app.controllers.task_controller.datetime") as mock_datetime,
+        ):
             mock_now = datetime(2025, 10, 5, 12, 0, 0)
             mock_datetime.utcnow.return_value = mock_now
 
@@ -402,7 +409,9 @@ class TestBulkUpdateStatus:
                 mock_now = datetime(2025, 10, 5, 12, 0, 0)
                 mock_datetime.utcnow.return_value = mock_now
 
-                updated_tasks = task_controller.bulk_update_status(mock_db, task_ids, TaskStatus.WAITING)
+                updated_tasks = task_controller.bulk_update_status(
+                    mock_db, task_ids, TaskStatus.WAITING
+                )
 
                 assert len(updated_tasks) == 3
                 assert mock_task1.status == TaskStatus.WAITING.value

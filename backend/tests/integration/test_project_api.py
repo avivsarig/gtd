@@ -62,7 +62,9 @@ class TestProjectAPI:
     def test_list_projects_with_stats(self, client_postgres: TestClient):
         """Should return projects with task statistics."""
         # Create project
-        project_response = client_postgres.post("/api/v1/projects/", json={"name": "Project with Tasks"})
+        project_response = client_postgres.post(
+            "/api/v1/projects/", json={"name": "Project with Tasks"}
+        )
         project_id = project_response.json()["id"]
 
         # Create tasks for the project
@@ -143,7 +145,9 @@ class TestProjectAPI:
         project_id = create_response.json()["id"]
 
         # Update only name
-        update_response = client_postgres.put(f"/api/v1/projects/{project_id}", json={"name": "New Name"})
+        update_response = client_postgres.put(
+            f"/api/v1/projects/{project_id}", json={"name": "New Name"}
+        )
 
         assert update_response.status_code == 200
         data = update_response.json()
@@ -165,7 +169,9 @@ class TestProjectAPI:
     def test_complete_project(self, client_postgres: TestClient):
         """Should mark project as completed."""
         # Create project
-        create_response = client_postgres.post("/api/v1/projects/", json={"name": "Project to Complete"})
+        create_response = client_postgres.post(
+            "/api/v1/projects/", json={"name": "Project to Complete"}
+        )
         project_id = create_response.json()["id"]
 
         # Complete project
@@ -179,7 +185,9 @@ class TestProjectAPI:
     def test_delete_project(self, client_postgres: TestClient):
         """Should soft delete project."""
         # Create project
-        create_response = client_postgres.post("/api/v1/projects/", json={"name": "Project to Delete"})
+        create_response = client_postgres.post(
+            "/api/v1/projects/", json={"name": "Project to Delete"}
+        )
         project_id = create_response.json()["id"]
 
         # Delete project

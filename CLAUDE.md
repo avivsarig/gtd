@@ -25,8 +25,6 @@ Strong typing is highly encouraged.
 - Use factories/fixtures for data setup
 - Independent tests (no shared state)
 
-**Backend** - To be expended here: [README.md](/backend/tests/README.md)
-**Frontend** - To be expended here: [README.md](/frontend/tests/README.md)
 
 ## Documentation
 - The documentation of this project is divided between README and CLAUDE files; These are nested in multiple directories of this project

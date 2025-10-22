@@ -13,6 +13,8 @@ import {
   type Note,
   type InboxItem,
   type Context,
+  type SearchResultItem,
+  type SearchResponse,
 } from "@/lib/api"
 
 let taskCounter = 0
@@ -20,6 +22,7 @@ let projectCounter = 0
 let noteCounter = 0
 let inboxCounter = 0
 let contextCounter = 0
+let searchResultCounter = 0
 
 export function resetCounters() {
   taskCounter = 0
@@ -27,6 +30,7 @@ export function resetCounters() {
   noteCounter = 0
   inboxCounter = 0
   contextCounter = 0
+  searchResultCounter = 0
 }
 
 export function createMockTask(overrides?: Partial<Task>): Task {
@@ -205,4 +209,41 @@ export function createMultipleContexts(
   overrides?: Partial<Context>,
 ): Context[] {
   return Array.from({ length: count }, () => createMockContext(overrides))
+}
+
+export function createMockSearchResult(
+  overrides?: Partial<SearchResultItem>,
+): SearchResultItem {
+  const id = overrides?.id || crypto.randomUUID()
+  const now = new Date().toISOString()
+  searchResultCounter++
+
+  return {
+    id,
+    type: "task",
+    title: `Search Result ${searchResultCounter}`,
+    snippet: `Snippet for result ${searchResultCounter}`,
+    rank: 0.5,
+    created_at: now,
+    project_id: null,
+    ...overrides,
+  }
+}
+
+export function createMockSearchResponse(
+  overrides?: Partial<SearchResponse>,
+): SearchResponse {
+  return {
+    query: "test",
+    total_results: 0,
+    results: [],
+    ...overrides,
+  }
+}
+
+export function createMultipleSearchResults(
+  count: number,
+  overrides?: Partial<SearchResultItem>,
+): SearchResultItem[] {
+  return Array.from({ length: count }, () => createMockSearchResult(overrides))
 }

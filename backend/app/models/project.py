@@ -1,10 +1,11 @@
 """Project model - Collections of tasks working toward an outcome."""
 
+from uuid import uuid4
+
 from sqlalchemy import TIMESTAMP, Column, String, Text
 from sqlalchemy.dialects.postgresql import TSVECTOR
-from sqlalchemy.orm import deferred, relationship
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func, text
-from uuid import uuid4
 
 from app.db.database import Base
 
@@ -31,9 +32,7 @@ class Project(Base):
     search_vector = Column(TSVECTOR)
 
     # Mapper configuration - exclude search_vector from INSERT/UPDATE
-    __mapper_args__ = {
-        "exclude_properties": ["search_vector"]
-    }
+    __mapper_args__ = {"exclude_properties": ["search_vector"]}
 
     # Relationships
     tasks = relationship("Task", back_populates="project", foreign_keys="Task.project_id")

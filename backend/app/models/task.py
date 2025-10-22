@@ -1,10 +1,11 @@
 """Task model - Core GTD actionable items."""
 
+from uuid import uuid4
+
 from sqlalchemy import TIMESTAMP, Column, Date, ForeignKey, String, Text, Time
 from sqlalchemy.dialects.postgresql import TSVECTOR
-from sqlalchemy.orm import deferred, relationship
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func, text
-from uuid import uuid4
 
 from app.db.database import Base
 from app.models.associations import task_contexts
@@ -22,9 +23,7 @@ class Task(Base):
     scheduled_date = Column(Date, nullable=True)
     scheduled_time = Column(Time, nullable=True)
     due_date = Column(Date, nullable=True)
-    project_id = Column(
-        String(36), ForeignKey("projects.id", ondelete="SET NULL"), nullable=True
-    )
+    project_id = Column(String(36), ForeignKey("projects.id", ondelete="SET NULL"), nullable=True)
     blocked_by_task_id = Column(
         String(36), ForeignKey("tasks.id", ondelete="SET NULL"), nullable=True
     )
@@ -39,9 +38,7 @@ class Task(Base):
     search_vector = Column(TSVECTOR)
 
     # Mapper configuration - exclude search_vector from INSERT/UPDATE
-    __mapper_args__ = {
-        "exclude_properties": ["search_vector"]
-    }
+    __mapper_args__ = {"exclude_properties": ["search_vector"]}
 
     # Relationships
     project = relationship("Project", back_populates="tasks", foreign_keys=[project_id])
