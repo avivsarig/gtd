@@ -1,19 +1,21 @@
 """Context model - Tags for filtering tasks by location/tool."""
 
-from uuid import uuid4
-
 from sqlalchemy import TIMESTAMP, Column, Integer, String, Text
 from sqlalchemy.sql import func, text
 
 from app.db.database import Base
+from app.models.mixins import UUIDPrimaryKeyMixin
 
 
-class Context(Base):
-    """Context model for task categorization (@home, @computer, etc.)."""
+class Context(Base, UUIDPrimaryKeyMixin):
+    """Context model for task categorization (@home, @computer, etc.).
+
+    Note: Context only has created_at timestamp (no updated_at).
+    Contexts are relatively static and don't need update tracking.
+    """
 
     __tablename__ = "contexts"
 
-    id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
     name = Column(String(50), nullable=False, unique=True)
     description = Column(Text, nullable=True)
     icon = Column(String(50), nullable=True)

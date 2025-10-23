@@ -1,22 +1,19 @@
 """Task model - Core GTD actionable items."""
 
-from uuid import uuid4
-
 from sqlalchemy import TIMESTAMP, Column, Date, ForeignKey, String, Text, Time
-from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func, text
+from sqlalchemy.sql import text
 
 from app.db.database import Base
 from app.models.associations import task_contexts
+from app.models.mixins import SearchableMixin, SoftDeletableMixin, UUIDPrimaryKeyMixin
 
 
-class Task(Base):
+class Task(Base, UUIDPrimaryKeyMixin, SoftDeletableMixin, SearchableMixin):
     """Task model - the primary actionable items in GTD."""
 
     __tablename__ = "tasks"
 
-    id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
     title = Column(String(500), nullable=False)
     description = Column(Text, nullable=True)
     status = Column(String(20), nullable=False, server_default=text("'next'"))
@@ -27,20 +24,16 @@ class Task(Base):
     blocked_by_task_id = Column(
         String(36), ForeignKey("tasks.id", ondelete="SET NULL"), nullable=True
     )
-    created_at = Column(TIMESTAMP, nullable=False, server_default=func.now())
-    updated_at = Column(TIMESTAMP, nullable=False, server_default=func.now())
     completed_at = Column(TIMESTAMP, nullable=True)
     archived_at = Column(TIMESTAMP, nullable=True)
-    deleted_at = Column(TIMESTAMP, nullable=True)
-
-    # PostgreSQL full-text search (deferred for SQLite compatibility)
-    # Generated column - exclude from mapper to prevent insert/update errors
-    search_vector = Column(TSVECTOR)
-
-    # Mapper configuration - exclude search_vector from INSERT/UPDATE
-    __mapper_args__ = {"exclude_properties": ["search_vector"]}
 
     # Relationships
     project = relationship("Project", back_populates="tasks", foreign_keys=[project_id])
     contexts = relationship("Context", secondary=task_contexts, backref="tasks")
-    blocking_task = relationship("Task", remote_side=[id], foreign_keys=[blocked_by_task_id])
+
+    @classmethod
+    def __declare_last__(cls):
+        """Configure self-referential relationship after mapper is configured."""
+        cls.blocking_task = relationship(
+            "Task", remote_side=[cls.id], foreign_keys=[cls.blocked_by_task_id]
+        )
