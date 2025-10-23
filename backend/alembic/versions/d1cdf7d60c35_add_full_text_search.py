@@ -8,6 +8,12 @@ Create Date: 2025-10-01 19:49:52.760509
 from collections.abc import Sequence
 
 from alembic import op
+from alembic.utils.search_helpers import drop_search_vector_sql, generate_search_vector_sql
+
+# Import models to use their __search_fields__ configuration (single source of truth)
+from app.models.note import Note
+from app.models.project import Project
+from app.models.task import Task
 
 # revision identifiers, used by Alembic.
 revision: str = 'd1cdf7d60c35'
@@ -17,42 +23,24 @@ depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
-    # Add tsvector columns for full-text search
-    op.execute("""
-        ALTER TABLE tasks ADD COLUMN search_vector tsvector
-        GENERATED ALWAYS AS (
-            setweight(to_tsvector('english', coalesce(title, '')), 'A') ||
-            setweight(to_tsvector('english', coalesce(description, '')), 'B')
-        ) STORED
-    """)
+    # Use model __search_fields__ as single source of truth
+    searchable_models = [
+        ("tasks", Task),
+        ("notes", Note),
+        ("projects", Project),
+    ]
 
-    op.execute("""
-        ALTER TABLE notes ADD COLUMN search_vector tsvector
-        GENERATED ALWAYS AS (
-            setweight(to_tsvector('english', coalesce(title, '')), 'A') ||
-            setweight(to_tsvector('english', coalesce(content, '')), 'B')
-        ) STORED
-    """)
-
-    op.execute("""
-        ALTER TABLE projects ADD COLUMN search_vector tsvector
-        GENERATED ALWAYS AS (
-            setweight(to_tsvector('english', coalesce(name, '')), 'A') ||
-            setweight(to_tsvector('english', coalesce(outcome_statement, '')), 'B')
-        ) STORED
-    """)
-
-    # Create GIN indexes for fast text search
-    op.create_index('idx_tasks_search', 'tasks', ['search_vector'], postgresql_using='gin')
-    op.create_index('idx_notes_search', 'notes', ['search_vector'], postgresql_using='gin')
-    op.create_index('idx_projects_search', 'projects', ['search_vector'], postgresql_using='gin')
+    # Apply search_vector column and index to all tables
+    for table_name, model in searchable_models:
+        field_weights = model.get_search_config()
+        add_column_sql, create_index_sql = generate_search_vector_sql(table_name, field_weights)
+        op.execute(add_column_sql)
+        op.execute(create_index_sql)
 
 
 def downgrade() -> None:
-    op.drop_index('idx_projects_search', table_name='projects')
-    op.drop_index('idx_notes_search', table_name='notes')
-    op.drop_index('idx_tasks_search', table_name='tasks')
-
-    op.execute('ALTER TABLE projects DROP COLUMN search_vector')
-    op.execute('ALTER TABLE notes DROP COLUMN search_vector')
-    op.execute('ALTER TABLE tasks DROP COLUMN search_vector')
+    # Remove search vectors in reverse order
+    for table_name in ["projects", "notes", "tasks"]:
+        drop_index_sql, drop_column_sql = drop_search_vector_sql(table_name)
+        op.execute(drop_index_sql)
+        op.execute(drop_column_sql)

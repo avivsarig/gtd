@@ -12,6 +12,10 @@ class Note(Base, UUIDPrimaryKeyMixin, SoftDeletableMixin, SearchableMixin):
     """Note model for reference material and documentation."""
 
     __tablename__ = "notes"
+    __search_fields__ = {
+        "title": "A",
+        "content": "B",
+    }
 
     title = Column(String(200), nullable=False)
     content = Column(Text, nullable=True)

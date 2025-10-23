@@ -13,6 +13,10 @@ class Task(Base, UUIDPrimaryKeyMixin, SoftDeletableMixin, SearchableMixin):
     """Task model - the primary actionable items in GTD."""
 
     __tablename__ = "tasks"
+    __search_fields__ = {
+        "title": "A",
+        "description": "B",
+    }
 
     title = Column(String(500), nullable=False)
     description = Column(Text, nullable=True)

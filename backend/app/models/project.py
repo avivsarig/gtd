@@ -12,6 +12,10 @@ class Project(Base, UUIDPrimaryKeyMixin, SoftDeletableMixin, SearchableMixin):
     """Project model for grouping related tasks."""
 
     __tablename__ = "projects"
+    __search_fields__ = {
+        "name": "A",
+        "outcome_statement": "B",
+    }
 
     name = Column(String(200), nullable=False)
     outcome_statement = Column(Text, nullable=True)

@@ -30,7 +30,7 @@ This is a fullstack app based on:
 - Notes with markdown support and project links
 - Context management (@home, @computer, @phone)
 - Full-text search API (UI pending)
-- 581 tests passing (180 backend + 401 frontend)
+- 610 tests passing (209 backend + 401 frontend)
 
 **Pending:**
 - Global keyboard shortcuts (Cmd+K trigger)
