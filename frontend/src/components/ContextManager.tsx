@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button"
 import { ItemCard } from "@/components/ItemCard"
 import { EmptyState } from "@/components/EmptyState"
 import { Plus, X } from "lucide-react"
+import { MESSAGES } from "@/lib/messages"
 
 interface ContextManagerProps {
   contexts: Context[]
@@ -37,7 +38,7 @@ export function ContextManager({
     e.preventDefault()
 
     if (!formData.name.trim()) {
-      setError("Context name is required")
+      setError(MESSAGES.validation.CONTEXT_NAME_REQUIRED)
       return
     }
 
@@ -54,7 +55,11 @@ export function ContextManager({
       setFormData({ name: "", description: "", icon: "", sort_order: 0 })
       setIsCreating(false)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create context")
+      setError(
+        err instanceof Error
+          ? err.message
+          : MESSAGES.errors.CREATE_CONTEXT_FAILED,
+      )
     } finally {
       setIsSubmitting(false)
     }
@@ -152,7 +157,9 @@ export function ContextManager({
 
             <div className="flex gap-2">
               <Button type="submit" disabled={isSubmitting} size="sm">
-                {isSubmitting ? "Creating..." : "Create Context"}
+                {isSubmitting
+                  ? MESSAGES.buttons.CREATING
+                  : MESSAGES.buttons.CREATE_CONTEXT}
               </Button>
               <Button
                 type="button"
@@ -177,7 +184,9 @@ export function ContextManager({
             <ItemCard
               key={context.id}
               onDelete={() => onDelete(context.id)}
-              deleteConfirmMessage={`Delete context "${context.name}"?`}
+              deleteConfirmMessage={MESSAGES.confirmations.DELETE_CONTEXT(
+                context.name,
+              )}
             >
               <div className="flex items-start gap-2">
                 {context.icon && (

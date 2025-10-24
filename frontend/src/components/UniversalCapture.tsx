@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
+import { MESSAGES } from "@/lib/messages"
 
 interface UniversalCaptureProps {
   open: boolean
@@ -35,7 +36,7 @@ export function UniversalCapture({
     e.preventDefault()
 
     if (!content.trim()) {
-      setError("Please enter something")
+      setError(MESSAGES.validation.REQUIRED_FIELD)
       return
     }
 
@@ -50,7 +51,9 @@ export function UniversalCapture({
       onOpenChange(false)
       onSuccess?.()
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to capture")
+      setError(
+        err instanceof Error ? err.message : MESSAGES.errors.CAPTURE_FAILED,
+      )
     } finally {
       setIsSubmitting(false)
     }
@@ -97,7 +100,9 @@ export function UniversalCapture({
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting || !content.trim()}>
-              {isSubmitting ? "Capturing..." : "Capture"}
+              {isSubmitting
+                ? MESSAGES.buttons.CAPTURING
+                : MESSAGES.buttons.CAPTURE}
             </Button>
           </div>
         </form>
