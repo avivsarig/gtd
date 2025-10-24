@@ -22,7 +22,9 @@ class ProjectFactory(factory.Factory):
     id = factory.LazyFunction(lambda: str(uuid4()))
     name = factory.Sequence(lambda n: f"Project {n}")
     outcome_statement = factory.Faker("sentence")
-    status = fuzzy.FuzzyChoice([ProjectStatus.ACTIVE.value, ProjectStatus.ON_HOLD.value, ProjectStatus.COMPLETED.value])
+    status = fuzzy.FuzzyChoice(
+        [ProjectStatus.ACTIVE.value, ProjectStatus.ON_HOLD.value, ProjectStatus.COMPLETED.value]
+    )
     parent_project_id = None
     created_at = factory.LazyFunction(lambda: datetime.now(UTC))
     updated_at = factory.LazyFunction(lambda: datetime.now(UTC))
@@ -41,7 +43,9 @@ class TaskFactory(factory.Factory):
     id = factory.LazyFunction(lambda: str(uuid4()))
     title = factory.Faker("sentence", nb_words=4)
     description = factory.Faker("paragraph")
-    status = fuzzy.FuzzyChoice([TaskStatus.NEXT.value, TaskStatus.WAITING.value, TaskStatus.SOMEDAY.value])
+    status = fuzzy.FuzzyChoice(
+        [TaskStatus.NEXT.value, TaskStatus.WAITING.value, TaskStatus.SOMEDAY.value]
+    )
     project_id = None
     blocked_by_task_id = None
     scheduled_date = None

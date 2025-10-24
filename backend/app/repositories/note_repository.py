@@ -32,7 +32,7 @@ class NoteRepository(BaseRepository[Note, NoteCreate, NoteUpdate]):
         query = db.query(Note)
 
         if not include_deleted:
-            query = query.filter(Note.deleted_at == None)  # noqa: E712
+            query = query.filter(Note.deleted_at.is_(None))
 
         if project_id:
             query = query.filter(Note.project_id == self._uuid_to_str(project_id))

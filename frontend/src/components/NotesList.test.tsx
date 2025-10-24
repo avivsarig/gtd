@@ -151,7 +151,6 @@ describe("NotesList", () => {
     it("shows updated_at timestamp when expanded", async () => {
       const user = userEvent.setup()
       const note = createMockNote({ title: "Test Note" })
-      const dateString = new Date(note.updated_at).toLocaleString()
 
       render(
         <NotesList

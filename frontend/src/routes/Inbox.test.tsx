@@ -524,7 +524,7 @@ describe("Inbox", () => {
       // Button should be disabled during deletion
       // Note: This is a very brief window and may not be testable with waitFor
       // The important thing is the operation completes without errors
-      expect(deleteButton).not.toThrow
+      expect(deleteButton).toBeDefined()
 
       resolveDelete!()
     })
@@ -702,7 +702,6 @@ describe("Inbox", () => {
     })
 
     it("does not trigger shortcuts when typing in input", async () => {
-      const user = userEvent.setup()
       const item = createMockInboxItem({ content: "Item" })
       vi.mocked(api.getInboxItems).mockResolvedValue([item])
 

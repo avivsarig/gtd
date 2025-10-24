@@ -331,12 +331,10 @@ describe("NoteForm", () => {
     })
 
     it("prevents form submission when title is empty", async () => {
-      const user = userEvent.setup()
       const mockSubmit = vi.fn()
 
       render(<NoteForm projects={projects} onSubmit={mockSubmit} />)
 
-      const form = screen.getByLabelText("Title *").closest("form")!
       const submitButton = screen.getByRole("button", { name: "Create Note" })
 
       // Try to submit by pressing Enter (form submission should be prevented)

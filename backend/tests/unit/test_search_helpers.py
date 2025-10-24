@@ -9,7 +9,7 @@ import pytest
 alembic_path = Path(__file__).parent.parent.parent / "alembic"
 sys.path.insert(0, str(alembic_path))
 
-from utils.search_helpers import drop_search_vector_sql, generate_search_vector_sql
+from utils.search_helpers import drop_search_vector_sql, generate_search_vector_sql  # noqa: E402
 
 
 class TestGenerateSearchVectorSQL:

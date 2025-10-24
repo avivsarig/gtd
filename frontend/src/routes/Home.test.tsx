@@ -668,8 +668,6 @@ describe("Home", () => {
 
   describe("context management", () => {
     it("creates new context", async () => {
-      const user = userEvent.setup()
-
       vi.mocked(api.createContext).mockResolvedValue(undefined)
 
       render(<Home />)
@@ -682,7 +680,6 @@ describe("Home", () => {
     })
 
     it("deletes context when confirmed", async () => {
-      const user = userEvent.setup()
       const context = createMockContext({ name: "@home" })
 
       vi.mocked(api.getContexts).mockResolvedValue([context])

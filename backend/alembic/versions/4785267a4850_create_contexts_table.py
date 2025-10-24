@@ -1,7 +1,7 @@
 """create_contexts_table
 
 Revision ID: 4785267a4850
-Revises: 
+Revises:
 Create Date: 2025-10-01 19:48:06.950799
 
 """

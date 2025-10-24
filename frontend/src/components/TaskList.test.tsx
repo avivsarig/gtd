@@ -125,7 +125,7 @@ describe("TaskList", () => {
     it("applies visual feedback to completed tasks", () => {
       const task = createCompletedTask({ title: "Completed Task" })
 
-      const { container } = render(
+      render(
         <TaskList
           tasks={[task]}
           projects={[]}
@@ -427,7 +427,7 @@ describe("TaskList", () => {
     it("does not render edit button when onEdit not provided", () => {
       const task = createMockTask()
 
-      const { container } = render(
+      render(
         <TaskList
           tasks={[task]}
           projects={[]}

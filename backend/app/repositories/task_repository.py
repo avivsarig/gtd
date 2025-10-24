@@ -45,7 +45,7 @@ class TaskRepository(BaseRepository[Task, TaskCreate, TaskUpdate]):
         query = db.query(Task)
 
         if not include_deleted:
-            query = query.filter(Task.deleted_at == None)  # noqa: E712
+            query = query.filter(Task.deleted_at.is_(None))
 
         # Apply filters
         if status is not None:

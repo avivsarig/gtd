@@ -114,7 +114,7 @@ class TestUpdate:
 
         mock_db = Mock()
 
-        result = note_repository.update(mock_db, mock_note, note_data)
+        note_repository.update(mock_db, mock_note, note_data)
 
         assert mock_note.title == "New Title"
         assert hasattr(mock_note, "updated_at")
@@ -130,7 +130,7 @@ class TestSoftDelete:
         mock_note = Mock(spec=Note)
         mock_db = Mock()
 
-        result = note_repository.soft_delete(mock_db, mock_note)
+        note_repository.soft_delete(mock_db, mock_note)
 
         assert mock_note.deleted_at is not None
         mock_db.commit.assert_called_once()

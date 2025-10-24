@@ -47,10 +47,37 @@ warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false  # Start lenient, gradually enforce
 ignore_missing_imports = true  # For libraries without type stubs
+plugins = ["pydantic.mypy", "sqlalchemy.ext.mypy.plugin"]
+
+# Pydantic plugin configuration
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
 
 [[tool.mypy.overrides]]
 module = "tests.*"
 disallow_untyped_defs = false
+
+# SQLAlchemy models - disable plugin's strict checking for legacy declarative style
+[[tool.mypy.overrides]]
+module = "app.models.*"
+disable_error_code = ["assignment", "attr-defined", "misc"]
+
+# Repositories interact heavily with SQLAlchemy's dynamic attributes
+[[tool.mypy.overrides]]
+module = "app.repositories.*"
+disable_error_code = ["assignment", "attr-defined", "override"]
+
+# Controllers interact with models and perform assignments
+[[tool.mypy.overrides]]
+module = "app.controllers.*"
+disable_error_code = ["assignment", "arg-type"]
+
+# API layer does FastAPI automatic ORM->Pydantic conversion
+[[tool.mypy.overrides]]
+module = "app.api.*"
+disable_error_code = ["return-value", "arg-type", "misc", "assignment"]
 
 [tool.pytest.ini_options]
 # Keep pytest config here instead of pytest.ini (modern approach)

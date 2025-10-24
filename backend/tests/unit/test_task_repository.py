@@ -271,7 +271,7 @@ class TestUpdate:
             title="Updated title", status="waiting", scheduled_date=date(2025, 10, 15)
         )
 
-        result = task_repository.update(mock_db, mock_task, update_data)
+        task_repository.update(mock_db, mock_task, update_data)
 
         # Verify all fields were updated
         assert mock_task.title == "Updated title"

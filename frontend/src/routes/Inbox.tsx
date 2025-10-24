@@ -15,8 +15,7 @@ import {
 } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { ItemCard } from "@/components/ItemCard"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { FileText, Folder, CheckSquare } from "lucide-react"
+import { FileText, CheckSquare } from "lucide-react"
 
 export function Inbox() {
   const [items, setItems] = useState<InboxItem[]>([])

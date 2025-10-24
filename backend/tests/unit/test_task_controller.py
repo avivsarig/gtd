@@ -88,7 +88,7 @@ class TestCreateTask:
         with patch(
             "app.controllers.task_controller.task_repository.create", return_value=mock_task
         ) as mock_create:
-            created_task = task_controller.create_task(mock_db, task_data)
+            task_controller.create_task(mock_db, task_data)
 
             # Verify status was changed to 'waiting'
             assert task_data.status == TaskStatus.WAITING
@@ -105,7 +105,7 @@ class TestCreateTask:
         with patch(
             "app.controllers.task_controller.task_repository.create", return_value=mock_task
         ) as mock_create:
-            created_task = task_controller.create_task(mock_db, task_data)
+            task_controller.create_task(mock_db, task_data)
 
             # Verify status was NOT changed
             assert task_data.status == TaskStatus.NEXT
@@ -122,7 +122,7 @@ class TestCreateTask:
         with patch(
             "app.controllers.task_controller.task_repository.create", return_value=mock_task
         ) as mock_create:
-            created_task = task_controller.create_task(mock_db, task_data)
+            task_controller.create_task(mock_db, task_data)
 
             # Default status from schema should be 'next'
             assert task_data.status == TaskStatus.NEXT
@@ -155,12 +155,10 @@ class TestGetTask:
         mock_db = Mock()
         task_id = uuid4()
 
-        with patch(
-            "app.controllers.task_controller.task_repository.get_by_id", return_value=None
-        ) as mock_get:
-            created_task = task_controller.get_task(mock_db, task_id)
+        with patch("app.controllers.task_controller.task_repository.get_by_id", return_value=None):
+            result = task_controller.get_task(mock_db, task_id)
 
-            assert created_task is None
+            assert result is None
 
 
 class TestUpdateTask:
@@ -177,17 +175,18 @@ class TestUpdateTask:
         mock_task = Mock(spec=Task, id=task_id, title="Old title")
         update_data = TaskUpdate(title="New title")
 
-        with patch(
-            "app.controllers.task_controller.task_repository.get_by_id", return_value=mock_task
-        ) as mock_get:
-            with patch(
+        with (
+            patch(
+                "app.controllers.task_controller.task_repository.get_by_id", return_value=mock_task
+            ) as mock_get,
+            patch(
                 "app.controllers.task_controller.task_repository.update", return_value=mock_task
-            ) as mock_update:
-                created_task = task_controller.update_task(mock_db, task_id, update_data)
+            ) as mock_update,
+        ):
+            task_controller.update_task(mock_db, task_id, update_data)
 
-                mock_get.assert_called_once_with(mock_db, task_id)
-                mock_update.assert_called_once_with(mock_db, mock_task, update_data)
-                assert created_task == mock_task
+            mock_get.assert_called_once_with(mock_db, task_id)
+            mock_update.assert_called_once_with(mock_db, mock_task, update_data)
 
     def test_update_task_returns_none_when_not_found(self):
         """Should return None if task doesn't exist."""
@@ -221,16 +220,16 @@ class TestUpdateTask:
 
         update_data = TaskUpdate(title="Blocked task", blocked_by_task_id=blocking_task_id)
 
-        with patch(
-            "app.controllers.task_controller.task_repository.get_by_id", return_value=mock_task
+        with (
+            patch(
+                "app.controllers.task_controller.task_repository.get_by_id", return_value=mock_task
+            ),
+            patch("app.controllers.task_controller.task_repository.update", return_value=mock_task),
         ):
-            with patch(
-                "app.controllers.task_controller.task_repository.update", return_value=mock_task
-            ) as mock_update:
-                created_task = task_controller.update_task(mock_db, task_id, update_data)
+            task_controller.update_task(mock_db, task_id, update_data)
 
-                # Verify status was auto-set to waiting
-                assert update_data.status == TaskStatus.WAITING
+            # Verify status was auto-set to waiting
+            assert update_data.status == TaskStatus.WAITING
 
     def test_update_task_without_blocked_by_keeps_status(self):
         """Should not change status when blocked_by_task_id is not set."""
@@ -244,22 +243,17 @@ class TestUpdateTask:
 
         update_data = TaskUpdate(title="Updated title")
 
-        with patch(
-            "app.controllers.task_controller.task_repository.get_by_id", return_value=mock_task
+        with (
+            patch(
+                "app.controllers.task_controller.task_repository.get_by_id",
+                return_value=mock_task,
+            ),
+            patch("app.controllers.task_controller.task_repository.update", return_value=mock_task),
         ):
-            with (
-                patch(
-                    "app.controllers.task_controller.task_repository.get_by_id",
-                    return_value=mock_task,
-                ),
-                patch(
-                    "app.controllers.task_controller.task_repository.update", return_value=mock_task
-                ),
-            ):
-                task_controller.update_task(mock_db, task_id, update_data)
+            task_controller.update_task(mock_db, task_id, update_data)
 
-                # Status should not be set
-                assert update_data.status is None
+            # Status should not be set
+            assert update_data.status is None
 
 
 class TestDeleteTask:
@@ -273,18 +267,20 @@ class TestDeleteTask:
         task_id = uuid4()
         mock_task = Mock(spec=Task, id=task_id)
 
-        with patch(
-            "app.controllers.task_controller.task_repository.get_by_id", return_value=mock_task
-        ) as mock_get:
-            with patch(
+        with (
+            patch(
+                "app.controllers.task_controller.task_repository.get_by_id", return_value=mock_task
+            ) as mock_get,
+            patch(
                 "app.controllers.task_controller.task_repository.soft_delete",
                 return_value=mock_task,
-            ) as mock_delete:
-                created_task = task_controller.delete_task(mock_db, task_id)
+            ) as mock_delete,
+        ):
+            result = task_controller.delete_task(mock_db, task_id)
 
-                mock_get.assert_called_once_with(mock_db, task_id)
-                mock_delete.assert_called_once_with(mock_db, mock_task)
-                assert created_task == mock_task
+            mock_get.assert_called_once_with(mock_db, task_id)
+            mock_delete.assert_called_once_with(mock_db, mock_task)
+            assert result == mock_task
 
     def test_delete_task_returns_none_when_not_found(self):
         """Should return None if task doesn't exist."""
@@ -357,7 +353,7 @@ class TestUncompleteTask:
         with patch(
             "app.controllers.task_controller.task_repository.get_by_id", return_value=mock_task
         ):
-            created_task = task_controller.uncomplete_task(mock_db, task_id)
+            task_controller.uncomplete_task(mock_db, task_id)
 
             assert mock_task.completed_at is None
             mock_db.commit.assert_called_once()
@@ -401,24 +397,26 @@ class TestBulkUpdateStatus:
                 return mock_task3
             return None
 
-        with patch(
-            "app.controllers.task_controller.task_repository.get_by_id",
-            side_effect=get_by_id_side_effect,
+        with (
+            patch(
+                "app.controllers.task_controller.task_repository.get_by_id",
+                side_effect=get_by_id_side_effect,
+            ),
+            patch("app.controllers.task_controller.datetime") as mock_datetime,
         ):
-            with patch("app.controllers.task_controller.datetime") as mock_datetime:
-                mock_now = datetime(2025, 10, 5, 12, 0, 0)
-                mock_datetime.utcnow.return_value = mock_now
+            mock_now = datetime(2025, 10, 5, 12, 0, 0)
+            mock_datetime.utcnow.return_value = mock_now
 
-                updated_tasks = task_controller.bulk_update_status(
-                    mock_db, task_ids, TaskStatus.WAITING
-                )
+            updated_tasks = task_controller.bulk_update_status(
+                mock_db, task_ids, TaskStatus.WAITING
+            )
 
-                assert len(updated_tasks) == 3
-                assert mock_task1.status == TaskStatus.WAITING.value
-                assert mock_task2.status == TaskStatus.WAITING.value
-                assert mock_task3.status == TaskStatus.WAITING.value
-                assert mock_task1.updated_at == mock_now
-                mock_db.commit.assert_called_once()
+            assert len(updated_tasks) == 3
+            assert mock_task1.status == TaskStatus.WAITING.value
+            assert mock_task2.status == TaskStatus.WAITING.value
+            assert mock_task3.status == TaskStatus.WAITING.value
+            assert mock_task1.updated_at == mock_now
+            mock_db.commit.assert_called_once()
 
     def test_bulk_update_status_ignores_nonexistent_tasks(self):
         """Should skip tasks that don't exist without error."""
@@ -439,21 +437,23 @@ class TestBulkUpdateStatus:
                 return mock_task3
             return None
 
-        with patch(
-            "app.controllers.task_controller.task_repository.get_by_id",
-            side_effect=get_by_id_side_effect,
+        with (
+            patch(
+                "app.controllers.task_controller.task_repository.get_by_id",
+                side_effect=get_by_id_side_effect,
+            ),
+            patch("app.controllers.task_controller.datetime") as mock_datetime,
         ):
-            with patch("app.controllers.task_controller.datetime") as mock_datetime:
-                mock_datetime.utcnow.return_value = datetime.utcnow()
+            mock_datetime.utcnow.return_value = datetime.utcnow()
 
-                updated_tasks = task_controller.bulk_update_status(
-                    mock_db, [task_id1, task_id2, task_id3], TaskStatus.SOMEDAY
-                )
+            updated_tasks = task_controller.bulk_update_status(
+                mock_db, [task_id1, task_id2, task_id3], TaskStatus.SOMEDAY
+            )
 
-                # Should only return 2 tasks (1 and 3)
-                assert len(updated_tasks) == 2
-                assert mock_task1 in updated_tasks
-                assert mock_task3 in updated_tasks
+            # Should only return 2 tasks (1 and 3)
+            assert len(updated_tasks) == 2
+            assert mock_task1 in updated_tasks
+            assert mock_task3 in updated_tasks
 
     def test_bulk_update_status_handles_empty_list(self):
         """Should handle empty task list gracefully."""

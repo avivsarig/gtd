@@ -420,7 +420,7 @@ describe("ItemCard", () => {
 
   describe("layout", () => {
     it("renders content area separate from actions", () => {
-      const { container } = render(
+      render(
         <ItemCard onEdit={vi.fn()}>
           <div data-testid="content">Main content</div>
         </ItemCard>,

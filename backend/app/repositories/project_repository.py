@@ -86,7 +86,7 @@ class ProjectRepository(BaseRepository[Project, ProjectCreate, ProjectUpdate]):
         project_id_str = self._uuid_to_str(project_id)
         total = (
             db.query(func.count(Task.id))
-            .filter(Task.project_id == project_id_str, Task.deleted_at == None)  # noqa: E712
+            .filter(Task.project_id == project_id_str, Task.deleted_at.is_(None))
             .scalar()
             or 0
         )
@@ -95,8 +95,8 @@ class ProjectRepository(BaseRepository[Project, ProjectCreate, ProjectUpdate]):
             db.query(func.count(Task.id))
             .filter(
                 Task.project_id == project_id_str,
-                Task.completed_at != None,  # noqa: E712
-                Task.deleted_at == None,  # noqa: E712
+                Task.completed_at.isnot(None),
+                Task.deleted_at.is_(None),
             )
             .scalar()
             or 0
@@ -107,8 +107,8 @@ class ProjectRepository(BaseRepository[Project, ProjectCreate, ProjectUpdate]):
             .filter(
                 Task.project_id == project_id_str,
                 Task.status == TaskStatus.NEXT.value,
-                Task.completed_at == None,  # noqa: E712
-                Task.deleted_at == None,  # noqa: E712
+                Task.completed_at.is_(None),
+                Task.deleted_at.is_(None),
             )
             .scalar()
             or 0

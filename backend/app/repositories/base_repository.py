@@ -1,11 +1,36 @@
 """Base repository with common CRUD operations using Python generics."""
 
 from datetime import UTC, datetime
-from typing import Generic, TypeVar
+from typing import Any, Generic, Protocol, TypeVar
 from uuid import UUID
 
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+
+
+class HasIdProtocol(Protocol):
+    """Protocol for models with an id attribute."""
+
+    id: Any
+
+
+class HasDeletedAtProtocol(Protocol):
+    """Protocol for models with deleted_at attribute."""
+
+    deleted_at: Any
+
+
+class HasCreatedAtProtocol(Protocol):
+    """Protocol for models with created_at attribute."""
+
+    created_at: Any
+
+
+class HasUpdatedAtProtocol(Protocol):
+    """Protocol for models with updated_at attribute."""
+
+    updated_at: Any
+
 
 ModelType = TypeVar("ModelType")
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
@@ -86,7 +111,7 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         query = db.query(self.model)
 
         if not include_deleted and hasattr(self.model, "deleted_at"):
-            query = query.filter(self.model.deleted_at == None)  # noqa: E712
+            query = query.filter(self.model.deleted_at.is_(None))
 
         if hasattr(self.model, "created_at"):
             return query.order_by(self.model.created_at.desc()).all()

@@ -182,7 +182,7 @@ def convert_to_note(db: Session, item_id: UUID, convert_data: ConvertToNoteReque
     title = convert_data.title
     if not title:
         # Use first line or first 50 chars
-        lines = item.content.split("\n", 1)
+        lines = str(item.content).split("\n", 1)
         title = lines[0][:50]
 
     # Build note data from inbox item + conversion request
@@ -226,7 +226,7 @@ def convert_to_project(
 
     # Build project data from inbox item + conversion request
     project_data = ProjectCreate(
-        name=convert_data.name or item.content[:200],  # Limit to reasonable length
+        name=convert_data.name or str(item.content)[:200],
         outcome_statement=convert_data.outcome_statement,
     )
 

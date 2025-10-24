@@ -32,10 +32,10 @@ class InboxRepository(BaseRepository[InboxItem, InboxItemCreate, InboxItemUpdate
         query = db.query(InboxItem)
 
         if not include_processed:
-            query = query.filter(InboxItem.processed_at == None)  # noqa: E712
+            query = query.filter(InboxItem.processed_at.is_(None))
 
         if not include_deleted:
-            query = query.filter(InboxItem.deleted_at == None)  # noqa: E712
+            query = query.filter(InboxItem.deleted_at.is_(None))
 
         return query.order_by(InboxItem.created_at.asc()).all()
 
@@ -97,7 +97,7 @@ class InboxRepository(BaseRepository[InboxItem, InboxItemCreate, InboxItemUpdate
         """
         return (
             db.query(InboxItem)
-            .filter(InboxItem.processed_at == None, InboxItem.deleted_at == None)  # noqa: E712
+            .filter(InboxItem.processed_at.is_(None), InboxItem.deleted_at.is_(None))
             .count()
         )
 

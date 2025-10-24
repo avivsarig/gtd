@@ -19,11 +19,12 @@ class ContextRepository(BaseRepository[Context, ContextCreate, ContextUpdate]):
         """Initialize ContextRepository with Context model."""
         super().__init__(Context)
 
-    def get_all(self, db: Session) -> list[Context]:
+    def get_all(self, db: Session, include_deleted: bool = False) -> list[Context]:  # noqa: ARG002
         """Get all contexts ordered by sort_order, then name.
 
         Args:
             db: Database session
+            include_deleted: Ignored for Context (no soft delete)
 
         Returns:
             List of all contexts
@@ -42,8 +43,10 @@ class ContextRepository(BaseRepository[Context, ContextCreate, ContextUpdate]):
         """
         return db.query(Context).filter(Context.name == name).first()
 
-    def update(self, db: Session, context_id: UUID, context_data: ContextUpdate) -> Context | None:
-        """Update an existing context.
+    def update_by_id(
+        self, db: Session, context_id: UUID, context_data: ContextUpdate
+    ) -> Context | None:
+        """Update an existing context by ID.
 
         Args:
             db: Database session
@@ -95,5 +98,5 @@ get_all = _repository.get_all
 get_by_id = _repository.get_by_id
 get_by_name = _repository.get_by_name
 create = _repository.create
-update = _repository.update
+update = _repository.update_by_id
 delete = _repository.delete
