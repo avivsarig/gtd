@@ -160,6 +160,14 @@ lint-be:
 lint-fe:
 	$(DC) exec $(FE) npm run lint
 	$(DC) exec $(FE) npm run format:check
+
+# Type Checking (separate from linting)
+typecheck: typecheck-be typecheck-fe
+
+typecheck-be:
+	$(DC) exec $(BE) mypy app
+
+typecheck-fe:
 	$(DC) exec $(FE) npm run tc
 
 format: format-be format-fe

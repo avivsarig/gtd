@@ -165,11 +165,13 @@ export function createMockContext(overrides?: Partial<Context>): Context {
   const contextNames = ["@home", "@computer", "@phone", "@errands", "@office"]
   const contextIcons = ["🏠", "💻", "📱", "🚗", "🏢"]
 
+  const index = (contextCounter - 1) % contextNames.length
+
   return {
     id,
-    name: contextNames[(contextCounter - 1) % contextNames.length],
+    name: contextNames[index]!,
     description: `Description for context ${contextCounter}`,
-    icon: contextIcons[(contextCounter - 1) % contextIcons.length],
+    icon: contextIcons[index]!,
     sort_order: contextCounter,
     created_at: now,
     ...overrides,

@@ -397,7 +397,7 @@ describe("Home", () => {
       const item = createMockInboxItem({ content: "Convert me to task" })
 
       vi.mocked(api.getInboxItems).mockResolvedValue([item])
-      vi.mocked(api.convertInboxToTask).mockResolvedValue(undefined)
+      vi.mocked(api.convertInboxToTask).mockResolvedValue(createMockTask())
 
       render(<Home />)
 
@@ -423,7 +423,7 @@ describe("Home", () => {
       const item = createMockInboxItem({ content: "Convert me to note" })
 
       vi.mocked(api.getInboxItems).mockResolvedValue([item])
-      vi.mocked(api.convertInboxToNote).mockResolvedValue(undefined)
+      vi.mocked(api.convertInboxToNote).mockResolvedValue(createMockNote())
 
       render(<Home />)
 
@@ -668,7 +668,7 @@ describe("Home", () => {
 
   describe("context management", () => {
     it("creates new context", async () => {
-      vi.mocked(api.createContext).mockResolvedValue(undefined)
+      vi.mocked(api.createContext).mockResolvedValue(createMockContext())
 
       render(<Home />)
 
@@ -755,7 +755,7 @@ describe("Home", () => {
       const item = createMockInboxItem()
 
       vi.mocked(api.getInboxItems).mockResolvedValue([item])
-      vi.mocked(api.convertInboxToTask).mockResolvedValue(undefined)
+      vi.mocked(api.convertInboxToTask).mockResolvedValue(createMockTask())
 
       render(<Home />)
 
@@ -782,7 +782,7 @@ describe("Home", () => {
       const item = createMockInboxItem()
 
       vi.mocked(api.getInboxItems).mockResolvedValue([item])
-      vi.mocked(api.convertInboxToNote).mockResolvedValue(undefined)
+      vi.mocked(api.convertInboxToNote).mockResolvedValue(createMockNote())
 
       render(<Home />)
 

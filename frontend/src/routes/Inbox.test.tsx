@@ -3,7 +3,12 @@ import { render, screen, waitFor } from "@/test/utils"
 import userEvent from "@testing-library/user-event"
 import { Inbox } from "./Inbox"
 import * as api from "@/lib/api"
-import { createMockInboxItem } from "@/test/factories"
+import { type Task } from "@/lib/api"
+import {
+  createMockInboxItem,
+  createMockTask,
+  createMockNote,
+} from "@/test/factories"
 
 // Mock the API module
 vi.mock("@/lib/api")
@@ -228,7 +233,7 @@ describe("Inbox", () => {
       const user = userEvent.setup()
       const item = createMockInboxItem({ content: "Buy milk" })
       vi.mocked(api.getInboxItems).mockResolvedValue([item])
-      vi.mocked(api.convertInboxToTask).mockResolvedValue(undefined)
+      vi.mocked(api.convertInboxToTask).mockResolvedValue(createMockTask())
 
       render(<Inbox />)
 
@@ -251,7 +256,7 @@ describe("Inbox", () => {
       const user = userEvent.setup()
       const item = createMockInboxItem({ content: "Buy milk" })
       vi.mocked(api.getInboxItems).mockResolvedValue([item])
-      vi.mocked(api.convertInboxToTask).mockResolvedValue(undefined)
+      vi.mocked(api.convertInboxToTask).mockResolvedValue(createMockTask())
 
       const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {})
 
@@ -275,7 +280,7 @@ describe("Inbox", () => {
       const user = userEvent.setup()
       const item = createMockInboxItem({ content: "Item" })
       vi.mocked(api.getInboxItems).mockResolvedValue([item])
-      vi.mocked(api.convertInboxToTask).mockResolvedValue(undefined)
+      vi.mocked(api.convertInboxToTask).mockResolvedValue(createMockTask())
 
       const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {})
 
@@ -324,8 +329,8 @@ describe("Inbox", () => {
     it("disables buttons while converting", async () => {
       const user = userEvent.setup()
       let resolveConversion: () => void
-      const conversionPromise = new Promise<void>((resolve) => {
-        resolveConversion = resolve
+      const conversionPromise = new Promise<Task>((resolve) => {
+        resolveConversion = () => resolve(createMockTask())
       })
 
       const item = createMockInboxItem({ content: "Item" })
@@ -354,7 +359,7 @@ describe("Inbox", () => {
       const user = userEvent.setup()
       const item = createMockInboxItem({ content: "Interesting idea" })
       vi.mocked(api.getInboxItems).mockResolvedValue([item])
-      vi.mocked(api.convertInboxToNote).mockResolvedValue(undefined)
+      vi.mocked(api.convertInboxToNote).mockResolvedValue(createMockNote())
 
       const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {})
 
@@ -381,7 +386,7 @@ describe("Inbox", () => {
       const user = userEvent.setup()
       const item = createMockInboxItem({ content: "Item" })
       vi.mocked(api.getInboxItems).mockResolvedValue([item])
-      vi.mocked(api.convertInboxToNote).mockResolvedValue(undefined)
+      vi.mocked(api.convertInboxToNote).mockResolvedValue(createMockNote())
 
       const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {})
 
@@ -405,7 +410,7 @@ describe("Inbox", () => {
       const user = userEvent.setup()
       const item = createMockInboxItem({ content: "Note content" })
       vi.mocked(api.getInboxItems).mockResolvedValue([item])
-      vi.mocked(api.convertInboxToNote).mockResolvedValue(undefined)
+      vi.mocked(api.convertInboxToNote).mockResolvedValue(createMockNote())
 
       const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {})
 
@@ -632,7 +637,7 @@ describe("Inbox", () => {
       const user = userEvent.setup()
       const item = createMockInboxItem({ content: "Item" })
       vi.mocked(api.getInboxItems).mockResolvedValue([item])
-      vi.mocked(api.convertInboxToTask).mockResolvedValue(undefined)
+      vi.mocked(api.convertInboxToTask).mockResolvedValue(createMockTask())
 
       const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {})
 
@@ -658,7 +663,7 @@ describe("Inbox", () => {
       const user = userEvent.setup()
       const item = createMockInboxItem({ content: "Item" })
       vi.mocked(api.getInboxItems).mockResolvedValue([item])
-      vi.mocked(api.convertInboxToNote).mockResolvedValue(undefined)
+      vi.mocked(api.convertInboxToNote).mockResolvedValue(createMockNote())
 
       const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {})
 

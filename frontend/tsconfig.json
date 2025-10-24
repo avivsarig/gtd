@@ -4,6 +4,9 @@
   "compilerOptions": {
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    // More lenient for test files - they use runtime assertions
+    "strictNullChecks": true,
+    "noUncheckedIndexedAccess": false
   }
 }

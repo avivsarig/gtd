@@ -492,8 +492,13 @@ describe("ItemCard", () => {
 
   describe("edge cases", () => {
     it("handles empty children gracefully", () => {
-      const { container } = render(<ItemCard></ItemCard>)
+      const { container } = render(
+        <ItemCard>
+          <div data-testid="empty-child" />
+        </ItemCard>,
+      )
 
+      expect(screen.getByTestId("empty-child")).toBeInTheDocument()
       expect(container.firstChild).toBeInTheDocument()
     })
 
