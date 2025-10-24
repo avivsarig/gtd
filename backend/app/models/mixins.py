@@ -7,11 +7,11 @@ These mixins implement DRY principle by extracting repeated patterns:
 - SearchableMixin: PostgreSQL full-text search integration
 """
 
-from uuid import uuid4
-
 from sqlalchemy import TIMESTAMP, Column, String
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.sql import func
+
+from app.core.uuid_utils import generate_uuid
 
 
 class UUIDPrimaryKeyMixin:
@@ -21,7 +21,7 @@ class UUIDPrimaryKeyMixin:
     Auto-generates UUID4 values on creation.
     """
 
-    id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    id = Column(String(36), primary_key=True, default=generate_uuid)
 
 
 class TimestampMixin:

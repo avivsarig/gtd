@@ -1,15 +1,15 @@
 # GTD Project Status
 
-**Last Updated:** 2025-10-23
+**Last Updated:** 2025-10-24
 
 ---
 
 ## Overall Completion: ~65%
 
 **Test Coverage:**
-- Backend: 209 tests passing (123 unit + 86 integration)
+- Backend: 214 tests passing (128 unit + 86 integration)
 - Frontend: 401 tests passing (15 test files)
-- Total: **610 tests passing**
+- Total: **615 tests passing**
 
 ---
 
@@ -19,13 +19,13 @@
 - PostgreSQL database with SQLAlchemy ORM
 - 9 database migrations applied (tasks, contexts, notes, projects, inbox, full-text search, triggers)
 - Docker containerization with docker-compose
-- 209 backend tests passing (123 unit + 86 integration)
+- 214 backend tests passing (128 unit + 86 integration)
 - **Code Quality Improvements:**
   - BaseRepository pattern - DRY compliance across all repositories
   - Mixins pattern (AuditMixin, SoftDeletableMixin, SearchableMixin) - eliminated model duplication
   - SearchableMixin with automatic field derivation
   - SQL injection prevention in migration helpers
-  - Centralized UUID and datetime utilities
+  - Centralized UUID utilities module - app.core.uuid_utils with generate_uuid() function
 
 **APIs Implemented:**
 - Tasks: Full CRUD + status management + completion + bulk updates + filtering
@@ -116,10 +116,10 @@
 3. **SearchableMixin** - Automatic field derivation for full-text search with proper inheritance
 4. **Replace magic status strings with TaskStatus enum references** - Backend uses TaskStatus enum, frontend uses TaskStatusEnum constant object
 5. Deduplicate complete/uncomplete functions in task_controller
+6. **Extract shared UUID utilities to common module** - Created app.core.uuid_utils with generate_uuid() and UUID export
 
 ### 🔄 To-Do (Quick Wins - Low Effort, High Impact)
 - Standardize datetime handling (use datetime.now(UTC) consistently)
-- Extract shared UUID utilities to common module
 - Create **useFormSubmit hook** - eliminate form state duplication in 4+ components
 - Create **useDataFetch hook** - eliminate data loading pattern
 - Create **BaseModal component** - standardize modal management

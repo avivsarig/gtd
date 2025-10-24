@@ -1,11 +1,11 @@
 """Factory Boy factories for test data generation."""
 
 from datetime import UTC, datetime
-from uuid import uuid4
 
 import factory
 from factory import fuzzy
 
+from app.core.uuid_utils import generate_uuid
 from app.models.note import Note
 from app.models.project import Project
 from app.models.task import Task
@@ -19,7 +19,7 @@ class ProjectFactory(factory.Factory):
     class Meta:
         model = Project
 
-    id = factory.LazyFunction(lambda: str(uuid4()))
+    id = factory.LazyFunction(generate_uuid)
     name = factory.Sequence(lambda n: f"Project {n}")
     outcome_statement = factory.Faker("sentence")
     status = fuzzy.FuzzyChoice(
@@ -40,7 +40,7 @@ class TaskFactory(factory.Factory):
     class Meta:
         model = Task
 
-    id = factory.LazyFunction(lambda: str(uuid4()))
+    id = factory.LazyFunction(generate_uuid)
     title = factory.Faker("sentence", nb_words=4)
     description = factory.Faker("paragraph")
     status = fuzzy.FuzzyChoice(
@@ -64,7 +64,7 @@ class NoteFactory(factory.Factory):
     class Meta:
         model = Note
 
-    id = factory.LazyFunction(lambda: str(uuid4()))
+    id = factory.LazyFunction(generate_uuid)
     title = factory.Faker("sentence", nb_words=3)
     content = factory.Faker("paragraph", nb_sentences=5)
     project_id = None
