@@ -14,6 +14,7 @@ from app.main import app
 from app.models.note import Note
 from app.models.project import Project
 from app.models.task import Task
+from app.schemas.task import TaskStatus
 
 
 @pytest.fixture(scope="function")
@@ -174,7 +175,7 @@ def sample_project(db_session):
 @pytest.fixture
 def sample_task(db_session):
     """Create and persist a sample task."""
-    task = Task(title="Test Task", description="This is a test task", status="next")
+    task = Task(title="Test Task", description="This is a test task", status=TaskStatus.NEXT.value)
     db_session.add(task)
     db_session.commit()
     db_session.refresh(task)
@@ -197,7 +198,7 @@ def sample_task_with_project(db_session, sample_project):
     task = Task(
         title="Project Task",
         description="Task in a project",
-        status="next",
+        status=TaskStatus.NEXT.value,
         project_id=sample_project.id,
     )
     db_session.add(task)
@@ -210,10 +211,10 @@ def sample_task_with_project(db_session, sample_project):
 def multiple_tasks(db_session):
     """Create multiple tasks with different statuses."""
     tasks = [
-        Task(title="Next Task", status="next"),
-        Task(title="Waiting Task", status="waiting"),
-        Task(title="Someday Task", status="someday"),
-        Task(title="Completed Task", status="next", completed_at=datetime.now(UTC)),
+        Task(title="Next Task", status=TaskStatus.NEXT.value),
+        Task(title="Waiting Task", status=TaskStatus.WAITING.value),
+        Task(title="Someday Task", status=TaskStatus.SOMEDAY.value),
+        Task(title="Completed Task", status=TaskStatus.NEXT.value, completed_at=datetime.now(UTC)),
     ]
     for task in tasks:
         db_session.add(task)

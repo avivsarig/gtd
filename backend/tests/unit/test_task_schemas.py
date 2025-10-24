@@ -6,7 +6,7 @@ from uuid import uuid4
 import pytest
 from pydantic import ValidationError
 
-from app.schemas.task import TaskCreate, TaskResponse, TaskUpdate
+from app.schemas.task import TaskCreate, TaskResponse, TaskStatus, TaskUpdate
 
 
 class TestTaskCreate:
@@ -17,7 +17,7 @@ class TestTaskCreate:
         task = TaskCreate(title="Test task")
         assert task.title == "Test task"
         assert task.description is None
-        assert task.status == "next"  # Default status
+        assert task.status == TaskStatus.NEXT  # Default status
 
     def test_create_with_all_fields(self):
         """Should create task with all fields."""
@@ -25,14 +25,14 @@ class TestTaskCreate:
         task = TaskCreate(
             title="Complete task",
             description="Task description",
-            status="waiting",
+            status=TaskStatus.WAITING,
             scheduled_date=date(2025, 10, 15),
             due_date=date(2025, 10, 20),
             project_id=project_id,
         )
         assert task.title == "Complete task"
         assert task.description == "Task description"
-        assert task.status == "waiting"
+        assert task.status == TaskStatus.WAITING
         assert task.scheduled_date == date(2025, 10, 15)
         assert task.project_id == project_id
 
@@ -83,7 +83,7 @@ class TestTaskResponse:
             "id": task_id,
             "title": "Test task",
             "description": "Description",
-            "status": "next",
+            "status": TaskStatus.NEXT.value,
             "scheduled_date": None,
             "scheduled_time": None,
             "due_date": None,
@@ -97,5 +97,5 @@ class TestTaskResponse:
         task = TaskResponse(**data)
         assert task.id == task_id
         assert task.title == "Test task"
-        assert task.status == "next"
+        assert task.status == TaskStatus.NEXT.value
         assert task.created_at == now

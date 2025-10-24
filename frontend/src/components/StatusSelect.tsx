@@ -5,7 +5,7 @@
  * Follows clean code principles with proper separation and reusability.
  */
 
-import { type TaskStatus } from "@/lib/api"
+import { TaskStatusEnum, type TaskStatus } from "@/lib/api"
 
 interface StatusOption {
   value: TaskStatus
@@ -15,17 +15,17 @@ interface StatusOption {
 
 const STATUS_OPTIONS: StatusOption[] = [
   {
-    value: "next",
+    value: TaskStatusEnum.NEXT,
     label: "Next",
     color: "bg-blue-500/20 text-blue-400 border-blue-500/30",
   },
   {
-    value: "waiting",
+    value: TaskStatusEnum.WAITING,
     label: "Waiting",
     color: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
   },
   {
-    value: "someday",
+    value: TaskStatusEnum.SOMEDAY,
     label: "Someday",
     color: "bg-gray-500/20 text-gray-400 border-gray-500/30",
   },

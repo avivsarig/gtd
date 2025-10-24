@@ -6,6 +6,12 @@ const API_BASE_URL = "http://localhost:8000"
 
 export type TaskStatus = "next" | "waiting" | "someday"
 
+export const TaskStatusEnum = {
+  NEXT: "next" as const,
+  WAITING: "waiting" as const,
+  SOMEDAY: "someday" as const,
+}
+
 export interface Task {
   id: string
   title: string

@@ -7,6 +7,7 @@ from sqlalchemy.sql import text
 from app.db.database import Base
 from app.models.associations import task_contexts
 from app.models.mixins import SearchableMixin, SoftDeletableMixin, UUIDPrimaryKeyMixin
+from app.schemas.task import TaskStatus
 
 
 class Task(Base, UUIDPrimaryKeyMixin, SoftDeletableMixin, SearchableMixin):
@@ -20,7 +21,7 @@ class Task(Base, UUIDPrimaryKeyMixin, SoftDeletableMixin, SearchableMixin):
 
     title = Column(String(500), nullable=False)
     description = Column(Text, nullable=True)
-    status = Column(String(20), nullable=False, server_default=text("'next'"))
+    status = Column(String(20), nullable=False, server_default=text(f"'{TaskStatus.NEXT.value}'"))
     scheduled_date = Column(Date, nullable=True)
     scheduled_time = Column(Time, nullable=True)
     due_date = Column(Date, nullable=True)

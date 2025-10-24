@@ -6,10 +6,10 @@
  */
 
 import {
+  TaskStatusEnum,
   type Task,
   type TaskStatus,
   type Project,
-  type ProjectStatus,
   type Note,
   type InboxItem,
   type Context,
@@ -42,7 +42,7 @@ export function createMockTask(overrides?: Partial<Task>): Task {
     id,
     title: `Test Task ${taskCounter}`,
     description: `Description for task ${taskCounter}`,
-    status: "next",
+    status: TaskStatusEnum.NEXT,
     project_id: null,
     context_id: null,
     completed_at: null,

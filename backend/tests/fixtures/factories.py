@@ -9,6 +9,8 @@ from factory import fuzzy
 from app.models.note import Note
 from app.models.project import Project
 from app.models.task import Task
+from app.schemas.project import ProjectStatus
+from app.schemas.task import TaskStatus
 
 
 class ProjectFactory(factory.Factory):
@@ -20,7 +22,7 @@ class ProjectFactory(factory.Factory):
     id = factory.LazyFunction(lambda: str(uuid4()))
     name = factory.Sequence(lambda n: f"Project {n}")
     outcome_statement = factory.Faker("sentence")
-    status = fuzzy.FuzzyChoice(["active", "on_hold", "completed"])
+    status = fuzzy.FuzzyChoice([ProjectStatus.ACTIVE.value, ProjectStatus.ON_HOLD.value, ProjectStatus.COMPLETED.value])
     parent_project_id = None
     created_at = factory.LazyFunction(lambda: datetime.now(UTC))
     updated_at = factory.LazyFunction(lambda: datetime.now(UTC))
@@ -39,7 +41,7 @@ class TaskFactory(factory.Factory):
     id = factory.LazyFunction(lambda: str(uuid4()))
     title = factory.Faker("sentence", nb_words=4)
     description = factory.Faker("paragraph")
-    status = fuzzy.FuzzyChoice(["next", "waiting", "someday"])
+    status = fuzzy.FuzzyChoice([TaskStatus.NEXT.value, TaskStatus.WAITING.value, TaskStatus.SOMEDAY.value])
     project_id = None
     blocked_by_task_id = None
     scheduled_date = None
@@ -85,7 +87,7 @@ def create_note(**kwargs):
 
 def create_completed_task(**kwargs):
     """Create a completed task."""
-    defaults = {"completed_at": datetime.now(UTC), "status": "next"}
+    defaults = {"completed_at": datetime.now(UTC), "status": TaskStatus.NEXT.value}
     defaults.update(kwargs)
     return TaskFactory(**defaults)
 
@@ -99,6 +101,6 @@ def create_project_with_tasks(num_tasks=3, **kwargs):
 
 def create_blocked_task(blocking_task_id, **kwargs):
     """Create a task that is blocked by another task."""
-    defaults = {"blocked_by_task_id": blocking_task_id, "status": "waiting"}
+    defaults = {"blocked_by_task_id": blocking_task_id, "status": TaskStatus.WAITING.value}
     defaults.update(kwargs)
     return TaskFactory(**defaults)

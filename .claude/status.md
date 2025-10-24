@@ -115,8 +115,10 @@
 2. **Model Mixins (AuditMixin, SoftDeletableMixin)** - Consolidated timestamp fields across 4 models
 3. **SearchableMixin** - Automatic field derivation for full-text search with proper inheritance
 
+### ✅ Done (Type Safety & Constants)
+- **Replace magic status strings with TaskStatus enum references** - Backend uses TaskStatus enum, frontend uses TaskStatusEnum constant object
+
 ### 🔄 To-Do (Quick Wins - Low Effort, High Impact)
-- Replace magic status strings with TaskStatus enum references
 - Deduplicate complete/uncomplete functions in task_controller
 - Standardize datetime handling (use datetime.now(UTC) consistently)
 - Extract shared UUID utilities to common module

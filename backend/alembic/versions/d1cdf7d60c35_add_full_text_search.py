@@ -5,10 +5,15 @@ Revises: adb6e3090ecf
 Create Date: 2025-10-01 19:49:52.760509
 
 """
+import sys
 from collections.abc import Sequence
+from pathlib import Path
 
 from alembic import op
-from alembic.utils.search_helpers import drop_search_vector_sql, generate_search_vector_sql
+
+# Add alembic directory to path to allow imports from alembic.utils
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from utils.search_helpers import drop_search_vector_sql, generate_search_vector_sql
 
 # Import models to use their __search_fields__ configuration (single source of truth)
 from app.models.note import Note

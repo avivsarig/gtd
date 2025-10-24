@@ -10,6 +10,7 @@ from app.models.project import Project
 from app.models.task import Task
 from app.repositories.base_repository import BaseRepository
 from app.schemas.project import ProjectCreate, ProjectUpdate
+from app.schemas.task import TaskStatus
 
 
 class ProjectRepository(BaseRepository[Project, ProjectCreate, ProjectUpdate]):
@@ -105,7 +106,7 @@ class ProjectRepository(BaseRepository[Project, ProjectCreate, ProjectUpdate]):
             db.query(func.count(Task.id))
             .filter(
                 Task.project_id == project_id_str,
-                Task.status == "next",
+                Task.status == TaskStatus.NEXT.value,
                 Task.completed_at == None,  # noqa: E712
                 Task.deleted_at == None,  # noqa: E712
             )
