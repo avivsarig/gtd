@@ -133,6 +133,33 @@ def delete_task(db: Session, task_id: UUID) -> Task | None:
     return task_repository.soft_delete(db, task)
 
 
+def _update_task_field(
+    db: Session, task_id: UUID, field_name: str, field_value: datetime | None
+) -> Task | None:
+    """
+    Update a single field on a task.
+
+    Helper function to reduce duplication in simple field updates.
+
+    Args:
+        db: Database session
+        task_id: UUID of task to update
+        field_name: Name of the field to update
+        field_value: New value for the field
+
+    Returns:
+        Updated Task object if found, None if task doesn't exist
+    """
+    task = task_repository.get_by_id(db, task_id)
+    if task is None:
+        return None
+
+    setattr(task, field_name, field_value)
+    db.commit()
+    db.refresh(task)
+    return task
+
+
 def complete_task(db: Session, task_id: UUID) -> Task | None:
     """
     Mark a task as completed.
@@ -148,14 +175,7 @@ def complete_task(db: Session, task_id: UUID) -> Task | None:
     Returns:
         Completed Task object if found, None if task doesn't exist
     """
-    task = task_repository.get_by_id(db, task_id)
-    if task is None:
-        return None
-
-    task.completed_at = datetime.utcnow()
-    db.commit()
-    db.refresh(task)
-    return task
+    return _update_task_field(db, task_id, "completed_at", datetime.utcnow())
 
 
 def uncomplete_task(db: Session, task_id: UUID) -> Task | None:
@@ -172,14 +192,7 @@ def uncomplete_task(db: Session, task_id: UUID) -> Task | None:
     Returns:
         Task object if found, None if task doesn't exist
     """
-    task = task_repository.get_by_id(db, task_id)
-    if task is None:
-        return None
-
-    task.completed_at = None
-    db.commit()
-    db.refresh(task)
-    return task
+    return _update_task_field(db, task_id, "completed_at", None)
 
 
 def bulk_update_status(db: Session, task_ids: list[UUID], status: TaskStatus) -> list[Task]:
