@@ -6,6 +6,13 @@ BE := backend
 FE := frontend
 DB := postgres
 
+# Detect if running in CI/pre-commit (no TTY)
+ifeq ($(shell [ -t 0 ] && echo 1 || echo 0),0)
+    EXEC_FLAGS := -T
+else
+    EXEC_FLAGS :=
+endif
+
 # Colors
 GREEN := \033[0;32m
 YELLOW := \033[0;33m
@@ -99,7 +106,7 @@ logs-fe:
 
 # Database Management
 db-migrate:
-	$(DC) exec $(BE) alembic upgrade head
+	$(DC) exec $(EXEC_FLAGS) $(BE) alembic upgrade head
 
 db-reset:
 	@read -p "$(YELLOW)DESTRUCTIVE: Reset entire database? ALL DATA WILL BE LOST! (y/N)$(NC) " confirm; \
@@ -144,7 +151,7 @@ test-db-reset:
 
 test-db-migrate:
 	@echo "$(GREEN)Running migrations on test database...$(NC)"
-	@$(DC) exec -e DATABASE_URL=$(shell grep DATABASE_TEST_URL .env | cut -d '=' -f2) $(BE) alembic upgrade head
+	@$(DC) exec $(EXEC_FLAGS) -e DATABASE_URL=$(shell grep DATABASE_TEST_URL .env | cut -d '=' -f2) $(BE) alembic upgrade head
 
 test-db-shell:
 	$(DC) exec postgres-test psql -U gtd_test -d gtd_test
@@ -153,31 +160,31 @@ test-db-shell:
 lint: lint-be lint-fe
 
 lint-be:
-	$(DC) exec $(BE) ruff check .
-	$(DC) exec $(BE) black --check .
-	$(DC) exec $(BE) mypy app
+	$(DC) exec $(EXEC_FLAGS) $(BE) ruff check .
+	$(DC) exec $(EXEC_FLAGS) $(BE) black --check .
+	$(DC) exec $(EXEC_FLAGS) $(BE) mypy app
 
 lint-fe:
-	$(DC) exec $(FE) npm run lint
-	$(DC) exec $(FE) npm run format:check
+	$(DC) exec $(EXEC_FLAGS) $(FE) npm run lint
+	$(DC) exec $(EXEC_FLAGS) $(FE) npm run format:check
 
 # Type Checking (separate from linting)
 typecheck: typecheck-be typecheck-fe
 
 typecheck-be:
-	$(DC) exec $(BE) mypy app
+	$(DC) exec $(EXEC_FLAGS) $(BE) mypy app
 
 typecheck-fe:
-	$(DC) exec $(FE) npm run tc
+	$(DC) exec $(EXEC_FLAGS) $(FE) npm run tc
 
 format: format-be format-fe
 
 format-be:
-	$(DC) exec $(BE) black .
-	$(DC) exec $(BE) ruff check --fix .
+	$(DC) exec $(EXEC_FLAGS) $(BE) black .
+	$(DC) exec $(EXEC_FLAGS) $(BE) ruff check --fix .
 
 format-fe:
-	$(DC) exec $(FE) npm run format
+	$(DC) exec $(EXEC_FLAGS) $(FE) npm run format
 
 # Testing
 test: test-be test-fe
@@ -185,20 +192,20 @@ test: test-be test-fe
 test-be: test-be-unit test-be-int
 
 test-be-unit:
-	$(DC) exec $(BE) pytest tests/unit
+	$(DC) exec $(EXEC_FLAGS) $(BE) pytest tests/unit
 
 test-be-int:
-	$(DC) exec $(BE) pytest tests/integration
+	$(DC) exec $(EXEC_FLAGS) $(BE) pytest tests/integration
 
 test-fe:
-	$(DC) exec $(FE) npm test
+	$(DC) exec $(EXEC_FLAGS) $(FE) npm test
 
 test-cov:
 	@echo "$(GREEN)Generating backend test coverage:$(NC)"
-	$(DC) exec $(BE) pytest tests/unit \
+	$(DC) exec $(EXEC_FLAGS) $(BE) pytest tests/unit \
 		--quiet \
 		--cov=app --cov-report=term-missing \
 		--cov-report=html --cov-report=xml \
 		--cov-fail-under=60
 	@echo "\n$(GREEN)Generating frontend test coverage:$(NC)"
-	$(DC) exec $(FE) npm run test:coverage
+	$(DC) exec $(EXEC_FLAGS) $(FE) npm run test:coverage

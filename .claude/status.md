@@ -110,13 +110,11 @@
 
 ## Code Quality Improvements
 
-### ✅ Done (Inheritance & OOP)
+### ✅ Done
 1. **BaseRepository pattern** - Eliminated ~70% duplication across 5 repositories
 2. **Model Mixins (AuditMixin, SoftDeletableMixin)** - Consolidated timestamp fields across 4 models
 3. **SearchableMixin** - Automatic field derivation for full-text search with proper inheritance
-
-### ✅ Done (Type Safety & Constants)
-- **Replace magic status strings with TaskStatus enum references** - Backend uses TaskStatus enum, frontend uses TaskStatusEnum constant object
+4. **Replace magic status strings with TaskStatus enum references** - Backend uses TaskStatus enum, frontend uses TaskStatusEnum constant object
 
 ### 🔄 To-Do (Quick Wins - Low Effort, High Impact)
 - Deduplicate complete/uncomplete functions in task_controller

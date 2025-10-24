@@ -43,7 +43,7 @@ See [Project Status](.claude/status.md) for complete roadmap.
 
 ## Quick Start
 
-A [Makefile](/Makefile) provides key development commands.  
+A [Makefile](/Makefile) provides key development commands.
 Run `make help` for a list of available commands.
 
 **To start locally:**
@@ -59,6 +59,26 @@ The backend API is available at [http://localhost:8000](http://localhost:8000), 
 ## Development
 
 See [Makefile](Makefile) for all available commands including linting, formatting, and testing.
+
+### Pre-commit Hooks
+
+The project uses pre-commit hooks to ensure code quality. Every commit automatically runs:
+- **Lint** - Code style and syntax checks
+- **TypeCheck** - Static type validation
+- **Test** - All unit and integration tests
+
+Hooks only run for files in their respective directories (backend/frontend).
+
+**Setup:**
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+**Manual run:**
+```bash
+pre-commit run --all-files
+```
 
 ## Repository Structure
 

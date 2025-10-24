@@ -5,6 +5,7 @@ Revises: adb6e3090ecf
 Create Date: 2025-10-01 19:49:52.760509
 
 """
+
 import sys
 from collections.abc import Sequence
 from pathlib import Path
@@ -21,8 +22,8 @@ from app.models.project import Project
 from app.models.task import Task
 
 # revision identifiers, used by Alembic.
-revision: str = 'd1cdf7d60c35'
-down_revision: str | None = 'adb6e3090ecf'
+revision: str = "d1cdf7d60c35"
+down_revision: str | None = "adb6e3090ecf"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
