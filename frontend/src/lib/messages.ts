@@ -76,7 +76,46 @@ export const MESSAGES = {
   buttons: {
     CAPTURING: "Capturing...",
     CAPTURE: "Capture",
+    CAPTURE_TO_INBOX: "Capture to Inbox",
     CREATING: "Creating...",
     CREATE_CONTEXT: "Create Context",
+  },
+
+  // API error messages (thrown by api.ts functions)
+  api: {
+    // Task errors
+    FETCH_TASKS_FAILED: "Failed to fetch tasks",
+    CREATE_TASK_FAILED: "Failed to create task",
+    UPDATE_TASK_FAILED: "Failed to update task",
+    COMPLETE_TASK_FAILED: "Failed to complete task",
+    UNCOMPLETE_TASK_FAILED: "Failed to uncomplete task",
+    DELETE_TASK_FAILED: "Failed to delete task",
+
+    // Project errors
+    FETCH_PROJECTS_FAILED: "Failed to fetch projects",
+    CREATE_PROJECT_FAILED: "Failed to create project",
+
+    // Note errors
+    FETCH_NOTES_FAILED: "Failed to fetch notes",
+    FETCH_NOTE_FAILED: "Failed to fetch note",
+    CREATE_NOTE_FAILED: "Failed to create note",
+    UPDATE_NOTE_FAILED: "Failed to update note",
+    DELETE_NOTE_FAILED: "Failed to delete note",
+
+    // Inbox errors
+    FETCH_INBOX_FAILED: "Failed to fetch inbox items",
+    FETCH_INBOX_COUNT_FAILED: "Failed to fetch inbox count",
+    CREATE_INBOX_FAILED: "Failed to create inbox item",
+    DELETE_INBOX_FAILED: "Failed to delete inbox item",
+    CONVERT_TO_TASK_FAILED: "Failed to convert inbox item to task",
+    CONVERT_TO_NOTE_FAILED: "Failed to convert inbox item to note",
+    CONVERT_TO_PROJECT_FAILED: "Failed to convert inbox item to project",
+
+    // Context errors
+    FETCH_CONTEXTS_FAILED: "Failed to fetch contexts",
+    FETCH_CONTEXT_FAILED: "Failed to fetch context",
+    CREATE_CONTEXT_FAILED: "Failed to create context",
+    UPDATE_CONTEXT_FAILED: "Failed to update context",
+    DELETE_CONTEXT_FAILED: "Failed to delete context",
   },
 } as const

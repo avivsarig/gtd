@@ -8,6 +8,7 @@ import { useState } from "react"
 import { createInboxItem } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
+import { MESSAGES } from "@/lib/messages"
 
 interface QuickCaptureProps {
   onSuccess?: () => void
@@ -22,7 +23,7 @@ export function QuickCapture({ onSuccess }: QuickCaptureProps) {
     e.preventDefault()
 
     if (!content.trim()) {
-      setError("Please enter something")
+      setError(MESSAGES.validation.REQUIRED_FIELD)
       return
     }
 
@@ -34,7 +35,9 @@ export function QuickCapture({ onSuccess }: QuickCaptureProps) {
       setContent("")
       onSuccess?.()
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to capture")
+      setError(
+        err instanceof Error ? err.message : MESSAGES.errors.CAPTURE_FAILED,
+      )
     } finally {
       setIsSubmitting(false)
     }
@@ -63,7 +66,9 @@ export function QuickCapture({ onSuccess }: QuickCaptureProps) {
         disabled={isSubmitting || !content.trim()}
         className="w-full"
       >
-        {isSubmitting ? "Capturing..." : "Capture to Inbox"}
+        {isSubmitting
+          ? MESSAGES.buttons.CAPTURING
+          : MESSAGES.buttons.CAPTURE_TO_INBOX}
       </Button>
     </form>
   )
