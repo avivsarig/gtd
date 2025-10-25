@@ -3,6 +3,10 @@
  *
  * Provides UI for viewing, creating, editing, and deleting contexts.
  * Follows clean code principles with clear responsibilities.
+ *
+ * Refactored to use:
+ * - useFormSubmission hook (eliminates manual state management)
+ * - validateRequired + sanitizeFormData utilities
  */
 
 import { useState } from "react"
@@ -12,6 +16,8 @@ import { ItemCard } from "@/components/ItemCard"
 import { EmptyState } from "@/components/EmptyState"
 import { Plus, X } from "lucide-react"
 import { MESSAGES } from "@/lib/messages"
+import { useFormSubmission } from "@/hooks/useFormSubmission"
+import { validateRequired, sanitizeInput } from "@/lib/validation"
 
 interface ContextManagerProps {
   contexts: Context[]
@@ -25,50 +31,35 @@ export function ContextManager({
   onCreate,
 }: ContextManagerProps) {
   const [isCreating, setIsCreating] = useState(false)
-  const [formData, setFormData] = useState<CreateContextInput>({
-    name: "",
-    description: "",
-    icon: "",
-    sort_order: 0,
-  })
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!formData.name.trim()) {
-      setError(MESSAGES.validation.CONTEXT_NAME_REQUIRED)
-      return
-    }
-
-    setIsSubmitting(true)
-    setError(null)
-
-    try {
-      await onCreate({
-        name: formData.name.trim(),
-        description: formData.description?.trim() || undefined,
-        icon: formData.icon?.trim() || undefined,
-        sort_order: formData.sort_order,
-      })
-      setFormData({ name: "", description: "", icon: "", sort_order: 0 })
-      setIsCreating(false)
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : MESSAGES.errors.CREATE_CONTEXT_FAILED,
-      )
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
+  const {
+    data: formData,
+    updateField,
+    handleSubmit,
+    isSubmitting,
+    error,
+    reset,
+  } = useFormSubmission<CreateContextInput>(
+    {
+      name: "",
+      description: "",
+      icon: "",
+      sort_order: 0,
+    },
+    {
+      validate: (data) =>
+        validateRequired(data.name, MESSAGES.validation.CONTEXT_NAME_REQUIRED),
+      onSuccess: () => {
+        setIsCreating(false)
+      },
+      defaultErrorMessage: MESSAGES.errors.CREATE_CONTEXT_FAILED,
+      resetOnSuccess: true,
+    },
+  )
 
   const handleCancel = () => {
     setIsCreating(false)
-    setFormData({ name: "", description: "", icon: "", sort_order: 0 })
-    setError(null)
+    reset()
   }
 
   return (
@@ -96,7 +87,17 @@ export function ContextManager({
             </Button>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-3">
+          <form
+            onSubmit={handleSubmit(async (data) => {
+              await onCreate({
+                name: sanitizeInput(data.name)!,
+                description: sanitizeInput(data.description),
+                icon: sanitizeInput(data.icon),
+                sort_order: data.sort_order,
+              })
+            })}
+            className="space-y-3"
+          >
             <div>
               <label htmlFor="context-name" className="text-sm font-medium">
                 Name <span className="text-red-500">*</span>
@@ -105,9 +106,7 @@ export function ContextManager({
                 id="context-name"
                 type="text"
                 value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
+                onChange={(e) => updateField("name", e.target.value)}
                 placeholder="e.g., @home, @computer, @phone"
                 className="bg-background mt-1 w-full rounded border px-3 py-2 text-sm"
                 disabled={isSubmitting}
@@ -123,9 +122,7 @@ export function ContextManager({
                 id="context-icon"
                 type="text"
                 value={formData.icon}
-                onChange={(e) =>
-                  setFormData({ ...formData, icon: e.target.value })
-                }
+                onChange={(e) => updateField("icon", e.target.value)}
                 placeholder="e.g., 🏠 💻 📱"
                 className="bg-background mt-1 w-full rounded border px-3 py-2 text-sm"
                 disabled={isSubmitting}
@@ -144,9 +141,7 @@ export function ContextManager({
                 id="context-description"
                 type="text"
                 value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
+                onChange={(e) => updateField("description", e.target.value)}
                 placeholder="When to use this context"
                 className="bg-background mt-1 w-full rounded border px-3 py-2 text-sm"
                 disabled={isSubmitting}

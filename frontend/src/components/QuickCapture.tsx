@@ -2,59 +2,60 @@
  * QuickCapture - Simple inbox capture component
  *
  * Default GTD behavior: capture to inbox, process later
+ *
+ * Refactored to use:
+ * - useFormSubmission hook (eliminates manual state management)
+ * - validateRequired + sanitizeInput utilities
  */
 
-import { useState } from "react"
 import { createInboxItem } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { MESSAGES } from "@/lib/messages"
+import { useFormSubmission } from "@/hooks/useFormSubmission"
+import { validateRequired, sanitizeInput } from "@/lib/validation"
 
 interface QuickCaptureProps {
   onSuccess?: () => void
 }
 
 export function QuickCapture({ onSuccess }: QuickCaptureProps) {
-  const [content, setContent] = useState("")
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!content.trim()) {
-      setError(MESSAGES.validation.REQUIRED_FIELD)
-      return
-    }
-
-    setIsSubmitting(true)
-    setError(null)
-
-    try {
-      await createInboxItem({ content: content.trim() })
-      setContent("")
-      onSuccess?.()
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : MESSAGES.errors.CAPTURE_FAILED,
-      )
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
+  const {
+    data,
+    updateField,
+    handleSubmit,
+    isSubmitting,
+    error,
+  } = useFormSubmission(
+    { content: "" },
+    {
+      validate: (formData) => validateRequired(formData.content),
+      onSuccess,
+      defaultErrorMessage: MESSAGES.errors.CAPTURE_FAILED,
+      resetOnSuccess: true,
+    },
+  )
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
+    <form
+      onSubmit={handleSubmit(async (formData) => {
+        await createInboxItem({ content: sanitizeInput(formData.content)! })
+      })}
+      className="space-y-3"
+    >
       <Textarea
         placeholder="What's on your mind? (Press Enter to capture)"
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
+        value={data.content}
+        onChange={(e) => updateField("content", e.target.value)}
         className="min-h-[80px] resize-none"
         disabled={isSubmitting}
         onKeyDown={(e) => {
           if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault()
-            void handleSubmit(e)
+            const form = e.currentTarget.form
+            if (form) {
+              form.requestSubmit()
+            }
           }
         }}
       />
@@ -63,7 +64,7 @@ export function QuickCapture({ onSuccess }: QuickCaptureProps) {
 
       <Button
         type="submit"
-        disabled={isSubmitting || !content.trim()}
+        disabled={isSubmitting || !data.content.trim()}
         className="w-full"
       >
         {isSubmitting

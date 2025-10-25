@@ -16,7 +16,10 @@
  *
  * Handles the common pattern: `err instanceof Error ? err.message : fallback`
  *
- * @param error - The error to extract a message from (can be Error, string, or unknown)
+ * Only Error instances are considered trusted error messages.
+ * All other types (strings, objects, null, etc.) use the fallback for security.
+ *
+ * @param error - The error to extract a message from (can be Error or unknown)
  * @param fallback - Default message if error is not an Error instance
  * @returns User-friendly error message
  *
@@ -31,10 +34,6 @@
 export function getErrorMessage(error: unknown, fallback: string): string {
   if (error instanceof Error) {
     return error.message
-  }
-
-  if (typeof error === "string") {
-    return error
   }
 
   return fallback

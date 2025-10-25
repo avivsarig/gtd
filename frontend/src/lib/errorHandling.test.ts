@@ -36,10 +36,10 @@ describe("getErrorMessage", () => {
     expect(result).toBe("Fallback message")
   })
 
-  it("should handle string errors", () => {
+  it("should return fallback for string errors (untrusted)", () => {
     const result = getErrorMessage("String error", "Fallback message")
 
-    expect(result).toBe("String error")
+    expect(result).toBe("Fallback message")
   })
 
   it("should return fallback for numbers", () => {
@@ -233,14 +233,14 @@ describe("handleError", () => {
     expect(typeof message).toBe("string")
   })
 
-  it("should handle string errors", () => {
+  it("should return fallback for string errors (untrusted)", () => {
     const result = handleError(
       "String error message",
       "Operation context",
       "Fallback",
     )
 
-    expect(result).toBe("String error message")
+    expect(result).toBe("Fallback")
   })
 
   it("should pass through additional options", () => {
