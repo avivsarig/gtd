@@ -45,6 +45,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ContextManager } from "@/components/ContextManager"
 import { FileText, CheckSquare } from "lucide-react"
+import { MESSAGES } from "@/lib/messages"
 
 export function Home() {
   const [tasks, setTasks] = useState<Task[]>([])
@@ -63,7 +64,7 @@ export function Home() {
       const data = await getTasks()
       setTasks(data)
     } catch (err) {
-      console.error("Failed to load tasks:", err)
+      console.error(MESSAGES.errors.console.LOAD_TASKS_FAILED, err)
     }
   }
 
@@ -72,7 +73,7 @@ export function Home() {
       const data = await getProjects(true)
       setProjects(data)
     } catch (err) {
-      console.error("Failed to load projects:", err)
+      console.error(MESSAGES.errors.console.LOAD_PROJECTS_FAILED, err)
     }
   }
 
@@ -81,7 +82,7 @@ export function Home() {
       const data = await getNotes()
       setNotes(data)
     } catch (err) {
-      console.error("Failed to load notes:", err)
+      console.error(MESSAGES.errors.console.LOAD_NOTES_FAILED, err)
     }
   }
 
@@ -90,7 +91,7 @@ export function Home() {
       const data = await getInboxItems()
       setInboxItems(data)
     } catch (err) {
-      console.error("Failed to load inbox:", err)
+      console.error(MESSAGES.errors.console.LOAD_INBOX_FAILED, err)
     }
   }
 
@@ -99,7 +100,7 @@ export function Home() {
       const data = await getContexts()
       setContexts(data)
     } catch (err) {
-      console.error("Failed to load contexts:", err)
+      console.error(MESSAGES.errors.console.LOAD_CONTEXTS_FAILED, err)
     }
   }
 
@@ -147,7 +148,7 @@ export function Home() {
         prev.map((task) => (task.id === taskId ? updatedTask : task)),
       )
     } catch (err) {
-      console.error("Failed to update task status:", err)
+      console.error(MESSAGES.errors.console.UPDATE_TASK_STATUS_FAILED, err)
     }
   }
 
@@ -158,7 +159,7 @@ export function Home() {
         : await completeTask(task.id)
       setTasks((prev) => prev.map((t) => (t.id === task.id ? updatedTask : t)))
     } catch (err) {
-      console.error("Failed to toggle task completion:", err)
+      console.error(MESSAGES.errors.console.TOGGLE_TASK_COMPLETION_FAILED, err)
     }
   }
 
@@ -172,7 +173,7 @@ export function Home() {
         prev.map((task) => (task.id === taskId ? updatedTask : task)),
       )
     } catch (err) {
-      console.error("Failed to update task project:", err)
+      console.error(MESSAGES.errors.console.UPDATE_TASK_PROJECT_FAILED, err)
     }
   }
 
@@ -186,7 +187,7 @@ export function Home() {
         prev.map((task) => (task.id === taskId ? updatedTask : task)),
       )
     } catch (err) {
-      console.error("Failed to update task context:", err)
+      console.error(MESSAGES.errors.console.UPDATE_TASK_CONTEXT_FAILED, err)
     }
   }
 
@@ -195,8 +196,8 @@ export function Home() {
       await deleteTask(taskId)
       setTasks((prev) => prev.filter((task) => task.id !== taskId))
     } catch (err) {
-      console.error("Failed to delete task:", err)
-      alert("Failed to delete task")
+      console.error(MESSAGES.errors.console.DELETE_TASK_FAILED, err)
+      alert(MESSAGES.errors.DELETE_TASK_FAILED)
     }
   }
 
@@ -211,7 +212,7 @@ export function Home() {
       setNotes((prev) => [newNote, ...prev])
       setShowNoteForm(false)
     } catch (err) {
-      console.error("Failed to create note:", err)
+      console.error(MESSAGES.errors.console.CREATE_NOTE_FAILED, err)
     }
   }
 
@@ -229,7 +230,7 @@ export function Home() {
       setEditingNote(null)
       setShowNoteForm(false)
     } catch (err) {
-      console.error("Failed to update note:", err)
+      console.error(MESSAGES.errors.console.UPDATE_NOTE_FAILED, err)
     }
   }
 
@@ -243,7 +244,7 @@ export function Home() {
       await deleteNote(noteId)
       setNotes((prev) => prev.filter((note) => note.id !== noteId))
     } catch (err) {
-      console.error("Failed to delete note:", err)
+      console.error(MESSAGES.errors.console.DELETE_NOTE_FAILED, err)
     }
   }
 
@@ -259,7 +260,7 @@ export function Home() {
       await deleteInboxItem(id)
       void loadInbox()
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to delete")
+      alert(err instanceof Error ? err.message : MESSAGES.errors.DELETE_FAILED)
     } finally {
       setProcessingId(null)
     }
@@ -272,7 +273,7 @@ export function Home() {
       void loadInbox()
       void loadTasks()
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to convert")
+      alert(err instanceof Error ? err.message : MESSAGES.errors.CONVERT_FAILED)
     } finally {
       setProcessingId(null)
     }
@@ -285,7 +286,7 @@ export function Home() {
       void loadInbox()
       void loadNotes()
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to convert")
+      alert(err instanceof Error ? err.message : MESSAGES.errors.CONVERT_FAILED)
     } finally {
       setProcessingId(null)
     }
@@ -306,8 +307,8 @@ export function Home() {
       await deleteContext(contextId)
       void loadContexts()
     } catch (err) {
-      console.error("Failed to delete context:", err)
-      alert("Failed to delete context")
+      console.error(MESSAGES.errors.console.DELETE_CONTEXT_FAILED, err)
+      alert(MESSAGES.errors.DELETE_CONTEXT_FAILED)
     }
   }
 
@@ -356,7 +357,7 @@ export function Home() {
             <CardContent>
               {inboxItems.length === 0 ? (
                 <p className="text-muted-foreground py-8 text-center">
-                  Inbox Zero! 🎉
+                  {MESSAGES.info.INBOX_ZERO}
                 </p>
               ) : (
                 <div className="max-h-[400px] space-y-2 overflow-y-auto">
@@ -365,10 +366,12 @@ export function Home() {
                       key={item.id}
                       onEdit={() => {
                         // TODO: Implement edit functionality for inbox items
-                        alert("Edit functionality coming soon!")
+                        alert(MESSAGES.info.COMING_SOON)
                       }}
                       onDelete={() => handleDeleteInboxItem(item.id)}
-                      deleteConfirmMessage={`Delete inbox item?`}
+                      deleteConfirmMessage={
+                        MESSAGES.confirmations.DELETE_INBOX_ITEM
+                      }
                       actions={
                         <>
                           <Button
@@ -431,7 +434,7 @@ export function Home() {
                 onUpdateContext={handleUpdateContext}
                 onEdit={(_task) => {
                   // TODO: Implement edit functionality for tasks
-                  alert("Edit functionality coming soon!")
+                  alert(MESSAGES.info.COMING_SOON)
                 }}
                 onDelete={handleDeleteTask}
               />

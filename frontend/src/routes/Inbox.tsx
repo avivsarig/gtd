@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { ItemCard } from "@/components/ItemCard"
 import { FileText, CheckSquare } from "lucide-react"
+import { MESSAGES } from "@/lib/messages"
 
 export function Inbox() {
   const [items, setItems] = useState<InboxItem[]>([])
@@ -31,7 +32,9 @@ export function Inbox() {
       setItems(data)
       setError(null)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load inbox")
+      setError(
+        err instanceof Error ? err.message : MESSAGES.errors.LOAD_INBOX_FAILED,
+      )
     } finally {
       setLoading(false)
     }
@@ -105,7 +108,7 @@ export function Inbox() {
       await deleteInboxItem(id)
       setItems((prev) => prev.filter((item) => item.id !== id))
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to delete")
+      alert(err instanceof Error ? err.message : MESSAGES.errors.DELETE_FAILED)
     } finally {
       setProcessingId(null)
     }
@@ -116,9 +119,9 @@ export function Inbox() {
       setProcessingId(item.id)
       await convertInboxToTask(item.id, { title: item.content })
       setItems((prev) => prev.filter((i) => i.id !== item.id))
-      alert("✓ Converted to task!")
+      alert(MESSAGES.success.CONVERTED_TO_TASK)
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to convert")
+      alert(err instanceof Error ? err.message : MESSAGES.errors.CONVERT_FAILED)
     } finally {
       setProcessingId(null)
     }
@@ -129,9 +132,9 @@ export function Inbox() {
       setProcessingId(item.id)
       await convertInboxToNote(item.id, { content: item.content })
       setItems((prev) => prev.filter((i) => i.id !== item.id))
-      alert("✓ Converted to note!")
+      alert(MESSAGES.success.CONVERTED_TO_NOTE)
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to convert")
+      alert(err instanceof Error ? err.message : MESSAGES.errors.CONVERT_FAILED)
     } finally {
       setProcessingId(null)
     }
@@ -142,16 +145,16 @@ export function Inbox() {
       setProcessingId(item.id)
       await convertInboxToProject(item.id, { name: item.content })
       setItems((prev) => prev.filter((i) => i.id !== item.id))
-      alert("✓ Converted to project!")
+      alert(MESSAGES.success.CONVERTED_TO_PROJECT)
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to convert")
+      alert(err instanceof Error ? err.message : MESSAGES.errors.CONVERT_FAILED)
     } finally {
       setProcessingId(null)
     }
   }
 
   if (loading) {
-    return <div className="p-8 text-center">Loading inbox...</div>
+    return <div className="p-8 text-center">{MESSAGES.info.LOADING_INBOX}</div>
   }
 
   if (error) {
@@ -168,7 +171,7 @@ export function Inbox() {
   if (items.length === 0) {
     return (
       <div className="p-8 text-center">
-        <h2 className="mb-2 text-2xl font-bold">Inbox Zero! 🎉</h2>
+        <h2 className="mb-2 text-2xl font-bold">{MESSAGES.info.INBOX_ZERO}</h2>
         <p className="text-muted-foreground">
           All items processed. Press Cmd+K to capture new thoughts.
         </p>
@@ -197,10 +200,10 @@ export function Inbox() {
               key={item.id}
               onEdit={() => {
                 // TODO: Implement edit functionality for inbox items
-                alert("Edit functionality coming soon!")
+                alert(MESSAGES.info.COMING_SOON)
               }}
               onDelete={() => handleDelete(item.id)}
-              deleteConfirmMessage="Delete inbox item?"
+              deleteConfirmMessage={MESSAGES.confirmations.DELETE_INBOX_ITEM}
               className={isFocused ? "ring-primary ring-2" : ""}
               actions={
                 <>
@@ -231,7 +234,7 @@ export function Inbox() {
               </p>
               {processingId === item.id && (
                 <p className="text-muted-foreground mt-2 text-xs">
-                  Processing...
+                  {MESSAGES.info.PROCESSING}
                 </p>
               )}
             </ItemCard>

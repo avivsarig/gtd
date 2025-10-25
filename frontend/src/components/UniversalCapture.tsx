@@ -2,9 +2,12 @@
  * UniversalCapture - Cmd+K modal for instant GTD capture
  *
  * Zero-friction capture: just content, no classification required
+ *
+ * Refactored to use:
+ * - useFormSubmission hook (eliminates manual state management)
+ * - validateRequired + sanitizeInput utilities
  */
 
-import { useState } from "react"
 import { createInboxItem } from "@/lib/api"
 import {
   Dialog,
@@ -15,6 +18,9 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
+import { MESSAGES } from "@/lib/messages"
+import { useFormSubmission } from "@/hooks/useFormSubmission"
+import { validateRequired, sanitizeInput } from "@/lib/validation"
 
 interface UniversalCaptureProps {
   open: boolean
@@ -27,40 +33,30 @@ export function UniversalCapture({
   onOpenChange,
   onSuccess,
 }: UniversalCaptureProps) {
-  const [content, setContent] = useState("")
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!content.trim()) {
-      setError("Please enter something")
-      return
-    }
-
-    setIsSubmitting(true)
-    setError(null)
-
-    try {
-      await createInboxItem({ content: content.trim() })
-
-      // Success: clear and close
-      setContent("")
-      onOpenChange(false)
-      onSuccess?.()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to capture")
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
+  const {
+    data,
+    updateField,
+    handleSubmit,
+    isSubmitting,
+    error,
+    reset,
+  } = useFormSubmission(
+    { content: "" },
+    {
+      validate: (formData) => validateRequired(formData.content),
+      onSuccess: () => {
+        onOpenChange(false)
+        onSuccess?.()
+      },
+      defaultErrorMessage: MESSAGES.errors.CAPTURE_FAILED,
+      resetOnSuccess: true,
+    },
+  )
 
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
       // Clear form when closing
-      setContent("")
-      setError(null)
+      reset()
     }
     onOpenChange(newOpen)
   }
@@ -75,12 +71,17 @@ export function UniversalCapture({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form
+          onSubmit={handleSubmit(async (formData) => {
+            await createInboxItem({ content: sanitizeInput(formData.content)! })
+          })}
+          className="space-y-4"
+        >
           <Textarea
             autoFocus
             placeholder="What's on your mind?"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
+            value={data.content}
+            onChange={(e) => updateField("content", e.target.value)}
             className="min-h-[100px] resize-none"
             disabled={isSubmitting}
           />
@@ -96,8 +97,13 @@ export function UniversalCapture({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting || !content.trim()}>
-              {isSubmitting ? "Capturing..." : "Capture"}
+            <Button
+              type="submit"
+              disabled={isSubmitting || !data.content.trim()}
+            >
+              {isSubmitting
+                ? MESSAGES.buttons.CAPTURING
+                : MESSAGES.buttons.CAPTURE}
             </Button>
           </div>
         </form>

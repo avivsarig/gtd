@@ -112,36 +112,29 @@
 
 ### ✅ Done
 1. **BaseRepository pattern** - Eliminated ~70% duplication across 5 repositories
-2. **Model Mixins (AuditMixin, SoftDeletableMixin)** - Consolidated timestamp fields across 4 models
-3. **SearchableMixin** - Automatic field derivation for full-text search with proper inheritance
-4. **Replace magic status strings with TaskStatus enum references** - Backend uses TaskStatus enum, frontend uses TaskStatusEnum constant object
-5. Deduplicate complete/uncomplete functions in task_controller
-6. **Extract shared UUID utilities to common module** - Created app.core.uuid_utils with generate_uuid() and UUID export
+2. **Model Mixins (TimestampMixin, SoftDeletableMixin, SearchableMixin)** - DRY compliance across models
+3. **TaskStatus enum** - Backend/frontend use enum references vs magic strings
+4. **UUID utilities module** - Centralized app.core.uuid_utils
+5. **Custom hooks (useFormSubmission, useResourceLoader, useAsyncAction)** - Eliminated state duplication
+6. **MESSAGES constants** - Centralized error/success messages in lib/messages.ts
 
-### 🔄 To-Do (Quick Wins - Low Effort, High Impact)
-- Standardize datetime handling (use datetime.now(UTC) consistently)
-- Create **useFormSubmit hook** - eliminate form state duplication in 4+ components
-- Create **useDataFetch hook** - eliminate data loading pattern
-- Create **BaseModal component** - standardize modal management
-- Standardize error handling - replace alert() with toast/error boundary
-- Extract message constants to messages.ts
+### 🔄 Critical (SOLID/DRY Violations)
+- **BaseSelect component** - 80% duplicate code across StatusSelect/ProjectSelect/ContextSelect
+- **Project dict duplication** - 2 identical transformations in project_controller (lines 45-56, 93-105)
+- **datetime.now(UTC)** - BaseRepository uses it, controllers use deprecated datetime.utcnow()
+- **Home.tsx (540 lines)** - God Component with 5 load functions, violates SRP
 
-### 🔄 To-Do (Medium Effort Improvements)
-- Fix ProjectWithStats LSP violation (use composition instead of inheritance)
-- Create Pydantic base schemas (ResponseBase, SoftDeletableResponseBase)
-- Implement dependency injection with repository protocols
-- Extract transformation logic to dedicated transformer classes
-- Parameterize API base URL with environment variables
-- Create **BaseSelect component** - unify StatusSelect, ProjectSelect, ContextSelect (80% duplicate code)
-- Extract custom hooks from Home.tsx - useTaskManagement, useNoteManagement, useInboxManagement, useKeyboardShortcuts
-- Create **useKeyboardShortcut hook** - eliminate duplication in Home.tsx and Inbox.tsx
-- Refactor Tailwind patterns with cn() utility and variants
+### 🔄 Medium Priority
+- **API_BASE_URL hardcoded** - Should use import.meta.env.VITE_API_BASE_URL
+- **ProjectWithStats LSP violation** - Inherits ProjectResponse but adds fields (use composition)
+- **Context model missing soft-delete** - Inconsistent with Task/Note/Project/InboxItem
+- **alert() usage (17 occurrences)** - Should use toast notifications or error boundary
+- **Pydantic base schemas** - ResponseBase/SoftDeletableResponseBase to reduce schema duplication
 
-### 🔄 To-Do (Larger Refactors)
-- Break down **537-line Home.tsx** - God Component violating SRP
-- Create state management layer (service pattern or external store)
-- Extract nested JSX components from Home and Inbox routes
-- Add soft-delete for Context model (currently hard-deletes, inconsistent with other entities)
+### 🔄 Low Priority (Polish)
+- Extract nested JSX from Home/Inbox routes (readability)
+- Dependency injection with repository protocols (testability)
+- Refactor Tailwind with cn() utility (maintainability)
 
 ---
 

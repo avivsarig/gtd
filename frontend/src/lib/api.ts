@@ -2,6 +2,8 @@
  * API client for GTD backend
  */
 
+import { MESSAGES } from "./messages"
+
 const API_BASE_URL = "http://localhost:8000"
 
 export type TaskStatus = "next" | "waiting" | "someday"
@@ -44,7 +46,7 @@ export interface UpdateTaskInput {
 export async function getTasks(): Promise<Task[]> {
   const response = await fetch(`${API_BASE_URL}/api/v1/tasks`)
   if (!response.ok) {
-    throw new Error("Failed to fetch tasks")
+    throw new Error(MESSAGES.api.FETCH_TASKS_FAILED)
   }
   return response.json()
 }
@@ -61,7 +63,7 @@ export async function createTask(input: CreateTaskInput): Promise<Task> {
     body: JSON.stringify(input),
   })
   if (!response.ok) {
-    throw new Error("Failed to create task")
+    throw new Error(MESSAGES.api.CREATE_TASK_FAILED)
   }
   return response.json()
 }
@@ -81,7 +83,7 @@ export async function updateTask(
     body: JSON.stringify(input),
   })
   if (!response.ok) {
-    throw new Error("Failed to update task")
+    throw new Error(MESSAGES.api.UPDATE_TASK_FAILED)
   }
   return response.json()
 }
@@ -94,7 +96,7 @@ export async function completeTask(id: string): Promise<Task> {
     method: "POST",
   })
   if (!response.ok) {
-    throw new Error("Failed to complete task")
+    throw new Error(MESSAGES.api.COMPLETE_TASK_FAILED)
   }
   return response.json()
 }
@@ -110,7 +112,7 @@ export async function uncompleteTask(id: string): Promise<Task> {
     },
   )
   if (!response.ok) {
-    throw new Error("Failed to uncomplete task")
+    throw new Error(MESSAGES.api.UNCOMPLETE_TASK_FAILED)
   }
   return response.json()
 }
@@ -123,7 +125,7 @@ export async function deleteTask(id: string): Promise<void> {
     method: "DELETE",
   })
   if (!response.ok) {
-    throw new Error("Failed to delete task")
+    throw new Error(MESSAGES.api.DELETE_TASK_FAILED)
   }
 }
 
@@ -163,7 +165,7 @@ export async function getProjects(withStats = false): Promise<Project[]> {
     : `${API_BASE_URL}/api/v1/projects/`
   const response = await fetch(url)
   if (!response.ok) {
-    throw new Error("Failed to fetch projects")
+    throw new Error(MESSAGES.api.FETCH_PROJECTS_FAILED)
   }
   return response.json()
 }
@@ -182,7 +184,7 @@ export async function createProject(
     body: JSON.stringify(input),
   })
   if (!response.ok) {
-    throw new Error("Failed to create project")
+    throw new Error(MESSAGES.api.CREATE_PROJECT_FAILED)
   }
   return response.json()
 }
@@ -221,7 +223,7 @@ export async function getNotes(projectId?: string): Promise<Note[]> {
     : `${API_BASE_URL}/api/v1/notes/`
   const response = await fetch(url)
   if (!response.ok) {
-    throw new Error("Failed to fetch notes")
+    throw new Error(MESSAGES.api.FETCH_NOTES_FAILED)
   }
   return response.json()
 }
@@ -232,7 +234,7 @@ export async function getNotes(projectId?: string): Promise<Note[]> {
 export async function getNote(id: string): Promise<Note> {
   const response = await fetch(`${API_BASE_URL}/api/v1/notes/${id}`)
   if (!response.ok) {
-    throw new Error("Failed to fetch note")
+    throw new Error(MESSAGES.api.FETCH_NOTE_FAILED)
   }
   return response.json()
 }
@@ -249,7 +251,7 @@ export async function createNote(input: CreateNoteInput): Promise<Note> {
     body: JSON.stringify(input),
   })
   if (!response.ok) {
-    throw new Error("Failed to create note")
+    throw new Error(MESSAGES.api.CREATE_NOTE_FAILED)
   }
   return response.json()
 }
@@ -269,7 +271,7 @@ export async function updateNote(
     body: JSON.stringify(input),
   })
   if (!response.ok) {
-    throw new Error("Failed to update note")
+    throw new Error(MESSAGES.api.UPDATE_NOTE_FAILED)
   }
   return response.json()
 }
@@ -282,7 +284,7 @@ export async function deleteNote(id: string): Promise<void> {
     method: "DELETE",
   })
   if (!response.ok) {
-    throw new Error("Failed to delete note")
+    throw new Error(MESSAGES.api.DELETE_NOTE_FAILED)
   }
 }
 
@@ -330,7 +332,7 @@ export async function getInboxItems(
     : `${API_BASE_URL}/api/v1/inbox/`
   const response = await fetch(url)
   if (!response.ok) {
-    throw new Error("Failed to fetch inbox items")
+    throw new Error(MESSAGES.api.FETCH_INBOX_FAILED)
   }
   return response.json()
 }
@@ -341,7 +343,7 @@ export async function getInboxItems(
 export async function getInboxCount(): Promise<{ count: number }> {
   const response = await fetch(`${API_BASE_URL}/api/v1/inbox/count`)
   if (!response.ok) {
-    throw new Error("Failed to fetch inbox count")
+    throw new Error(MESSAGES.api.FETCH_INBOX_COUNT_FAILED)
   }
   return response.json()
 }
@@ -360,7 +362,7 @@ export async function createInboxItem(
     body: JSON.stringify(input),
   })
   if (!response.ok) {
-    throw new Error("Failed to create inbox item")
+    throw new Error(MESSAGES.api.CREATE_INBOX_FAILED)
   }
   return response.json()
 }
@@ -373,7 +375,7 @@ export async function deleteInboxItem(id: string): Promise<void> {
     method: "DELETE",
   })
   if (!response.ok) {
-    throw new Error("Failed to delete inbox item")
+    throw new Error(MESSAGES.api.DELETE_INBOX_FAILED)
   }
 }
 
@@ -395,7 +397,7 @@ export async function convertInboxToTask(
     },
   )
   if (!response.ok) {
-    throw new Error("Failed to convert inbox item to task")
+    throw new Error(MESSAGES.api.CONVERT_TO_TASK_FAILED)
   }
   return response.json()
 }
@@ -418,7 +420,7 @@ export async function convertInboxToNote(
     },
   )
   if (!response.ok) {
-    throw new Error("Failed to convert inbox item to note")
+    throw new Error(MESSAGES.api.CONVERT_TO_NOTE_FAILED)
   }
   return response.json()
 }
@@ -441,7 +443,7 @@ export async function convertInboxToProject(
     },
   )
   if (!response.ok) {
-    throw new Error("Failed to convert inbox item to project")
+    throw new Error(MESSAGES.api.CONVERT_TO_PROJECT_FAILED)
   }
   return response.json()
 }
@@ -478,7 +480,7 @@ export interface UpdateContextInput {
 export async function getContexts(): Promise<Context[]> {
   const response = await fetch(`${API_BASE_URL}/api/v1/contexts/`)
   if (!response.ok) {
-    throw new Error("Failed to fetch contexts")
+    throw new Error(MESSAGES.api.FETCH_CONTEXTS_FAILED)
   }
   return response.json()
 }
@@ -489,7 +491,7 @@ export async function getContexts(): Promise<Context[]> {
 export async function getContext(id: string): Promise<Context> {
   const response = await fetch(`${API_BASE_URL}/api/v1/contexts/${id}`)
   if (!response.ok) {
-    throw new Error("Failed to fetch context")
+    throw new Error(MESSAGES.api.FETCH_CONTEXT_FAILED)
   }
   return response.json()
 }
@@ -508,7 +510,7 @@ export async function createContext(
     body: JSON.stringify(input),
   })
   if (!response.ok) {
-    throw new Error("Failed to create context")
+    throw new Error(MESSAGES.api.CREATE_CONTEXT_FAILED)
   }
   return response.json()
 }
@@ -528,7 +530,7 @@ export async function updateContext(
     body: JSON.stringify(input),
   })
   if (!response.ok) {
-    throw new Error("Failed to update context")
+    throw new Error(MESSAGES.api.UPDATE_CONTEXT_FAILED)
   }
   return response.json()
 }
@@ -541,7 +543,7 @@ export async function deleteContext(id: string): Promise<void> {
     method: "DELETE",
   })
   if (!response.ok) {
-    throw new Error("Failed to delete context")
+    throw new Error(MESSAGES.api.DELETE_CONTEXT_FAILED)
   }
 }
 
