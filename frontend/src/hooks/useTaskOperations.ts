@@ -18,6 +18,7 @@ import {
   type TaskStatus,
 } from "@/lib/api"
 import { MESSAGES } from "@/lib/messages"
+import { notifyError } from "@/lib/errorHandling"
 
 export interface UseTaskOperationsOptions {
   /** Callback to reload tasks after operations */
@@ -164,7 +165,7 @@ export function useTaskOperations(
         }
       } catch (err) {
         console.error(MESSAGES.errors.console.DELETE_TASK_FAILED, err)
-        alert(MESSAGES.errors.DELETE_TASK_FAILED)
+        notifyError(MESSAGES.errors.DELETE_TASK_FAILED)
       }
     },
     [onReload, onUpdate],

@@ -11,6 +11,7 @@ import { ItemCard } from "@/components/ItemCard"
 import { FileText, CheckSquare } from "lucide-react"
 import { MESSAGES } from "@/lib/messages"
 import { type InboxItem } from "@/lib/api"
+import { notifyInfo } from "@/lib/errorHandling"
 
 export interface InboxSectionProps {
   inboxItems: InboxItem[]
@@ -53,7 +54,7 @@ export function InboxSection({
               <ItemCard
                 key={item.id}
                 onEdit={() => {
-                  alert(MESSAGES.info.COMING_SOON)
+                  notifyInfo(MESSAGES.info.COMING_SOON)
                 }}
                 onDelete={() => onDelete(item.id)}
                 deleteConfirmMessage={MESSAGES.confirmations.DELETE_INBOX_ITEM}

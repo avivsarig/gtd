@@ -14,6 +14,7 @@ import {
   type Context,
   type TaskStatus,
 } from "@/lib/api"
+import { notifyInfo } from "@/lib/errorHandling"
 
 export interface TasksSectionProps {
   tasks: Task[]
@@ -61,7 +62,7 @@ export function TasksSection({
           onUpdateContext={onUpdateContext}
           onEdit={(task) => {
             onEdit(task)
-            alert(MESSAGES.info.COMING_SOON)
+            notifyInfo(MESSAGES.info.COMING_SOON)
           }}
           onDelete={onDelete}
         />

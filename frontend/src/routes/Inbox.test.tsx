@@ -258,8 +258,6 @@ describe("Inbox", () => {
       vi.mocked(api.getInboxItems).mockResolvedValue([item])
       vi.mocked(api.convertInboxToTask).mockResolvedValue(createMockTask())
 
-      const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {})
-
       render(<Inbox />)
 
       await waitFor(() => {
@@ -272,8 +270,6 @@ describe("Inbox", () => {
       await waitFor(() => {
         expect(screen.queryByText("Buy milk")).not.toBeInTheDocument()
       })
-
-      alertSpy.mockRestore()
     })
 
     it("shows success alert when converted to task", async () => {
@@ -282,7 +278,7 @@ describe("Inbox", () => {
       vi.mocked(api.getInboxItems).mockResolvedValue([item])
       vi.mocked(api.convertInboxToTask).mockResolvedValue(createMockTask())
 
-      const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {})
+      const { toast } = await import("sonner")
 
       render(<Inbox />)
 
@@ -294,10 +290,10 @@ describe("Inbox", () => {
       await user.click(taskButton)
 
       await waitFor(() => {
-        expect(alertSpy).toHaveBeenCalledWith("✓ Converted to task!")
+        expect(toast.success).toHaveBeenCalledWith("✓ Converted to task!", {
+          duration: 3000,
+        })
       })
-
-      alertSpy.mockRestore()
     })
 
     it("handles error when converting to task fails", async () => {
@@ -308,7 +304,7 @@ describe("Inbox", () => {
         new Error("Conversion failed"),
       )
 
-      const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {})
+      const { toast } = await import("sonner")
 
       render(<Inbox />)
 
@@ -320,10 +316,10 @@ describe("Inbox", () => {
       await user.click(taskButton)
 
       await waitFor(() => {
-        expect(alertSpy).toHaveBeenCalledWith("Conversion failed")
+        expect(toast.error).toHaveBeenCalledWith("Conversion failed", {
+          duration: 4000,
+        })
       })
-
-      alertSpy.mockRestore()
     })
 
     it("disables buttons while converting", async () => {
@@ -361,8 +357,6 @@ describe("Inbox", () => {
       vi.mocked(api.getInboxItems).mockResolvedValue([item])
       vi.mocked(api.convertInboxToNote).mockResolvedValue(createMockNote())
 
-      const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {})
-
       render(<Inbox />)
 
       await waitFor(() => {
@@ -378,8 +372,6 @@ describe("Inbox", () => {
           { content: item.content },
         )
       })
-
-      alertSpy.mockRestore()
     })
 
     it("shows success alert when converted to note", async () => {
@@ -388,7 +380,7 @@ describe("Inbox", () => {
       vi.mocked(api.getInboxItems).mockResolvedValue([item])
       vi.mocked(api.convertInboxToNote).mockResolvedValue(createMockNote())
 
-      const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {})
+      const { toast } = await import("sonner")
 
       render(<Inbox />)
 
@@ -400,10 +392,10 @@ describe("Inbox", () => {
       await user.click(noteButton)
 
       await waitFor(() => {
-        expect(alertSpy).toHaveBeenCalledWith("✓ Converted to note!")
+        expect(toast.success).toHaveBeenCalledWith("✓ Converted to note!", {
+          duration: 3000,
+        })
       })
-
-      alertSpy.mockRestore()
     })
 
     it("removes item after successful conversion to note", async () => {
@@ -411,8 +403,6 @@ describe("Inbox", () => {
       const item = createMockInboxItem({ content: "Note content" })
       vi.mocked(api.getInboxItems).mockResolvedValue([item])
       vi.mocked(api.convertInboxToNote).mockResolvedValue(createMockNote())
-
-      const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {})
 
       render(<Inbox />)
 
@@ -426,8 +416,6 @@ describe("Inbox", () => {
       await waitFor(() => {
         expect(screen.queryByText("Note content")).not.toBeInTheDocument()
       })
-
-      alertSpy.mockRestore()
     })
   })
 
@@ -485,7 +473,7 @@ describe("Inbox", () => {
         new Error("Deletion failed"),
       )
 
-      const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {})
+      const { toast } = await import("sonner")
       vi.spyOn(window, "confirm").mockReturnValue(true)
 
       render(<Inbox />)
@@ -498,10 +486,10 @@ describe("Inbox", () => {
       await user.click(deleteButton)
 
       await waitFor(() => {
-        expect(alertSpy).toHaveBeenCalledWith("Deletion failed")
+        expect(toast.error).toHaveBeenCalledWith("Deletion failed", {
+          duration: 4000,
+        })
       })
-
-      alertSpy.mockRestore()
     })
 
     it("disables buttons while deleting", async () => {
@@ -639,8 +627,6 @@ describe("Inbox", () => {
       vi.mocked(api.getInboxItems).mockResolvedValue([item])
       vi.mocked(api.convertInboxToTask).mockResolvedValue(createMockTask())
 
-      const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {})
-
       render(<Inbox />)
 
       await waitFor(() => {
@@ -655,8 +641,6 @@ describe("Inbox", () => {
           { title: item.content },
         )
       })
-
-      alertSpy.mockRestore()
     })
 
     it("converts focused item to note with N key", async () => {
@@ -664,8 +648,6 @@ describe("Inbox", () => {
       const item = createMockInboxItem({ content: "Item" })
       vi.mocked(api.getInboxItems).mockResolvedValue([item])
       vi.mocked(api.convertInboxToNote).mockResolvedValue(createMockNote())
-
-      const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {})
 
       render(<Inbox />)
 
@@ -681,8 +663,6 @@ describe("Inbox", () => {
           { content: item.content },
         )
       })
-
-      alertSpy.mockRestore()
     })
 
     it("deletes focused item with D key", async () => {

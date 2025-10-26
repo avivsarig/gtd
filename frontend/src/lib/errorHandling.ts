@@ -11,6 +11,8 @@
  * - Future-proof: Easy to add toast notifications or error tracking
  */
 
+import { toast } from "sonner"
+
 /**
  * Extract a user-friendly error message from an unknown error type
  *
@@ -75,8 +77,7 @@ export interface NotifyErrorOptions {
 /**
  * Notify the user of an error
  *
- * Currently uses browser alert() but designed to be easily replaced
- * with a toast notification system.
+ * Uses toast notification system for non-blocking error feedback.
  *
  * @param message - The error message to display
  * @param options - Notification options
@@ -88,14 +89,47 @@ export function notifyError(
   message: string,
   options: NotifyErrorOptions = {},
 ): void {
-  const { log = true } = options
+  const { log = true, duration = 4000 } = options
 
   if (log) {
     console.error(message)
   }
 
-  // TODO: Replace with toast notification system
-  alert(message)
+  toast.error(message, { duration })
+}
+
+/**
+ * Notify the user of a success action
+ *
+ * @param message - The success message to display
+ * @param options - Notification options
+ *
+ * @example
+ * notifySuccess('Task created successfully')
+ */
+export function notifySuccess(
+  message: string,
+  options: Omit<NotifyErrorOptions, "severity"> = {},
+): void {
+  const { duration = 3000 } = options
+  toast.success(message, { duration })
+}
+
+/**
+ * Notify the user with informational message
+ *
+ * @param message - The info message to display
+ * @param options - Notification options
+ *
+ * @example
+ * notifyInfo('Feature coming soon!')
+ */
+export function notifyInfo(
+  message: string,
+  options: Omit<NotifyErrorOptions, "severity"> = {},
+): void {
+  const { duration = 3000 } = options
+  toast.info(message, { duration })
 }
 
 /**

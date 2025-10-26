@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button"
 import { ItemCard } from "@/components/ItemCard"
 import { FileText, CheckSquare } from "lucide-react"
 import { MESSAGES } from "@/lib/messages"
+import { notifyError, notifySuccess, notifyInfo } from "@/lib/errorHandling"
 
 export function Inbox() {
   const [items, setItems] = useState<InboxItem[]>([])
@@ -108,7 +109,9 @@ export function Inbox() {
       await deleteInboxItem(id)
       setItems((prev) => prev.filter((item) => item.id !== id))
     } catch (err) {
-      alert(err instanceof Error ? err.message : MESSAGES.errors.DELETE_FAILED)
+      notifyError(
+        err instanceof Error ? err.message : MESSAGES.errors.DELETE_FAILED,
+      )
     } finally {
       setProcessingId(null)
     }
@@ -119,9 +122,11 @@ export function Inbox() {
       setProcessingId(item.id)
       await convertInboxToTask(item.id, { title: item.content })
       setItems((prev) => prev.filter((i) => i.id !== item.id))
-      alert(MESSAGES.success.CONVERTED_TO_TASK)
+      notifySuccess(MESSAGES.success.CONVERTED_TO_TASK)
     } catch (err) {
-      alert(err instanceof Error ? err.message : MESSAGES.errors.CONVERT_FAILED)
+      notifyError(
+        err instanceof Error ? err.message : MESSAGES.errors.CONVERT_FAILED,
+      )
     } finally {
       setProcessingId(null)
     }
@@ -132,9 +137,11 @@ export function Inbox() {
       setProcessingId(item.id)
       await convertInboxToNote(item.id, { content: item.content })
       setItems((prev) => prev.filter((i) => i.id !== item.id))
-      alert(MESSAGES.success.CONVERTED_TO_NOTE)
+      notifySuccess(MESSAGES.success.CONVERTED_TO_NOTE)
     } catch (err) {
-      alert(err instanceof Error ? err.message : MESSAGES.errors.CONVERT_FAILED)
+      notifyError(
+        err instanceof Error ? err.message : MESSAGES.errors.CONVERT_FAILED,
+      )
     } finally {
       setProcessingId(null)
     }
@@ -145,9 +152,11 @@ export function Inbox() {
       setProcessingId(item.id)
       await convertInboxToProject(item.id, { name: item.content })
       setItems((prev) => prev.filter((i) => i.id !== item.id))
-      alert(MESSAGES.success.CONVERTED_TO_PROJECT)
+      notifySuccess(MESSAGES.success.CONVERTED_TO_PROJECT)
     } catch (err) {
-      alert(err instanceof Error ? err.message : MESSAGES.errors.CONVERT_FAILED)
+      notifyError(
+        err instanceof Error ? err.message : MESSAGES.errors.CONVERT_FAILED,
+      )
     } finally {
       setProcessingId(null)
     }
@@ -200,7 +209,7 @@ export function Inbox() {
               key={item.id}
               onEdit={() => {
                 // TODO: Implement edit functionality for inbox items
-                alert(MESSAGES.info.COMING_SOON)
+                notifyInfo(MESSAGES.info.COMING_SOON)
               }}
               onDelete={() => handleDelete(item.id)}
               deleteConfirmMessage={MESSAGES.confirmations.DELETE_INBOX_ITEM}

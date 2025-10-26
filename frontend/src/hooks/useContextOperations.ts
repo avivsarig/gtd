@@ -14,6 +14,7 @@ import {
   type CreateContextInput,
 } from "@/lib/api"
 import { MESSAGES } from "@/lib/messages"
+import { notifyError } from "@/lib/errorHandling"
 
 export interface UseContextOperationsOptions {
   /** Callback to reload contexts after operations */
@@ -66,7 +67,7 @@ export function useContextOperations(
         await onReload()
       } catch (err) {
         console.error(MESSAGES.errors.console.DELETE_CONTEXT_FAILED, err)
-        alert(MESSAGES.errors.DELETE_CONTEXT_FAILED)
+        notifyError(MESSAGES.errors.DELETE_CONTEXT_FAILED)
       }
     },
     [onReload],

@@ -122,9 +122,9 @@
 10. **Datetime standardization** - All code now uses `datetime.now(UTC)` (modern, timezone-aware)
 11. **Environment configuration** - Centralized config module with VITE_API_BASE_URL support
 12. **ProjectWithStats LSP violation** - Fixed by removing inheritance, using explicit fields with factory method
+13. **alert() usage (17 occurrences)** - Toast system introduced
 
 ### 🔄 Medium Priority
-- **alert() usage (17 occurrences)** - Should use toast notifications or error boundary
 - **Pydantic base schemas** - ResponseBase/SoftDeletableResponseBase to reduce schema duplication
 
 ### 🔄 Low Priority (Polish)

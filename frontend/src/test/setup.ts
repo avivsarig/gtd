@@ -1,4 +1,4 @@
-import { afterEach } from "vitest"
+import { afterEach, vi } from "vitest"
 import { cleanup } from "@testing-library/react"
 import "@testing-library/jest-dom/vitest"
 
@@ -6,6 +6,16 @@ import "@testing-library/jest-dom/vitest"
 afterEach(() => {
   cleanup()
 })
+
+// Mock sonner toast globally
+vi.mock("sonner", () => ({
+  toast: {
+    error: vi.fn(),
+    success: vi.fn(),
+    info: vi.fn(),
+  },
+  Toaster: () => null,
+}))
 
 // Mock window.matchMedia
 Object.defineProperty(window, "matchMedia", {

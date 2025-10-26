@@ -7,8 +7,19 @@ import {
   getErrorMessage,
   logError,
   notifyError,
+  notifySuccess,
+  notifyInfo,
   handleError,
 } from "./errorHandling"
+
+// Mock sonner toast
+vi.mock("sonner", () => ({
+  toast: {
+    error: vi.fn(),
+    success: vi.fn(),
+    info: vi.fn(),
+  },
+}))
 
 describe("getErrorMessage", () => {
   it("should extract message from Error instance", () => {
@@ -110,66 +121,115 @@ describe("logError", () => {
 
 describe("notifyError", () => {
   let consoleErrorSpy: ReturnType<typeof vi.spyOn>
-  let alertSpy: ReturnType<typeof vi.spyOn>
 
-  beforeEach(() => {
+  beforeEach(async () => {
     consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
-    alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {})
+    vi.clearAllMocks()
   })
 
   afterEach(() => {
     consoleErrorSpy.mockRestore()
-    alertSpy.mockRestore()
   })
 
-  it("should notify and log by default", () => {
+  it("should notify and log by default", async () => {
+    const { toast } = await import("sonner")
     notifyError("Something went wrong")
 
     expect(consoleErrorSpy).toHaveBeenCalledWith("Something went wrong")
-    expect(alertSpy).toHaveBeenCalledWith("Something went wrong")
+    expect(toast.error).toHaveBeenCalledWith("Something went wrong", {
+      duration: 4000,
+    })
   })
 
-  it("should notify without logging when log=false", () => {
+  it("should notify without logging when log=false", async () => {
+    const { toast } = await import("sonner")
     notifyError("Something went wrong", { log: false })
 
     expect(consoleErrorSpy).not.toHaveBeenCalled()
-    expect(alertSpy).toHaveBeenCalledWith("Something went wrong")
+    expect(toast.error).toHaveBeenCalledWith("Something went wrong", {
+      duration: 4000,
+    })
   })
 
-  it("should accept duration option for future use", () => {
-    // Should not throw even though duration isn't used yet
-    expect(() => {
-      notifyError("Test message", { duration: 3000 })
-    }).not.toThrow()
+  it("should accept duration option", async () => {
+    const { toast } = await import("sonner")
+    notifyError("Test message", { duration: 3000 })
 
-    expect(alertSpy).toHaveBeenCalledWith("Test message")
+    expect(toast.error).toHaveBeenCalledWith("Test message", { duration: 3000 })
   })
 
-  it("should accept severity option for future use", () => {
-    // Should not throw even though severity isn't used yet
+  it("should accept severity option for future use", async () => {
+    const { toast } = await import("sonner")
     expect(() => {
       notifyError("Warning message", { severity: "warning" })
     }).not.toThrow()
 
-    expect(alertSpy).toHaveBeenCalledWith("Warning message")
+    expect(toast.error).toHaveBeenCalled()
+  })
+})
+
+describe("notifySuccess", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it("should call toast.success with default duration", async () => {
+    const { toast } = await import("sonner")
+    notifySuccess("Task completed!")
+
+    expect(toast.success).toHaveBeenCalledWith("Task completed!", {
+      duration: 3000,
+    })
+  })
+
+  it("should accept custom duration", async () => {
+    const { toast } = await import("sonner")
+    notifySuccess("Task completed!", { duration: 5000 })
+
+    expect(toast.success).toHaveBeenCalledWith("Task completed!", {
+      duration: 5000,
+    })
+  })
+})
+
+describe("notifyInfo", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it("should call toast.info with default duration", async () => {
+    const { toast } = await import("sonner")
+    notifyInfo("Feature coming soon")
+
+    expect(toast.info).toHaveBeenCalledWith("Feature coming soon", {
+      duration: 3000,
+    })
+  })
+
+  it("should accept custom duration", async () => {
+    const { toast } = await import("sonner")
+    notifyInfo("Feature coming soon", { duration: 2000 })
+
+    expect(toast.info).toHaveBeenCalledWith("Feature coming soon", {
+      duration: 2000,
+    })
   })
 })
 
 describe("handleError", () => {
   let consoleErrorSpy: ReturnType<typeof vi.spyOn>
-  let alertSpy: ReturnType<typeof vi.spyOn>
 
   beforeEach(() => {
     consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
-    alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {})
+    vi.clearAllMocks()
   })
 
   afterEach(() => {
     consoleErrorSpy.mockRestore()
-    alertSpy.mockRestore()
   })
 
-  it("should extract message, log, but not notify by default", () => {
+  it("should extract message, log, but not notify by default", async () => {
+    const { toast } = await import("sonner")
     const error = new Error("Network error")
     const result = handleError(
       error,
@@ -182,10 +242,11 @@ describe("handleError", () => {
       "[Failed to fetch data]:",
       error,
     )
-    expect(alertSpy).not.toHaveBeenCalled()
+    expect(toast.error).not.toHaveBeenCalled()
   })
 
-  it("should notify when notify=true", () => {
+  it("should notify when notify=true", async () => {
+    const { toast } = await import("sonner")
     const error = new Error("Delete failed")
     const result = handleError(error, "Failed to delete task", "Fallback", {
       notify: true,
@@ -196,7 +257,9 @@ describe("handleError", () => {
       "[Failed to delete task]:",
       error,
     )
-    expect(alertSpy).toHaveBeenCalledWith("Delete failed")
+    expect(toast.error).toHaveBeenCalledWith("Delete failed", {
+      duration: 4000,
+    })
   })
 
   it("should not log when log=false", () => {
@@ -216,12 +279,13 @@ describe("handleError", () => {
     expect(result).toBe("Operation failed")
   })
 
-  it("should handle notify=true and log=false together", () => {
+  it("should handle notify=true and log=false together", async () => {
+    const { toast } = await import("sonner")
     const error = new Error("Test error")
     handleError(error, "Context", "Fallback", { notify: true, log: false })
 
     expect(consoleErrorSpy).not.toHaveBeenCalled()
-    expect(alertSpy).toHaveBeenCalledWith("Test error")
+    expect(toast.error).toHaveBeenCalledWith("Test error", { duration: 4000 })
   })
 
   it("should return extracted message for state management", () => {
@@ -259,19 +323,18 @@ describe("handleError", () => {
 
 describe("integration scenarios", () => {
   let consoleErrorSpy: ReturnType<typeof vi.spyOn>
-  let alertSpy: ReturnType<typeof vi.spyOn>
 
   beforeEach(() => {
     consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
-    alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {})
+    vi.clearAllMocks()
   })
 
   afterEach(() => {
     consoleErrorSpy.mockRestore()
-    alertSpy.mockRestore()
   })
 
-  it("should handle typical component error scenario", () => {
+  it("should handle typical component error scenario", async () => {
+    const { toast } = await import("sonner")
     // Simulating: try { await api() } catch (err) { handleError(...) }
     const apiError = new Error("Network timeout")
     const message = handleError(
@@ -283,16 +346,19 @@ describe("integration scenarios", () => {
 
     expect(message).toBe("Network timeout")
     expect(consoleErrorSpy).toHaveBeenCalled()
-    expect(alertSpy).not.toHaveBeenCalled()
+    expect(toast.error).not.toHaveBeenCalled()
   })
 
-  it("should handle delete operation with user notification", () => {
+  it("should handle delete operation with user notification", async () => {
+    const { toast } = await import("sonner")
     const error = new Error("Task not found")
     handleError(error, "Delete task failed", "Failed to delete task", {
       notify: true,
     })
 
-    expect(alertSpy).toHaveBeenCalledWith("Task not found")
+    expect(toast.error).toHaveBeenCalledWith("Task not found", {
+      duration: 4000,
+    })
     expect(consoleErrorSpy).toHaveBeenCalled()
   })
 })

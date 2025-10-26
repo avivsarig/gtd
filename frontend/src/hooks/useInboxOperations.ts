@@ -15,6 +15,7 @@ import {
   type InboxItem,
 } from "@/lib/api"
 import { MESSAGES } from "@/lib/messages"
+import { notifyError } from "@/lib/errorHandling"
 
 export interface UseInboxOperationsOptions {
   /** Callback to reload inbox after operations */
@@ -67,7 +68,7 @@ export function useInboxOperations(
         await deleteInboxItem(id)
         await onReloadInbox()
       } catch (err) {
-        alert(
+        notifyError(
           err instanceof Error ? err.message : MESSAGES.errors.DELETE_FAILED,
         )
       } finally {
@@ -85,7 +86,7 @@ export function useInboxOperations(
         await onReloadInbox()
         await onReloadTasks()
       } catch (err) {
-        alert(
+        notifyError(
           err instanceof Error ? err.message : MESSAGES.errors.CONVERT_FAILED,
         )
       } finally {
@@ -103,7 +104,7 @@ export function useInboxOperations(
         await onReloadInbox()
         await onReloadNotes()
       } catch (err) {
-        alert(
+        notifyError(
           err instanceof Error ? err.message : MESSAGES.errors.CONVERT_FAILED,
         )
       } finally {

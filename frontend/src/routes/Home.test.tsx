@@ -482,8 +482,7 @@ describe("Home", () => {
         new Error("Conversion failed"),
       )
 
-      // Mock alert
-      const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {})
+      const { toast } = await import("sonner")
 
       render(<Home />)
 
@@ -495,10 +494,8 @@ describe("Home", () => {
       await user.click(taskButton)
 
       await waitFor(() => {
-        expect(alertSpy).toHaveBeenCalled()
+        expect(toast.error).toHaveBeenCalled()
       })
-
-      alertSpy.mockRestore()
     })
   })
 
@@ -835,7 +832,7 @@ describe("Home", () => {
       vi.mocked(api.getTasks).mockResolvedValue([task])
       vi.mocked(api.deleteTask).mockRejectedValue(new Error("Delete failed"))
 
-      const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {})
+      const { toast } = await import("sonner")
 
       render(<Home />)
 
@@ -849,10 +846,8 @@ describe("Home", () => {
       await user.click(deleteButton)
 
       await waitFor(() => {
-        expect(alertSpy).toHaveBeenCalled()
+        expect(toast.error).toHaveBeenCalled()
       })
-
-      alertSpy.mockRestore()
     })
   })
 
