@@ -7,7 +7,13 @@ from sqlalchemy.orm import Session
 
 from app.models.project import Project
 from app.repositories import project_repository
-from app.schemas.project import ProjectCreate, ProjectStatus, ProjectUpdate, ProjectWithStats
+from app.schemas.project import (
+    ProjectCreate,
+    ProjectResponse,
+    ProjectStatus,
+    ProjectUpdate,
+    ProjectWithStats,
+)
 
 
 def list_projects(db: Session) -> list[Project]:
@@ -42,20 +48,9 @@ def list_projects_with_stats(db: Session) -> list[ProjectWithStats]:
 
     for project in projects:
         stats = project_repository.get_task_stats(db, project.id)
-        project_dict = {
-            "id": project.id,
-            "name": project.name,
-            "outcome_statement": project.outcome_statement,
-            "status": project.status,
-            "parent_project_id": project.parent_project_id,
-            "created_at": project.created_at,
-            "updated_at": project.updated_at,
-            "completed_at": project.completed_at,
-            "archived_at": project.archived_at,
-            "last_activity_at": project.last_activity_at,
-            **stats,
-        }
-        result.append(ProjectWithStats(**project_dict))
+        result.append(
+            ProjectWithStats(**ProjectResponse.model_validate(project).model_dump(), **stats)
+        )
 
     return result
 
@@ -90,20 +85,7 @@ def get_project_with_stats(db: Session, project_id: UUID) -> ProjectWithStats | 
         return None
 
     stats = project_repository.get_task_stats(db, project.id)
-    project_dict = {
-        "id": project.id,
-        "name": project.name,
-        "outcome_statement": project.outcome_statement,
-        "status": project.status,
-        "parent_project_id": project.parent_project_id,
-        "created_at": project.created_at,
-        "updated_at": project.updated_at,
-        "completed_at": project.completed_at,
-        "archived_at": project.archived_at,
-        "last_activity_at": project.last_activity_at,
-        **stats,
-    }
-    return ProjectWithStats(**project_dict)
+    return ProjectWithStats(**ProjectResponse.model_validate(project).model_dump(), **stats)
 
 
 def create_project(db: Session, project_data: ProjectCreate) -> Project:

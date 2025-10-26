@@ -120,9 +120,9 @@
 5. **Custom hooks (useFormSubmission, useResourceLoader, useAsyncAction)** - Eliminated state duplication
 6. **MESSAGES constants** - Centralized error/success messages in lib/messages.ts
 7. **BaseSelect component** - Unified select implementation with CVA variants, eliminated NoteForm inline duplication
+8. **Project dict duplication** - duplication eliminated
 
 ### 🔄 Critical (SOLID/DRY Violations)
-- **Project dict duplication** - 2 identical transformations in project_controller (lines 45-56, 93-105)
 - **datetime.now(UTC)** - BaseRepository uses it, controllers use deprecated datetime.utcnow()
 - **Home.tsx (540 lines)** - God Component with 5 load functions, violates SRP
 
