@@ -1,6 +1,6 @@
 """Unit tests for Task Pydantic schemas."""
 
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from uuid import uuid4
 
 import pytest
@@ -78,7 +78,7 @@ class TestTaskResponse:
     def test_response_from_dict(self):
         """Should create response from dict."""
         task_id = uuid4()
-        now = datetime.now()
+        now = datetime.now(UTC)
         data = {
             "id": task_id,
             "title": "Test task",

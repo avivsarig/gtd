@@ -1,6 +1,6 @@
 """Unit tests for Task controller."""
 
-from datetime import datetime
+from datetime import UTC, datetime
 from unittest.mock import Mock, patch
 
 from app.controllers import task_controller
@@ -316,8 +316,8 @@ class TestCompleteTask:
             ),
             patch("app.controllers.task_controller.datetime") as mock_datetime,
         ):
-            mock_now = datetime(2025, 10, 5, 12, 0, 0)
-            mock_datetime.utcnow.return_value = mock_now
+            mock_now = datetime(2025, 10, 5, 12, 0, 0, tzinfo=UTC)
+            mock_datetime.now.return_value = mock_now
 
             task_controller.complete_task(mock_db, task_id)
 
@@ -348,7 +348,7 @@ class TestUncompleteTask:
 
         mock_db = Mock()
         task_id = uuid4()
-        mock_task = Mock(spec=Task, id=task_id, completed_at=datetime.utcnow())
+        mock_task = Mock(spec=Task, id=task_id, completed_at=datetime.now(UTC))
 
         with patch(
             "app.controllers.task_controller.task_repository.get_by_id", return_value=mock_task
@@ -404,8 +404,8 @@ class TestBulkUpdateStatus:
             ),
             patch("app.controllers.task_controller.datetime") as mock_datetime,
         ):
-            mock_now = datetime(2025, 10, 5, 12, 0, 0)
-            mock_datetime.utcnow.return_value = mock_now
+            mock_now = datetime(2025, 10, 5, 12, 0, 0, tzinfo=UTC)
+            mock_datetime.now.return_value = mock_now
 
             updated_tasks = task_controller.bulk_update_status(
                 mock_db, task_ids, TaskStatus.WAITING
@@ -444,7 +444,7 @@ class TestBulkUpdateStatus:
             ),
             patch("app.controllers.task_controller.datetime") as mock_datetime,
         ):
-            mock_datetime.utcnow.return_value = datetime.utcnow()
+            mock_datetime.now.return_value = datetime.now(UTC)
 
             updated_tasks = task_controller.bulk_update_status(
                 mock_db, [task_id1, task_id2, task_id3], TaskStatus.SOMEDAY

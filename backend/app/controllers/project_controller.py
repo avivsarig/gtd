@@ -1,6 +1,6 @@
 """Project controller - Business logic layer for Project operations."""
 
-from datetime import datetime
+from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy.orm import Session
@@ -131,10 +131,10 @@ def update_project(db: Session, project_id: UUID, project_data: ProjectUpdate) -
 
     # If changing status to completed, set completed_at
     if project_data.status == ProjectStatus.COMPLETED and project.completed_at is None:
-        project.completed_at = datetime.utcnow()
+        project.completed_at = datetime.now(UTC)
 
     # Update last_activity_at
-    project.last_activity_at = datetime.utcnow()
+    project.last_activity_at = datetime.now(UTC)
 
     return project_repository.update(db, project, project_data)
 
@@ -179,9 +179,9 @@ def complete_project(db: Session, project_id: UUID) -> Project | None:
     if project is None:
         return None
 
-    project.completed_at = datetime.utcnow()
+    project.completed_at = datetime.now(UTC)
     project.status = ProjectStatus.COMPLETED.value
-    project.last_activity_at = datetime.utcnow()
+    project.last_activity_at = datetime.now(UTC)
     db.commit()
     db.refresh(project)
     return project

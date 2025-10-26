@@ -1,10 +1,6 @@
 # GTD Project Status
 
-**Last Updated:** 2025-10-26
-
 ---
-
-## Overall Completion: ~66%
 
 **Test Coverage:**
 - Backend: 214 tests passing (128 unit + 86 integration)
@@ -121,14 +117,8 @@
 6. **MESSAGES constants** - Centralized error/success messages in lib/messages.ts
 7. **BaseSelect component** - Unified select implementation with CVA variants, eliminated NoteForm inline duplication
 8. **Project dict duplication** - duplication eliminated
-9. **Home.tsx refactoring** - Reduced from 540 to 205 lines (62% reduction) via:
-   - 5 operation hooks (useTaskOperations, useNoteOperations, useInboxOperations, useContextOperations)
-   - 5 section components (DashboardHeader, InboxSection, TasksSection, NotesSection, ContextsSection)
-   - useModalState and useKeyboardShortcuts hooks for state consolidation
-   - All tests passing (535), zero lint violations
-
-### 🔄 Critical (SOLID/DRY Violations)
-- **datetime.now(UTC)** - BaseRepository uses it, controllers use deprecated datetime.utcnow()
+9. **Home.tsx refactoring** - Reduced from 540 to 205 lines (62% reduction)
+10. **Datetime standardization** - All code now uses `datetime.now(UTC)` (modern, timezone-aware)
 
 ### 🔄 Medium Priority
 - **API_BASE_URL hardcoded** - Should use import.meta.env.VITE_API_BASE_URL

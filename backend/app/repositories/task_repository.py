@@ -1,6 +1,6 @@
 """Task repository - Data access layer for Task operations."""
 
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from uuid import UUID
 
 from sqlalchemy.orm import Session
@@ -130,7 +130,7 @@ class TaskRepository(BaseRepository[Task, TaskCreate, TaskUpdate]):
         Returns:
             Task object with deleted_at set
         """
-        task.deleted_at = datetime.now()
+        task.deleted_at = datetime.now(UTC)
         db.commit()
         db.refresh(task)
         return task

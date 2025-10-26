@@ -1,6 +1,6 @@
 """Task controller - Business logic layer for Task operations."""
 
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from uuid import UUID
 
 from sqlalchemy.orm import Session
@@ -175,7 +175,7 @@ def complete_task(db: Session, task_id: UUID) -> Task | None:
     Returns:
         Completed Task object if found, None if task doesn't exist
     """
-    return _update_task_field(db, task_id, "completed_at", datetime.utcnow())
+    return _update_task_field(db, task_id, "completed_at", datetime.now(UTC))
 
 
 def uncomplete_task(db: Session, task_id: UUID) -> Task | None:
@@ -216,7 +216,7 @@ def bulk_update_status(db: Session, task_ids: list[UUID], status: TaskStatus) ->
         task = task_repository.get_by_id(db, task_id)
         if task is not None:
             task.status = status.value
-            task.updated_at = datetime.utcnow()
+            task.updated_at = datetime.now(UTC)
             updated_tasks.append(task)
 
     db.commit()

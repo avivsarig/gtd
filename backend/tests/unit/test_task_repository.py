@@ -1,6 +1,6 @@
 """Unit tests for Task repository."""
 
-from datetime import datetime
+from datetime import UTC, datetime
 from unittest.mock import Mock
 from uuid import uuid4
 
@@ -212,10 +212,9 @@ class TestGetById:
         """Should not return deleted tasks."""
 
         task_id = uuid4()
-        from datetime import datetime
 
         # Mock a deleted task
-        mock_task = Mock(spec=Task, id=task_id, title="Deleted task", deleted_at=datetime.now())
+        mock_task = Mock(spec=Task, id=task_id, title="Deleted task", deleted_at=datetime.now(UTC))
 
         # Mock database session
         mock_db = Mock()

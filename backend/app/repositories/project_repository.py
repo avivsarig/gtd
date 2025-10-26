@@ -1,6 +1,5 @@
 """Project repository - Data access layer for Project operations."""
 
-from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy import func
@@ -36,42 +35,6 @@ class ProjectRepository(BaseRepository[Project, ProjectCreate, ProjectUpdate]):
             query = query.filter(Project.deleted_at.is_(None))
 
         return query.order_by(Project.created_at.desc()).all()
-
-    def update(self, db: Session, project: Project, project_data: ProjectUpdate) -> Project:
-        """Update an existing project.
-
-        Args:
-            db: Database session
-            project: Existing project object
-            project_data: Update data
-
-        Returns:
-            Updated Project object
-        """
-        update_dict = project_data.model_dump(exclude_unset=True)
-
-        for field, value in update_dict.items():
-            setattr(project, field, value)
-
-        project.updated_at = datetime.utcnow()
-        db.commit()
-        db.refresh(project)
-        return project
-
-    def soft_delete(self, db: Session, project: Project) -> Project:
-        """Soft delete a project by setting deleted_at timestamp.
-
-        Args:
-            db: Database session
-            project: Project to delete
-
-        Returns:
-            Deleted Project object
-        """
-        project.deleted_at = datetime.utcnow()
-        db.commit()
-        db.refresh(project)
-        return project
 
     def get_task_stats(self, db: Session, project_id: UUID) -> dict:
         """Get task statistics for a project.
@@ -128,6 +91,6 @@ _repository = ProjectRepository()
 get_all = _repository.get_all
 get_by_id = _repository.get_by_id
 create = _repository.create
-update = _repository.update
-soft_delete = _repository.soft_delete
+update = _repository.update  # Inherited from BaseRepository
+soft_delete = _repository.soft_delete  # Inherited from BaseRepository
 get_task_stats = _repository.get_task_stats
