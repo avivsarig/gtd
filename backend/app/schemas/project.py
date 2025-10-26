@@ -6,6 +6,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
+from app.schemas.base import ResponseBase
+
 
 class ProjectStatus(str, Enum):
     """Valid project statuses."""
@@ -33,18 +35,13 @@ class ProjectUpdate(BaseModel):
     parent_project_id: UUID | None = None
 
 
-class ProjectResponse(BaseModel):
+class ProjectResponse(ResponseBase):
     """Schema for project responses."""
 
-    model_config = {"from_attributes": True}
-
-    id: UUID
     name: str
     outcome_statement: str | None
     status: str
     parent_project_id: UUID | None
-    created_at: datetime
-    updated_at: datetime
     completed_at: datetime | None = None
     archived_at: datetime | None = None
     last_activity_at: datetime | None = None
@@ -58,19 +55,14 @@ class ProjectStats(BaseModel):
     next_task_count: int = 0
 
 
-class ProjectWithStats(BaseModel):
+class ProjectWithStats(ResponseBase):
     """Project response with task statistics (flattened composition)."""
 
-    model_config = {"from_attributes": True}
-
     # Project fields
-    id: UUID
     name: str
     outcome_statement: str | None
     status: str
     parent_project_id: UUID | None
-    created_at: datetime
-    updated_at: datetime
     completed_at: datetime | None = None
     archived_at: datetime | None = None
     last_activity_at: datetime | None = None

@@ -24,6 +24,7 @@
   - SQL injection prevention in migration helpers
   - Centralized UUID utilities module - app.core.uuid_utils with generate_uuid() function
   - BaseSelect UI component - eliminated duplication across select components
+  - **Pydantic base schemas** - ResponseBase/SoftDeletableResponseBase reduce schema duplication across 4 schemas
 
 **APIs Implemented:**
 - Tasks: Full CRUD + status management + completion + bulk updates + filtering
@@ -123,9 +124,7 @@
 11. **Environment configuration** - Centralized config module with VITE_API_BASE_URL support
 12. **ProjectWithStats LSP violation** - Fixed by removing inheritance, using explicit fields with factory method
 13. **alert() usage (17 occurrences)** - Toast system introduced
-
-### 🔄 Medium Priority
-- **Pydantic base schemas** - ResponseBase/SoftDeletableResponseBase to reduce schema duplication
+14. **Pydantic base schemas** - ResponseBase/SoftDeletableResponseBase inheritance eliminates ~20 lines of boilerplate across Task/Note/Project/Context schemas
 
 ### 🔄 Low Priority (Polish)
 - Extract nested JSX from Inbox route (Home done - readability)

@@ -6,6 +6,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
+from app.schemas.base import ResponseBase
+
 
 class TaskStatus(str, Enum):
     """Valid task statuses following GTD methodology."""
@@ -43,12 +45,9 @@ class TaskUpdate(BaseModel):
     blocked_by_task_id: UUID | None = None
 
 
-class TaskResponse(BaseModel):
+class TaskResponse(ResponseBase):
     """Schema for task responses."""
 
-    model_config = {"from_attributes": True}
-
-    id: UUID
     title: str
     description: str | None
     status: str
@@ -58,8 +57,6 @@ class TaskResponse(BaseModel):
     project_id: UUID | None = None
     context_id: UUID | None = None
     blocked_by_task_id: UUID | None = None
-    created_at: datetime
-    updated_at: datetime
     completed_at: datetime | None = None
     archived_at: datetime | None = None
 

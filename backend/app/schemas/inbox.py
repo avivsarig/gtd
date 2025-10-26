@@ -19,7 +19,11 @@ class InboxItemUpdate(BaseModel):
 
 
 class InboxItemResponse(BaseModel):
-    """Schema for inbox item responses."""
+    """Schema for inbox item responses.
+
+    Note: InboxItem has custom timestamps (created_at, processed_at, deleted_at)
+    and intentionally does NOT have updated_at, so it doesn't inherit ResponseBase.
+    """
 
     model_config = {"from_attributes": True}
 

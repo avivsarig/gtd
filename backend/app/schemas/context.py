@@ -1,9 +1,8 @@
 """Context schemas for API request/response validation."""
 
-from datetime import datetime
-from uuid import UUID
-
 from pydantic import BaseModel, Field
+
+from app.schemas.base import ResponseBase
 
 
 class ContextBase(BaseModel):
@@ -32,12 +31,7 @@ class ContextUpdate(BaseModel):
     sort_order: int | None = Field(None, ge=0)
 
 
-class ContextResponse(ContextBase):
+class ContextResponse(ResponseBase, ContextBase):
     """Schema for context responses."""
 
-    id: UUID
-    created_at: datetime
-    updated_at: datetime
-
-    class Config:
-        from_attributes = True
+    pass

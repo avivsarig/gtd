@@ -1,9 +1,10 @@
 """Note Pydantic schemas for request/response validation."""
 
-from datetime import datetime
 from uuid import UUID
 
 from pydantic import BaseModel, Field
+
+from app.schemas.base import SoftDeletableResponseBase
 
 
 class NoteCreate(BaseModel):
@@ -22,15 +23,9 @@ class NoteUpdate(BaseModel):
     project_id: UUID | None = None
 
 
-class NoteResponse(BaseModel):
+class NoteResponse(SoftDeletableResponseBase):
     """Schema for note responses."""
 
-    model_config = {"from_attributes": True}
-
-    id: UUID
     title: str
     content: str | None
     project_id: UUID | None
-    created_at: datetime
-    updated_at: datetime
-    deleted_at: datetime | None = None

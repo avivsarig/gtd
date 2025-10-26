@@ -7,7 +7,13 @@ from pydantic import BaseModel, Field
 
 
 class SearchResultItem(BaseModel):
-    """Individual search result item."""
+    """Individual search result item.
+
+    Note: Search results only include created_at (not updated_at) from the
+    search query, so this schema doesn't inherit from ResponseBase.
+    """
+
+    model_config = {"from_attributes": True}
 
     id: UUID
     type: str = Field(..., description="Type of result: 'task', 'note', or 'project'")
@@ -16,9 +22,6 @@ class SearchResultItem(BaseModel):
     rank: float = Field(..., description="Search relevance rank (higher is more relevant)")
     created_at: datetime
     project_id: UUID | None = Field(None, description="Associated project ID (for tasks/notes)")
-
-    class Config:
-        from_attributes = True
 
 
 class SearchResponse(BaseModel):
