@@ -48,9 +48,8 @@ def list_projects_with_stats(db: Session) -> list[ProjectWithStats]:
 
     for project in projects:
         stats = project_repository.get_task_stats(db, project.id)
-        result.append(
-            ProjectWithStats(**ProjectResponse.model_validate(project).model_dump(), **stats)
-        )
+        project_response = ProjectResponse.model_validate(project)
+        result.append(ProjectWithStats.from_project_and_stats(project_response, stats))
 
     return result
 
@@ -85,7 +84,8 @@ def get_project_with_stats(db: Session, project_id: UUID) -> ProjectWithStats | 
         return None
 
     stats = project_repository.get_task_stats(db, project.id)
-    return ProjectWithStats(**ProjectResponse.model_validate(project).model_dump(), **stats)
+    project_response = ProjectResponse.model_validate(project)
+    return ProjectWithStats.from_project_and_stats(project_response, stats)
 
 
 def create_project(db: Session, project_data: ProjectCreate) -> Project:

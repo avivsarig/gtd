@@ -50,9 +50,46 @@ class ProjectResponse(BaseModel):
     last_activity_at: datetime | None = None
 
 
-class ProjectWithStats(ProjectResponse):
-    """Project response with task statistics."""
+class ProjectStats(BaseModel):
+    """Task statistics for a project."""
 
     task_count: int = 0
     completed_task_count: int = 0
     next_task_count: int = 0
+
+
+class ProjectWithStats(BaseModel):
+    """Project response with task statistics (flattened composition)."""
+
+    model_config = {"from_attributes": True}
+
+    # Project fields
+    id: UUID
+    name: str
+    outcome_statement: str | None
+    status: str
+    parent_project_id: UUID | None
+    created_at: datetime
+    updated_at: datetime
+    completed_at: datetime | None = None
+    archived_at: datetime | None = None
+    last_activity_at: datetime | None = None
+
+    # Statistics fields
+    task_count: int = 0
+    completed_task_count: int = 0
+    next_task_count: int = 0
+
+    @classmethod
+    def from_project_and_stats(cls, project: ProjectResponse, stats: dict) -> "ProjectWithStats":
+        """
+        Factory method to construct ProjectWithStats from ProjectResponse and stats dict.
+
+        Args:
+            project: ProjectResponse instance
+            stats: Dictionary with task_count, completed_task_count, next_task_count
+
+        Returns:
+            ProjectWithStats instance
+        """
+        return cls(**project.model_dump(), **stats)
