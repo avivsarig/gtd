@@ -98,16 +98,16 @@ def update_context(db: Session, context_id: UUID, context_data: ContextUpdate):
 
 def delete_context(db: Session, context_id: UUID):
     """
-    Delete a context.
+    Soft-delete a context.
 
-    Note: This is a hard delete. Tasks associated with this context
-    will have the association removed via database cascade rules.
+    Sets deleted_at timestamp instead of removing from database.
+    Task associations remain in the database for potential restoration.
 
     Args:
         db: Database session
         context_id: UUID of context to delete
 
     Returns:
-        Deleted context if found, None otherwise
+        Soft-deleted context if found, None otherwise
     """
     return context_repository.delete(db, context_id)

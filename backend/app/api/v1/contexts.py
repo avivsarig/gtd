@@ -76,9 +76,9 @@ def update_context(context_id: UUID, context_data: ContextUpdate, db: Session = 
 @router.delete("/{context_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_context(context_id: UUID, db: Session = Depends(get_db)):
     """
-    Delete a context (hard delete).
+    Soft-delete a context.
 
-    Note: Tasks associated with this context will have the association removed.
+    Sets deleted_at timestamp. Task associations are preserved for potential restoration.
 
     Raises:
         404: Context not found

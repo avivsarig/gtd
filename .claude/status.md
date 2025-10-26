@@ -3,9 +3,9 @@
 ---
 
 **Test Coverage:**
-- Backend: 214 tests passing (128 unit + 86 integration)
+- Backend: 251 tests passing (150 unit + 101 integration)
 - Frontend: 535 tests passing (21 test files)
-- Total: **749 tests passing**
+- Total: **786 tests passing**
 
 ---
 
@@ -13,12 +13,13 @@
 ### Backend (API Layer Complete)
 - 3-layer clean architecture (API → Controller → Repository)
 - PostgreSQL database with SQLAlchemy ORM
-- 9 database migrations applied (tasks, contexts, notes, projects, inbox, full-text search, triggers)
+- 10 database migrations applied (tasks, contexts, notes, projects, inbox, full-text search, triggers, context soft-delete)
 - Docker containerization with docker-compose
-- 214 backend tests passing (128 unit + 86 integration)
+- 251 backend tests passing (150 unit + 101 integration)
 - **Code Quality Improvements:**
   - BaseRepository pattern - DRY compliance across all repositories
-  - Mixins pattern (AuditMixin, SoftDeletableMixin, SearchableMixin) - eliminated model duplication
+  - Mixins pattern (SoftDeletableMixin, SearchableMixin) - eliminated model duplication
+  - **All models now use SoftDeletableMixin** - consistent soft-delete across Task/Note/Project/InboxItem/Context
   - SearchableMixin with automatic field derivation
   - SQL injection prevention in migration helpers
   - Centralized UUID utilities module - app.core.uuid_utils with generate_uuid() function
@@ -28,7 +29,7 @@
 - Tasks: Full CRUD + status management + completion + bulk updates + filtering
 - Projects: Full CRUD + completion + task statistics
 - Notes: Full CRUD + project association
-- Contexts: Full CRUD + name uniqueness
+- Contexts: Full CRUD + soft-delete + name uniqueness (partial unique index allows reuse after deletion)
 - Inbox: Full CRUD + conversion endpoints (task/note/project)
 - Search: Full-text search across tasks/notes/projects with relevance ranking
 
@@ -93,7 +94,7 @@
 |---|---|---|---|
 | FR-1.00 | Inbox Management | 🟢 95% | Backend + UniversalCapture + processing UI |
 | FR-1.01 | Task Management | 🟢 90% | CRUD + completion + status - missing archive view |
-| FR-1.02 | Contexts | 🟢 90% | API + Context UI - missing filter view |
+| FR-1.02 | Contexts | 🟢 95% | API + Context UI + soft-delete - missing filter view |
 | FR-1.03 | Scheduling | 🟡 20% | DB fields only |
 | FR-1.04 | Task States | 🟢 95% | Status management + filter tabs |
 | FR-1.05 | Bulk Operations | 🟡 50% | Backend API - no UI |
@@ -123,7 +124,6 @@
 12. **ProjectWithStats LSP violation** - Fixed by removing inheritance, using explicit fields with factory method
 
 ### 🔄 Medium Priority
-- **Context model missing soft-delete** - Inconsistent with Task/Note/Project/InboxItem
 - **alert() usage (17 occurrences)** - Should use toast notifications or error boundary
 - **Pydantic base schemas** - ResponseBase/SoftDeletableResponseBase to reduce schema duplication
 

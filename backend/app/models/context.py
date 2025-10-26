@@ -1,17 +1,17 @@
 """Context model - Tags for filtering tasks by location/tool."""
 
-from sqlalchemy import TIMESTAMP, Column, Integer, String, Text
-from sqlalchemy.sql import func, text
+from sqlalchemy import Column, Integer, String, Text
+from sqlalchemy.sql import text
 
 from app.db.database import Base
-from app.models.mixins import UUIDPrimaryKeyMixin
+from app.models.mixins import SoftDeletableMixin, UUIDPrimaryKeyMixin
 
 
-class Context(Base, UUIDPrimaryKeyMixin):
+class Context(Base, UUIDPrimaryKeyMixin, SoftDeletableMixin):
     """Context model for task categorization (@home, @computer, etc.).
 
-    Note: Context only has created_at timestamp (no updated_at).
-    Contexts are relatively static and don't need update tracking.
+    Supports soft-delete to maintain data integrity and allow potential restoration.
+    Inherits created_at, updated_at, and deleted_at from SoftDeletableMixin.
     """
 
     __tablename__ = "contexts"
@@ -20,4 +20,3 @@ class Context(Base, UUIDPrimaryKeyMixin):
     description = Column(Text, nullable=True)
     icon = Column(String(50), nullable=True)
     sort_order = Column(Integer, nullable=False, server_default=text("0"))
-    created_at = Column(TIMESTAMP, nullable=False, server_default=func.now())

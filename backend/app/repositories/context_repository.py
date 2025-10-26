@@ -10,38 +10,40 @@ from app.schemas.context import ContextCreate, ContextUpdate
 
 
 class ContextRepository(BaseRepository[Context, ContextCreate, ContextUpdate]):
-    """Repository for Context entity with custom sorting and hard delete.
-
-    Note: Context uses hard delete, not soft delete.
-    """
+    """Repository for Context entity with custom sorting and soft-delete support."""
 
     def __init__(self):
         """Initialize ContextRepository with Context model."""
         super().__init__(Context)
 
-    def get_all(self, db: Session, include_deleted: bool = False) -> list[Context]:  # noqa: ARG002
+    def get_all(self, db: Session, include_deleted: bool = False) -> list[Context]:
         """Get all contexts ordered by sort_order, then name.
 
         Args:
             db: Database session
-            include_deleted: Ignored for Context (no soft delete)
+            include_deleted: If True, include soft-deleted contexts (default: False)
 
         Returns:
-            List of all contexts
+            List of contexts ordered by sort_order, then name
         """
-        return db.query(Context).order_by(Context.sort_order, Context.name).all()
+        query = db.query(Context)
+
+        if not include_deleted:
+            query = query.filter(Context.deleted_at.is_(None))
+
+        return query.order_by(Context.sort_order, Context.name).all()
 
     def get_by_name(self, db: Session, name: str) -> Context | None:
-        """Get a context by name (case-sensitive).
+        """Get a context by name (case-sensitive), excluding soft-deleted contexts.
 
         Args:
             db: Database session
             name: Context name to search for
 
         Returns:
-            Context if found, None otherwise
+            Context if found and not deleted, None otherwise
         """
-        return db.query(Context).filter(Context.name == name).first()
+        return db.query(Context).filter(Context.name == name, Context.deleted_at.is_(None)).first()
 
     def update_by_id(
         self, db: Session, context_id: UUID, context_data: ContextUpdate
@@ -70,24 +72,20 @@ class ContextRepository(BaseRepository[Context, ContextCreate, ContextUpdate]):
         return context
 
     def delete(self, db: Session, context_id: UUID) -> Context | None:
-        """Delete a context (hard delete).
-
-        Note: This is a hard delete since contexts don't have soft delete in the schema.
+        """Soft-delete a context by setting deleted_at timestamp.
 
         Args:
             db: Database session
             context_id: UUID of context to delete
 
         Returns:
-            Deleted context if found, None otherwise
+            Soft-deleted context if found, None otherwise
         """
         context = self.get_by_id(db, context_id)
         if context is None:
             return None
 
-        db.delete(context)
-        db.commit()
-        return context
+        return self.soft_delete(db, context)
 
 
 # Singleton instance for backward compatibility with existing code
