@@ -377,7 +377,11 @@ describe("useFormSubmission", () => {
           message: "Hello!",
         })
         expect(onSuccess).toHaveBeenCalled()
-        expect(result.current.data).toEqual({ name: "", email: "", message: "" })
+        expect(result.current.data).toEqual({
+          name: "",
+          email: "",
+          message: "",
+        })
       })
     })
 

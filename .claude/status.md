@@ -1,15 +1,15 @@
 # GTD Project Status
 
-**Last Updated:** 2025-10-24
+**Last Updated:** 2025-10-26
 
 ---
 
-## Overall Completion: ~65%
+## Overall Completion: ~66%
 
 **Test Coverage:**
 - Backend: 214 tests passing (128 unit + 86 integration)
-- Frontend: 401 tests passing (15 test files)
-- Total: **615 tests passing**
+- Frontend: 535 tests passing (21 test files)
+- Total: **749 tests passing**
 
 ---
 
@@ -26,6 +26,7 @@
   - SearchableMixin with automatic field derivation
   - SQL injection prevention in migration helpers
   - Centralized UUID utilities module - app.core.uuid_utils with generate_uuid() function
+  - BaseSelect UI component - eliminated duplication across select components
 
 **APIs Implemented:**
 - Tasks: Full CRUD + status management + completion + bulk updates + filtering
@@ -40,7 +41,7 @@
 - Dark mode by default
 - Routing configured
 - API client with full type safety
-- 401 frontend tests passing (Vitest + React Testing Library, 15 test files)
+- 535 frontend tests passing (Vitest + React Testing Library, 21 test files)
 
 **UI Components:**
 - Home page with task list and notes
@@ -54,6 +55,7 @@
 - Note creation and editing form
 - ContextManager and ContextSelect components
 - **SearchBar component** - full-text search with debouncing, type filtering, keyboard navigation
+- **BaseSelect component** - reusable select with CVA variants (default/status/project/context)
 
 ### Development Tooling
 - Makefile with 20+ commands
@@ -117,9 +119,9 @@
 4. **UUID utilities module** - Centralized app.core.uuid_utils
 5. **Custom hooks (useFormSubmission, useResourceLoader, useAsyncAction)** - Eliminated state duplication
 6. **MESSAGES constants** - Centralized error/success messages in lib/messages.ts
+7. **BaseSelect component** - Unified select implementation with CVA variants, eliminated NoteForm inline duplication
 
 ### 🔄 Critical (SOLID/DRY Violations)
-- **BaseSelect component** - 80% duplicate code across StatusSelect/ProjectSelect/ContextSelect
 - **Project dict duplication** - 2 identical transformations in project_controller (lines 45-56, 93-105)
 - **datetime.now(UTC)** - BaseRepository uses it, controllers use deprecated datetime.utcnow()
 - **Home.tsx (540 lines)** - God Component with 5 load functions, violates SRP

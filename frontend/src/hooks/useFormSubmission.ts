@@ -45,7 +45,9 @@ export interface UseFormSubmissionResult<T> {
   /** Clear error message */
   clearError: () => void
   /** Handle form submission */
-  handleSubmit: (submitFn: (data: T) => Promise<void>) => (e: React.FormEvent) => Promise<void>
+  handleSubmit: (
+    submitFn: (data: T) => Promise<void>,
+  ) => (e: React.FormEvent) => Promise<void>
   /** Reset form to initial state */
   reset: () => void
 }
@@ -98,9 +100,12 @@ export function useFormSubmission<T>(
     resetOnSuccess = false,
   } = options
 
-  const updateField = useCallback(<K extends keyof T>(field: K, value: T[K]) => {
-    setData((prev) => ({ ...prev, [field]: value }))
-  }, [])
+  const updateField = useCallback(
+    <K extends keyof T>(field: K, value: T[K]) => {
+      setData((prev) => ({ ...prev, [field]: value }))
+    },
+    [],
+  )
 
   const clearError = useCallback(() => {
     setError(null)
@@ -149,7 +154,15 @@ export function useFormSubmission<T>(
         }
       }
     },
-    [data, validate, onSuccess, onError, defaultErrorMessage, resetOnSuccess, initialData],
+    [
+      data,
+      validate,
+      onSuccess,
+      onError,
+      defaultErrorMessage,
+      resetOnSuccess,
+      initialData,
+    ],
   )
 
   return {

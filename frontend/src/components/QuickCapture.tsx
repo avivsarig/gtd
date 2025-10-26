@@ -20,21 +20,16 @@ interface QuickCaptureProps {
 }
 
 export function QuickCapture({ onSuccess }: QuickCaptureProps) {
-  const {
-    data,
-    updateField,
-    handleSubmit,
-    isSubmitting,
-    error,
-  } = useFormSubmission(
-    { content: "" },
-    {
-      validate: (formData) => validateRequired(formData.content),
-      onSuccess,
-      defaultErrorMessage: MESSAGES.errors.CAPTURE_FAILED,
-      resetOnSuccess: true,
-    },
-  )
+  const { data, updateField, handleSubmit, isSubmitting, error } =
+    useFormSubmission(
+      { content: "" },
+      {
+        validate: (formData) => validateRequired(formData.content),
+        onSuccess,
+        defaultErrorMessage: MESSAGES.errors.CAPTURE_FAILED,
+        resetOnSuccess: true,
+      },
+    )
 
   return (
     <form

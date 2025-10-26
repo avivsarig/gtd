@@ -6,6 +6,7 @@
  */
 
 import { TaskStatusEnum, type TaskStatus } from "@/lib/api"
+import { BaseSelect, type Option } from "./ui/select"
 
 interface StatusOption {
   value: TaskStatus
@@ -38,24 +39,24 @@ interface StatusSelectProps {
 }
 
 export function StatusSelect({ value, onChange, disabled }: StatusSelectProps) {
-  const selectedOption = STATUS_OPTIONS.find((opt) => opt.value === value)
+  const options: Option<TaskStatus>[] = STATUS_OPTIONS.map((opt) => ({
+    value: opt.value,
+    label: opt.label,
+    color: opt.color,
+  }))
 
   return (
-    <select
+    <BaseSelect<TaskStatus>
       value={value}
-      onChange={(e) => onChange(e.target.value as TaskStatus)}
+      options={options}
+      onChange={(newValue) => {
+        if (newValue) onChange(newValue)
+      }}
       disabled={disabled}
-      className={`cursor-pointer rounded border px-2 py-1 text-xs font-medium transition-colors ${
-        selectedOption?.color || ""
-      } disabled:cursor-not-allowed disabled:opacity-50`}
+      variant="status"
       aria-label="Task status"
-    >
-      {STATUS_OPTIONS.map((option) => (
-        <option key={option.value} value={option.value}>
-          {option.label}
-        </option>
-      ))}
-    </select>
+      placeholder=""
+    />
   )
 }
 

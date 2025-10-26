@@ -255,9 +255,10 @@ describe("useAsyncAction", () => {
         })
 
       const { result } = renderHook(() =>
-        useAsyncAction<{ id: string; title: string; status: string }, [string, TaskInput]>(
-          mockAction,
-        ),
+        useAsyncAction<
+          { id: string; title: string; status: string },
+          [string, TaskInput]
+        >(mockAction),
       )
 
       await result.current.execute("task-1", {

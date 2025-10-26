@@ -83,7 +83,9 @@ describe("useResourceLoader", () => {
 
   describe("error handling", () => {
     it("should handle loader errors", async () => {
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+      const consoleErrorSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {})
       const mockError = new Error("Load failed")
       const mockLoader = vi.fn().mockRejectedValue(mockError)
 
@@ -105,7 +107,9 @@ describe("useResourceLoader", () => {
     })
 
     it("should use custom error context", async () => {
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+      const consoleErrorSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {})
       const mockLoader = vi.fn().mockRejectedValue(new Error("Failed"))
 
       const { result } = renderHook(() =>
@@ -122,7 +126,9 @@ describe("useResourceLoader", () => {
     })
 
     it("should clear error with clearError", async () => {
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+      const consoleErrorSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {})
       const mockLoader = vi.fn().mockRejectedValue(new Error("Failed"))
 
       const { result } = renderHook(() => useResourceLoader(mockLoader))
@@ -164,7 +170,9 @@ describe("useResourceLoader", () => {
     })
 
     it("should clear error on successful reload", async () => {
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+      const consoleErrorSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {})
       const mockLoader = vi
         .fn()
         .mockRejectedValueOnce(new Error("First error"))
@@ -282,7 +290,9 @@ describe("useResourceLoader", () => {
     })
 
     it("should set loading to false after error", async () => {
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+      const consoleErrorSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {})
       const mockLoader = vi.fn().mockRejectedValue(new Error("Failed"))
 
       const { result } = renderHook(() => useResourceLoader(mockLoader))

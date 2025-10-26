@@ -33,25 +33,19 @@ export function UniversalCapture({
   onOpenChange,
   onSuccess,
 }: UniversalCaptureProps) {
-  const {
-    data,
-    updateField,
-    handleSubmit,
-    isSubmitting,
-    error,
-    reset,
-  } = useFormSubmission(
-    { content: "" },
-    {
-      validate: (formData) => validateRequired(formData.content),
-      onSuccess: () => {
-        onOpenChange(false)
-        onSuccess?.()
+  const { data, updateField, handleSubmit, isSubmitting, error, reset } =
+    useFormSubmission(
+      { content: "" },
+      {
+        validate: (formData) => validateRequired(formData.content),
+        onSuccess: () => {
+          onOpenChange(false)
+          onSuccess?.()
+        },
+        defaultErrorMessage: MESSAGES.errors.CAPTURE_FAILED,
+        resetOnSuccess: true,
       },
-      defaultErrorMessage: MESSAGES.errors.CAPTURE_FAILED,
-      resetOnSuccess: true,
-    },
-  )
+    )
 
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {

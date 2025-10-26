@@ -6,6 +6,7 @@
  */
 
 import { type Context } from "@/lib/api"
+import { BaseSelect, type Option } from "./ui/select"
 
 interface ContextSelectProps {
   value: string | null | undefined
@@ -20,21 +21,21 @@ export function ContextSelect({
   onChange,
   disabled,
 }: ContextSelectProps) {
+  const options: Option[] = contexts.map((context) => ({
+    value: context.id,
+    label: context.name,
+    icon: context.icon ?? undefined,
+  }))
+
   return (
-    <select
-      value={value || ""}
-      onChange={(e) => onChange(e.target.value || null)}
+    <BaseSelect
+      value={value}
+      options={options}
+      onChange={onChange}
       disabled={disabled}
-      className="cursor-pointer rounded border border-green-500/30 bg-green-500/20 px-2 py-1 text-xs font-medium text-green-400 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+      variant="context"
+      placeholder="No Context"
       aria-label="Context assignment"
-    >
-      <option value="">No Context</option>
-      {contexts.map((context) => (
-        <option key={context.id} value={context.id}>
-          {context.icon ? `${context.icon} ` : ""}
-          {context.name}
-        </option>
-      ))}
-    </select>
+    />
   )
 }

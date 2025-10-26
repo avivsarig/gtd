@@ -68,7 +68,11 @@ export function useAsyncAction<T = void, TArgs extends unknown[] = []>(
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const { onSuccess, onError, defaultErrorMessage = "Operation failed" } = options
+  const {
+    onSuccess,
+    onError,
+    defaultErrorMessage = "Operation failed",
+  } = options
 
   const execute = useCallback(
     async (...args: TArgs) => {

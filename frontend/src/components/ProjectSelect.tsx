@@ -6,12 +6,14 @@
  */
 
 import { type Project } from "@/lib/api"
+import { BaseSelect, type Option } from "./ui/select"
 
 interface ProjectSelectProps {
   value: string | null | undefined
   projects: Project[]
   onChange: (projectId: string | null) => void
   disabled?: boolean
+  id?: string
 }
 
 export function ProjectSelect({
@@ -19,21 +21,23 @@ export function ProjectSelect({
   projects,
   onChange,
   disabled,
+  id,
 }: ProjectSelectProps) {
+  const options: Option[] = projects.map((project) => ({
+    value: project.id,
+    label: project.name,
+  }))
+
   return (
-    <select
-      value={value || ""}
-      onChange={(e) => onChange(e.target.value || null)}
+    <BaseSelect
+      id={id}
+      value={value}
+      options={options}
+      onChange={onChange}
       disabled={disabled}
-      className="cursor-pointer rounded border border-purple-500/30 bg-purple-500/20 px-2 py-1 text-xs font-medium text-purple-400 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+      variant="project"
+      placeholder="No Project"
       aria-label="Project assignment"
-    >
-      <option value="">No Project</option>
-      {projects.map((project) => (
-        <option key={project.id} value={project.id}>
-          {project.name}
-        </option>
-      ))}
-    </select>
+    />
   )
 }

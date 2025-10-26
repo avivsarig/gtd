@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import { type Note, type Project } from "@/lib/api"
+import { ProjectSelect } from "./ProjectSelect"
 
 interface NoteFormProps {
   note?: Note | null
@@ -93,20 +94,13 @@ export function NoteForm({
         >
           Project
         </label>
-        <select
+        <ProjectSelect
           id="note-project"
-          value={projectId ?? ""}
-          onChange={(e) => setProjectId(e.target.value || null)}
-          className="bg-background border-border focus:ring-primary w-full rounded-lg border px-3 py-2 focus:ring-2 focus:outline-none"
+          value={projectId}
+          projects={projects}
+          onChange={setProjectId}
           disabled={isLoading}
-        >
-          <option value="">No Project</option>
-          {projects.map((project) => (
-            <option key={project.id} value={project.id}>
-              {project.name}
-            </option>
-          ))}
-        </select>
+        />
       </div>
 
       <div className="flex gap-3">
