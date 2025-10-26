@@ -119,9 +119,9 @@
 8. **Project dict duplication** - duplication eliminated
 9. **Home.tsx refactoring** - Reduced from 540 to 205 lines (62% reduction)
 10. **Datetime standardization** - All code now uses `datetime.now(UTC)` (modern, timezone-aware)
+11. **Environment configuration** - Centralized config module with VITE_API_BASE_URL support
 
 ### 🔄 Medium Priority
-- **API_BASE_URL hardcoded** - Should use import.meta.env.VITE_API_BASE_URL
 - **ProjectWithStats LSP violation** - Inherits ProjectResponse but adds fields (use composition)
 - **Context model missing soft-delete** - Inconsistent with Task/Note/Project/InboxItem
 - **alert() usage (17 occurrences)** - Should use toast notifications or error boundary

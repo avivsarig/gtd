@@ -2,9 +2,8 @@
  * API client for GTD backend
  */
 
+import { API_BASE_URL } from "./config"
 import { MESSAGES } from "./messages"
-
-const API_BASE_URL = "http://localhost:8000"
 
 export type TaskStatus = "next" | "waiting" | "someday"
 

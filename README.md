@@ -56,6 +56,13 @@ make db-migrate   # Apply latest database migrations
 Then open [frontend](http://localhost:5173) in your browser
 The backend API is available at [http://localhost:8000](http://localhost:8000), and has built-in [Swagger UI documentation](http://localhost:8000/docs)
 
+**Environment Configuration:**
+
+The frontend can be configured via environment variables:
+- `VITE_API_BASE_URL` - Backend API URL (default: `http://localhost:8000`)
+
+For local development outside Docker, copy `frontend/.env.example` to `frontend/.env` and adjust as needed.
+
 ## Development
 
 See [Makefile](Makefile) for all available commands including linting, formatting, and testing.
