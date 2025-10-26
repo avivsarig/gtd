@@ -1,10 +1,16 @@
 /**
  * Inbox - GTD Inbox processing page
  *
- * Shows unprocessed inbox items, allows conversion to task/note/project
+ * Orchestrates inbox processing by composing specialized components and hooks.
+ * Business logic delegated to hooks for separation of concerns.
+ *
+ * Layout:
+ * - Header with item count and keyboard shortcuts legend
+ * - List of inbox items with conversion actions
+ * - Keyboard navigation support
  */
 
-import { useEffect, useState, useCallback } from "react"
+import { useState } from "react"
 import {
   getInboxItems,
   deleteInboxItem,
@@ -13,101 +19,34 @@ import {
   convertInboxToProject,
   type InboxItem,
 } from "@/lib/api"
-import { Button } from "@/components/ui/button"
-import { ItemCard } from "@/components/ItemCard"
-import { FileText, CheckSquare } from "lucide-react"
 import { MESSAGES } from "@/lib/messages"
-import { notifyError, notifySuccess, notifyInfo } from "@/lib/errorHandling"
+import { useResourceLoader } from "@/hooks/useResourceLoader"
+import { useInboxKeyboardNavigation } from "@/hooks/useInboxKeyboardNavigation"
+import { InboxEmptyState } from "@/components/InboxEmptyState"
+import { InboxErrorState } from "@/components/InboxErrorState"
+import { InboxItemDisplay } from "@/components/InboxItemDisplay"
+import { notifyError, notifySuccess } from "@/lib/errorHandling"
 
 export function Inbox() {
-  const [items, setItems] = useState<InboxItem[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  // Data layer - using useResourceLoader to eliminate duplicated load functions
+  const {
+    data: items,
+    loading,
+    error,
+    reload: loadInboxItems,
+    setData: setItems,
+  } = useResourceLoader(getInboxItems, {
+    errorContext: MESSAGES.errors.LOAD_INBOX_FAILED,
+  })
+
   const [processingId, setProcessingId] = useState<string | null>(null)
-  const [focusedIndex, setFocusedIndex] = useState(0)
 
-  const loadInboxItems = async () => {
-    try {
-      setLoading(true)
-      const data = await getInboxItems()
-      setItems(data)
-      setError(null)
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : MESSAGES.errors.LOAD_INBOX_FAILED,
-      )
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    void loadInboxItems()
-  }, [])
-
-  // Reset focused index when items change
-  useEffect(() => {
-    if (focusedIndex >= items.length) {
-      setFocusedIndex(Math.max(0, items.length - 1))
-    }
-  }, [items.length, focusedIndex])
-
-  // Keyboard shortcuts for inbox processing
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      // Don't intercept if user is typing in an input
-      if (
-        e.target instanceof HTMLInputElement ||
-        e.target instanceof HTMLTextAreaElement
-      ) {
-        return
-      }
-
-      const focusedItem = items[focusedIndex]
-      if (!focusedItem || processingId) return
-
-      switch (e.key.toLowerCase()) {
-        case "t":
-          e.preventDefault()
-          void handleConvertToTask(focusedItem)
-          break
-        case "n":
-          e.preventDefault()
-          void handleConvertToNote(focusedItem)
-          break
-        case "p":
-          e.preventDefault()
-          void handleConvertToProject(focusedItem)
-          break
-        case "d":
-          e.preventDefault()
-          void handleDelete(focusedItem.id)
-          break
-        case "j":
-        case "arrowdown":
-          e.preventDefault()
-          setFocusedIndex((prev) => Math.min(prev + 1, items.length - 1))
-          break
-        case "k":
-        case "arrowup":
-          e.preventDefault()
-          setFocusedIndex((prev) => Math.max(prev - 1, 0))
-          break
-      }
-    },
-    [items, focusedIndex, processingId],
-  )
-
-  useEffect(() => {
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [handleKeyDown])
-
+  // Operation handlers with immediate UI updates
   const handleDelete = async (id: string) => {
     try {
       setProcessingId(id)
       await deleteInboxItem(id)
-      setItems((prev) => prev.filter((item) => item.id !== id))
+      setItems((prev) => (prev ? prev.filter((item) => item.id !== id) : null))
     } catch (err) {
       notifyError(
         err instanceof Error ? err.message : MESSAGES.errors.DELETE_FAILED,
@@ -121,7 +60,7 @@ export function Inbox() {
     try {
       setProcessingId(item.id)
       await convertInboxToTask(item.id, { title: item.content })
-      setItems((prev) => prev.filter((i) => i.id !== item.id))
+      setItems((prev) => (prev ? prev.filter((i) => i.id !== item.id) : null))
       notifySuccess(MESSAGES.success.CONVERTED_TO_TASK)
     } catch (err) {
       notifyError(
@@ -136,7 +75,7 @@ export function Inbox() {
     try {
       setProcessingId(item.id)
       await convertInboxToNote(item.id, { content: item.content })
-      setItems((prev) => prev.filter((i) => i.id !== item.id))
+      setItems((prev) => (prev ? prev.filter((i) => i.id !== item.id) : null))
       notifySuccess(MESSAGES.success.CONVERTED_TO_NOTE)
     } catch (err) {
       notifyError(
@@ -151,7 +90,7 @@ export function Inbox() {
     try {
       setProcessingId(item.id)
       await convertInboxToProject(item.id, { name: item.content })
-      setItems((prev) => prev.filter((i) => i.id !== item.id))
+      setItems((prev) => (prev ? prev.filter((i) => i.id !== item.id) : null))
       notifySuccess(MESSAGES.success.CONVERTED_TO_PROJECT)
     } catch (err) {
       notifyError(
@@ -162,32 +101,32 @@ export function Inbox() {
     }
   }
 
+  // Keyboard navigation - handles focus and shortcuts
+  const navigation = useInboxKeyboardNavigation({
+    items: items ?? [],
+    onConvertToTask: handleConvertToTask,
+    onConvertToNote: handleConvertToNote,
+    onConvertToProject: handleConvertToProject,
+    onDelete: handleDelete,
+    isProcessing: !!processingId,
+  })
+
+  // Loading state
   if (loading) {
     return <div className="p-8 text-center">{MESSAGES.info.LOADING_INBOX}</div>
   }
 
+  // Error state
   if (error) {
-    return (
-      <div className="p-8 text-center text-red-500">
-        <p>{error}</p>
-        <Button onClick={loadInboxItems} className="mt-4">
-          Retry
-        </Button>
-      </div>
-    )
+    return <InboxErrorState error={error} onRetry={loadInboxItems} />
   }
 
-  if (items.length === 0) {
-    return (
-      <div className="p-8 text-center">
-        <h2 className="mb-2 text-2xl font-bold">{MESSAGES.info.INBOX_ZERO}</h2>
-        <p className="text-muted-foreground">
-          All items processed. Press Cmd+K to capture new thoughts.
-        </p>
-      </div>
-    )
+  // Empty state
+  if (!items || items.length === 0) {
+    return <InboxEmptyState />
   }
 
+  // Main list view
   return (
     <div className="p-8">
       <div className="mb-6">
@@ -202,53 +141,18 @@ export function Inbox() {
       </div>
 
       <div className="space-y-4">
-        {items.map((item, index) => {
-          const isFocused = index === focusedIndex
-          return (
-            <ItemCard
-              key={item.id}
-              onEdit={() => {
-                // TODO: Implement edit functionality for inbox items
-                notifyInfo(MESSAGES.info.COMING_SOON)
-              }}
-              onDelete={() => handleDelete(item.id)}
-              deleteConfirmMessage={MESSAGES.confirmations.DELETE_INBOX_ITEM}
-              className={isFocused ? "ring-primary ring-2" : ""}
-              actions={
-                <>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleConvertToTask(item)}
-                    disabled={processingId === item.id}
-                  >
-                    <CheckSquare className="mr-2 h-4 w-4" />
-                    Task (T)
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleConvertToNote(item)}
-                    disabled={processingId === item.id}
-                  >
-                    <FileText className="mr-2 h-4 w-4" />
-                    Note (N)
-                  </Button>
-                </>
-              }
-            >
-              <p className="text-base whitespace-pre-wrap">{item.content}</p>
-              <p className="text-muted-foreground mt-1 text-xs">
-                {new Date(item.created_at).toLocaleString()}
-              </p>
-              {processingId === item.id && (
-                <p className="text-muted-foreground mt-2 text-xs">
-                  {MESSAGES.info.PROCESSING}
-                </p>
-              )}
-            </ItemCard>
-          )
-        })}
+        {items.map((item, index) => (
+          <InboxItemDisplay
+            key={item.id}
+            item={item}
+            isFocused={index === navigation.focusedIndex}
+            isProcessing={processingId === item.id}
+            onConvertToTask={handleConvertToTask}
+            onConvertToNote={handleConvertToNote}
+            onConvertToProject={handleConvertToProject}
+            onDelete={handleDelete}
+          />
+        ))}
       </div>
     </div>
   )

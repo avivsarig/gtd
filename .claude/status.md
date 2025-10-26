@@ -125,10 +125,25 @@
 12. **ProjectWithStats LSP violation** - Fixed by removing inheritance, using explicit fields with factory method
 13. **alert() usage (17 occurrences)** - Toast system introduced
 14. **Pydantic base schemas** - ResponseBase/SoftDeletableResponseBase inheritance eliminates ~20 lines of boilerplate across Task/Note/Project/Context schemas
+15. **Inbox.tsx refactoring** - Reduced from 255 to 159 lines (38% reduction)
+   - Created `useInboxKeyboardNavigation` hook - separated keyboard handling from business logic
+   - Created `InboxEmptyState`, `InboxErrorState`, `InboxItemDisplay` components - improved readability
+
+### 🔄 High Priority (Critical/Quick Win)
+- Currently none
+
+### 🔄 Medium Priority (Important fixes)
+- Currently none
 
 ### 🔄 Low Priority (Polish)
-- Extract nested JSX from Inbox route (Home done - readability)
-- Dependency injection with repository protocols (testability)
+- **Dependency injection with repository protocols** (testability, SOLID compliance)
+  - Phase 1: Define repository protocols (TaskRepositoryProtocol, NoteRepositoryProtocol, etc.) - 1-2h
+  - Phase 2: Create dependency provider functions in `app/dependencies.py` - 30min
+  - Phase 3: Update controllers to accept protocol dependencies - 2-3h
+  - Phase 4: Wire dependencies in API routes using `Depends()` - 2-3h
+  - Phase 5: Refactor unit tests to use protocol mocks (eliminate `patch()` calls) - 3-4h
+  - Phase 6: Remove deprecated module-level function exports from repositories - 30min
+  - **Out of scope:** Converting controllers to classes, search repository refactor, advanced DI containers
 - Refactor Tailwind with cn() utility (maintainability)
 
 ---
