@@ -121,10 +121,14 @@
 6. **MESSAGES constants** - Centralized error/success messages in lib/messages.ts
 7. **BaseSelect component** - Unified select implementation with CVA variants, eliminated NoteForm inline duplication
 8. **Project dict duplication** - duplication eliminated
+9. **Home.tsx refactoring** - Reduced from 540 to 205 lines (62% reduction) via:
+   - 5 operation hooks (useTaskOperations, useNoteOperations, useInboxOperations, useContextOperations)
+   - 5 section components (DashboardHeader, InboxSection, TasksSection, NotesSection, ContextsSection)
+   - useModalState and useKeyboardShortcuts hooks for state consolidation
+   - All tests passing (535), zero lint violations
 
 ### 🔄 Critical (SOLID/DRY Violations)
 - **datetime.now(UTC)** - BaseRepository uses it, controllers use deprecated datetime.utcnow()
-- **Home.tsx (540 lines)** - God Component with 5 load functions, violates SRP
 
 ### 🔄 Medium Priority
 - **API_BASE_URL hardcoded** - Should use import.meta.env.VITE_API_BASE_URL
@@ -134,7 +138,7 @@
 - **Pydantic base schemas** - ResponseBase/SoftDeletableResponseBase to reduce schema duplication
 
 ### 🔄 Low Priority (Polish)
-- Extract nested JSX from Home/Inbox routes (readability)
+- Extract nested JSX from Inbox route (Home done - readability)
 - Dependency injection with repository protocols (testability)
 - Refactor Tailwind with cn() utility (maintainability)
 

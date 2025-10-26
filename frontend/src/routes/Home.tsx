@@ -1,327 +1,108 @@
 /**
  * Home - Main GTD dashboard
  *
+ * Orchestrates the dashboard layout by composing section components.
+ * Business logic delegated to custom hooks for separation of concerns.
+ *
  * Layout:
  * - Top: Quick Capture | Inbox (side by side)
  * - Middle: Tasks | Notes (side by side)
  * - Bottom: Projects | Contexts (placeholders)
  */
 
-import { useEffect, useState } from "react"
 import { QuickCapture } from "@/components/QuickCapture"
 import { UniversalCapture } from "@/components/UniversalCapture"
 import { SearchBar } from "@/components/SearchBar"
-import { TaskList } from "@/components/TaskList"
-import { NotesList } from "@/components/NotesList"
 import { NoteForm } from "@/components/NoteForm"
-import { ItemCard } from "@/components/ItemCard"
+import { DashboardHeader } from "@/components/DashboardHeader"
+import { InboxSection } from "@/components/InboxSection"
+import { TasksSection } from "@/components/TasksSection"
+import { NotesSection } from "@/components/NotesSection"
+import { ContextsSection } from "@/components/ContextsSection"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   getTasks,
-  updateTask,
-  completeTask,
-  uncompleteTask,
-  deleteTask,
   getProjects,
   getNotes,
-  createNote,
-  updateNote,
-  deleteNote,
   getInboxItems,
-  deleteInboxItem,
-  convertInboxToTask,
-  convertInboxToNote,
   getContexts,
-  createContext,
-  deleteContext,
-  type Task,
-  type TaskStatus,
-  type Project,
-  type Note,
-  type InboxItem,
-  type Context,
-  type CreateContextInput,
 } from "@/lib/api"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { ContextManager } from "@/components/ContextManager"
-import { FileText, CheckSquare } from "lucide-react"
 import { MESSAGES } from "@/lib/messages"
+import { useResourceLoader } from "@/hooks/useResourceLoader"
+import { useTaskOperations } from "@/hooks/useTaskOperations"
+import { useNoteOperations } from "@/hooks/useNoteOperations"
+import { useInboxOperations } from "@/hooks/useInboxOperations"
+import { useContextOperations } from "@/hooks/useContextOperations"
+import { useModalState } from "@/hooks/useModalState"
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts"
 
 export function Home() {
-  const [tasks, setTasks] = useState<Task[]>([])
-  const [projects, setProjects] = useState<Project[]>([])
-  const [contexts, setContexts] = useState<Context[]>([])
-  const [notes, setNotes] = useState<Note[]>([])
-  const [inboxItems, setInboxItems] = useState<InboxItem[]>([])
-  const [showUniversalCapture, setShowUniversalCapture] = useState(false)
-  const [showSearchBar, setShowSearchBar] = useState(false)
-  const [showNoteForm, setShowNoteForm] = useState(false)
-  const [editingNote, setEditingNote] = useState<Note | null>(null)
-  const [processingId, setProcessingId] = useState<string | null>(null)
+  // Data layer - using useResourceLoader to eliminate duplicated load functions
+  const {
+    data: tasks,
+    setData: setTasks,
+    reload: loadTasks,
+  } = useResourceLoader(getTasks, {
+    errorContext: MESSAGES.errors.console.LOAD_TASKS_FAILED,
+  })
 
-  const loadTasks = async () => {
-    try {
-      const data = await getTasks()
-      setTasks(data)
-    } catch (err) {
-      console.error(MESSAGES.errors.console.LOAD_TASKS_FAILED, err)
-    }
-  }
+  const { data: projects } = useResourceLoader(() => getProjects(true), {
+    errorContext: MESSAGES.errors.console.LOAD_PROJECTS_FAILED,
+  })
 
-  const loadProjects = async () => {
-    try {
-      const data = await getProjects(true)
-      setProjects(data)
-    } catch (err) {
-      console.error(MESSAGES.errors.console.LOAD_PROJECTS_FAILED, err)
-    }
-  }
+  const { data: notes, reload: loadNotes } = useResourceLoader(getNotes, {
+    errorContext: MESSAGES.errors.console.LOAD_NOTES_FAILED,
+  })
 
-  const loadNotes = async () => {
-    try {
-      const data = await getNotes()
-      setNotes(data)
-    } catch (err) {
-      console.error(MESSAGES.errors.console.LOAD_NOTES_FAILED, err)
-    }
-  }
+  const { data: inboxItems, reload: loadInbox } = useResourceLoader(
+    getInboxItems,
+    {
+      errorContext: MESSAGES.errors.console.LOAD_INBOX_FAILED,
+    },
+  )
 
-  const loadInbox = async () => {
-    try {
-      const data = await getInboxItems()
-      setInboxItems(data)
-    } catch (err) {
-      console.error(MESSAGES.errors.console.LOAD_INBOX_FAILED, err)
-    }
-  }
+  const { data: contexts, reload: loadContexts } = useResourceLoader(
+    getContexts,
+    {
+      errorContext: MESSAGES.errors.console.LOAD_CONTEXTS_FAILED,
+    },
+  )
 
-  const loadContexts = async () => {
-    try {
-      const data = await getContexts()
-      setContexts(data)
-    } catch (err) {
-      console.error(MESSAGES.errors.console.LOAD_CONTEXTS_FAILED, err)
-    }
-  }
+  // Business logic hooks - each handles a domain concern
+  const taskOps = useTaskOperations({
+    onReload: loadTasks,
+    onUpdate: (updater) => {
+      setTasks((prev) => (prev ? updater(prev) : null))
+    },
+  })
 
-  useEffect(() => {
-    void loadTasks()
-    void loadProjects()
-    void loadNotes()
-    void loadInbox()
-    void loadContexts()
-  }, [])
+  const noteOps = useNoteOperations({
+    onReload: loadNotes,
+  })
 
-  // Global keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't intercept if typing in input
-      if (
-        e.target instanceof HTMLInputElement ||
-        e.target instanceof HTMLTextAreaElement
-      ) {
-        return
-      }
+  const inboxOps = useInboxOperations({
+    onReloadInbox: loadInbox,
+    onReloadTasks: loadTasks,
+    onReloadNotes: loadNotes,
+  })
 
-      // Cmd+K / Ctrl+K - Universal capture
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-        e.preventDefault()
-        setShowUniversalCapture(true)
-      }
+  const contextOps = useContextOperations({
+    onReload: loadContexts,
+  })
 
-      // Cmd+/ / Ctrl+/ - Search
-      if ((e.metaKey || e.ctrlKey) && e.key === "/") {
-        e.preventDefault()
-        setShowSearchBar(true)
-      }
-    }
+  // Modal state management
+  const modals = useModalState()
 
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [])
-
-  // Task handlers
-  const handleUpdateStatus = async (taskId: string, status: TaskStatus) => {
-    try {
-      const updatedTask = await updateTask(taskId, { status })
-      setTasks((prev) =>
-        prev.map((task) => (task.id === taskId ? updatedTask : task)),
-      )
-    } catch (err) {
-      console.error(MESSAGES.errors.console.UPDATE_TASK_STATUS_FAILED, err)
-    }
-  }
-
-  const handleToggleComplete = async (task: Task) => {
-    try {
-      const updatedTask = task.completed_at
-        ? await uncompleteTask(task.id)
-        : await completeTask(task.id)
-      setTasks((prev) => prev.map((t) => (t.id === task.id ? updatedTask : t)))
-    } catch (err) {
-      console.error(MESSAGES.errors.console.TOGGLE_TASK_COMPLETION_FAILED, err)
-    }
-  }
-
-  const handleUpdateProject = async (
-    taskId: string,
-    projectId: string | null,
-  ) => {
-    try {
-      const updatedTask = await updateTask(taskId, { project_id: projectId })
-      setTasks((prev) =>
-        prev.map((task) => (task.id === taskId ? updatedTask : task)),
-      )
-    } catch (err) {
-      console.error(MESSAGES.errors.console.UPDATE_TASK_PROJECT_FAILED, err)
-    }
-  }
-
-  const handleUpdateContext = async (
-    taskId: string,
-    contextId: string | null,
-  ) => {
-    try {
-      const updatedTask = await updateTask(taskId, { context_id: contextId })
-      setTasks((prev) =>
-        prev.map((task) => (task.id === taskId ? updatedTask : task)),
-      )
-    } catch (err) {
-      console.error(MESSAGES.errors.console.UPDATE_TASK_CONTEXT_FAILED, err)
-    }
-  }
-
-  const handleDeleteTask = async (taskId: string) => {
-    try {
-      await deleteTask(taskId)
-      setTasks((prev) => prev.filter((task) => task.id !== taskId))
-    } catch (err) {
-      console.error(MESSAGES.errors.console.DELETE_TASK_FAILED, err)
-      alert(MESSAGES.errors.DELETE_TASK_FAILED)
-    }
-  }
-
-  // Note handlers
-  const handleCreateNote = async (data: {
-    title: string
-    content?: string
-    project_id?: string | null
-  }) => {
-    try {
-      const newNote = await createNote(data)
-      setNotes((prev) => [newNote, ...prev])
-      setShowNoteForm(false)
-    } catch (err) {
-      console.error(MESSAGES.errors.console.CREATE_NOTE_FAILED, err)
-    }
-  }
-
-  const handleUpdateNote = async (data: {
-    title: string
-    content?: string
-    project_id?: string | null
-  }) => {
-    if (!editingNote) return
-    try {
-      const updatedNote = await updateNote(editingNote.id, data)
-      setNotes((prev) =>
-        prev.map((note) => (note.id === editingNote.id ? updatedNote : note)),
-      )
-      setEditingNote(null)
-      setShowNoteForm(false)
-    } catch (err) {
-      console.error(MESSAGES.errors.console.UPDATE_NOTE_FAILED, err)
-    }
-  }
-
-  const handleEditNote = (note: Note) => {
-    setEditingNote(note)
-    setShowNoteForm(true)
-  }
-
-  const handleDeleteNote = async (noteId: string) => {
-    try {
-      await deleteNote(noteId)
-      setNotes((prev) => prev.filter((note) => note.id !== noteId))
-    } catch (err) {
-      console.error(MESSAGES.errors.console.DELETE_NOTE_FAILED, err)
-    }
-  }
-
-  const handleCancelNoteForm = () => {
-    setEditingNote(null)
-    setShowNoteForm(false)
-  }
-
-  // Inbox handlers
-  const handleDeleteInboxItem = async (id: string) => {
-    try {
-      setProcessingId(id)
-      await deleteInboxItem(id)
-      void loadInbox()
-    } catch (err) {
-      alert(err instanceof Error ? err.message : MESSAGES.errors.DELETE_FAILED)
-    } finally {
-      setProcessingId(null)
-    }
-  }
-
-  const handleConvertToTask = async (item: InboxItem) => {
-    try {
-      setProcessingId(item.id)
-      await convertInboxToTask(item.id, { title: item.content })
-      void loadInbox()
-      void loadTasks()
-    } catch (err) {
-      alert(err instanceof Error ? err.message : MESSAGES.errors.CONVERT_FAILED)
-    } finally {
-      setProcessingId(null)
-    }
-  }
-
-  const handleConvertToNote = async (item: InboxItem) => {
-    try {
-      setProcessingId(item.id)
-      await convertInboxToNote(item.id, { content: item.content })
-      void loadInbox()
-      void loadNotes()
-    } catch (err) {
-      alert(err instanceof Error ? err.message : MESSAGES.errors.CONVERT_FAILED)
-    } finally {
-      setProcessingId(null)
-    }
-  }
-
-  // Context handlers
-  const handleCreateContext = async (data: CreateContextInput) => {
-    try {
-      await createContext(data)
-      void loadContexts()
-    } catch (err) {
-      throw err
-    }
-  }
-
-  const handleDeleteContext = async (contextId: string) => {
-    try {
-      await deleteContext(contextId)
-      void loadContexts()
-    } catch (err) {
-      console.error(MESSAGES.errors.console.DELETE_CONTEXT_FAILED, err)
-      alert(MESSAGES.errors.DELETE_CONTEXT_FAILED)
-    }
-  }
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    onOpenCapture: modals.openUniversalCapture,
+    onOpenSearch: modals.openSearchBar,
+  })
 
   return (
     <div className="bg-background min-h-screen p-6">
       <div className="mx-auto max-w-7xl space-y-6">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold">GTD Dashboard</h1>
-          <p className="text-muted-foreground mt-2">
-            Press Cmd+K for quick capture
-          </p>
-        </div>
+        <DashboardHeader />
 
         {/* Top Row: Quick Capture + Inbox */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -339,134 +120,36 @@ export function Home() {
           </Card>
 
           {/* Inbox */}
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                Inbox
-                {inboxItems.length > 0 && (
-                  <span className="text-muted-foreground ml-2 text-sm font-normal">
-                    ({inboxItems.length}{" "}
-                    {inboxItems.length === 1 ? "item" : "items"})
-                  </span>
-                )}
-              </CardTitle>
-              <p className="text-muted-foreground text-sm">
-                Process into tasks, notes, or projects
-              </p>
-            </CardHeader>
-            <CardContent>
-              {inboxItems.length === 0 ? (
-                <p className="text-muted-foreground py-8 text-center">
-                  {MESSAGES.info.INBOX_ZERO}
-                </p>
-              ) : (
-                <div className="max-h-[400px] space-y-2 overflow-y-auto">
-                  {inboxItems.map((item) => (
-                    <ItemCard
-                      key={item.id}
-                      onEdit={() => {
-                        // TODO: Implement edit functionality for inbox items
-                        alert(MESSAGES.info.COMING_SOON)
-                      }}
-                      onDelete={() => handleDeleteInboxItem(item.id)}
-                      deleteConfirmMessage={
-                        MESSAGES.confirmations.DELETE_INBOX_ITEM
-                      }
-                      actions={
-                        <>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleConvertToTask(item)}
-                            disabled={processingId === item.id}
-                          >
-                            <CheckSquare className="mr-1 h-3 w-3" />
-                            Task
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleConvertToNote(item)}
-                            disabled={processingId === item.id}
-                          >
-                            <FileText className="mr-1 h-3 w-3" />
-                            Note
-                          </Button>
-                        </>
-                      }
-                    >
-                      <p className="text-sm whitespace-pre-wrap">
-                        {item.content}
-                      </p>
-                      <p className="text-muted-foreground mt-1 text-xs">
-                        {new Date(item.created_at).toLocaleString()}
-                      </p>
-                    </ItemCard>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <InboxSection
+            inboxItems={inboxItems ?? []}
+            processingId={inboxOps.processingId}
+            onConvertToTask={inboxOps.handleConvertToTask}
+            onConvertToNote={inboxOps.handleConvertToNote}
+            onDelete={inboxOps.handleDelete}
+          />
         </div>
 
         {/* Middle Row: Tasks + Notes */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          {/* Tasks */}
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                Tasks
-                {tasks.length > 0 && (
-                  <span className="text-muted-foreground ml-2 text-sm font-normal">
-                    ({tasks.filter((t) => !t.completed_at).length} active)
-                  </span>
-                )}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="max-h-[400px] overflow-y-auto">
-              <TaskList
-                tasks={tasks}
-                projects={projects}
-                contexts={contexts}
-                onUpdateStatus={handleUpdateStatus}
-                onToggleComplete={handleToggleComplete}
-                onUpdateProject={handleUpdateProject}
-                onUpdateContext={handleUpdateContext}
-                onEdit={(_task) => {
-                  // TODO: Implement edit functionality for tasks
-                  alert(MESSAGES.info.COMING_SOON)
-                }}
-                onDelete={handleDeleteTask}
-              />
-            </CardContent>
-          </Card>
+          <TasksSection
+            tasks={tasks ?? []}
+            projects={projects ?? []}
+            contexts={contexts ?? []}
+            onUpdateStatus={taskOps.handleUpdateStatus}
+            onToggleComplete={taskOps.handleToggleComplete}
+            onUpdateProject={taskOps.handleUpdateProject}
+            onUpdateContext={taskOps.handleUpdateContext}
+            onEdit={() => {}}
+            onDelete={taskOps.handleDelete}
+          />
 
-          {/* Notes */}
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                Notes
-                {notes.length > 0 && (
-                  <span className="text-muted-foreground ml-2 text-sm font-normal">
-                    ({notes.length})
-                  </span>
-                )}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="max-h-[400px] overflow-y-auto">
-              <div className="mb-3">
-                <Button onClick={() => setShowNoteForm(true)} size="sm">
-                  + New Note
-                </Button>
-              </div>
-              <NotesList
-                notes={notes}
-                projects={projects}
-                onEdit={handleEditNote}
-                onDelete={handleDeleteNote}
-              />
-            </CardContent>
-          </Card>
+          <NotesSection
+            notes={notes ?? []}
+            projects={projects ?? []}
+            onEdit={noteOps.handleEdit}
+            onDelete={noteOps.handleDelete}
+            onNewNote={noteOps.openNoteForm}
+          />
         </div>
 
         {/* Bottom Row: Projects + Contexts */}
@@ -484,55 +167,39 @@ export function Home() {
             </CardContent>
           </Card>
 
-          {/* Contexts */}
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                Contexts
-                {contexts.length > 0 && (
-                  <span className="text-muted-foreground ml-2 text-sm font-normal">
-                    ({contexts.length})
-                  </span>
-                )}
-              </CardTitle>
-              <p className="text-muted-foreground text-sm">
-                Manage contexts for task filtering
-              </p>
-            </CardHeader>
-            <CardContent className="max-h-[400px] overflow-y-auto">
-              <ContextManager
-                contexts={contexts}
-                onCreate={handleCreateContext}
-                onDelete={handleDeleteContext}
-              />
-            </CardContent>
-          </Card>
+          <ContextsSection
+            contexts={contexts ?? []}
+            onCreate={contextOps.handleCreate}
+            onDelete={contextOps.handleDelete}
+          />
         </div>
       </div>
 
       {/* Universal Capture Modal (Cmd+K) */}
       <UniversalCapture
-        open={showUniversalCapture}
-        onOpenChange={setShowUniversalCapture}
+        open={modals.showUniversalCapture}
+        onOpenChange={modals.setShowUniversalCapture}
         onSuccess={loadInbox}
       />
 
       {/* Search Modal (Cmd+/) */}
       <SearchBar
-        open={showSearchBar}
-        onOpenChange={setShowSearchBar}
+        open={modals.showSearchBar}
+        onOpenChange={modals.setShowSearchBar}
         onNavigate={(result) => {
           console.log("Navigate to:", result)
         }}
       />
 
       {/* Note Form Modal */}
-      {showNoteForm && (
+      {noteOps.showNoteForm && (
         <NoteForm
-          note={editingNote}
-          projects={projects}
-          onSubmit={editingNote ? handleUpdateNote : handleCreateNote}
-          onCancel={handleCancelNoteForm}
+          note={noteOps.editingNote}
+          projects={projects ?? []}
+          onSubmit={
+            noteOps.editingNote ? noteOps.handleUpdate : noteOps.handleCreate
+          }
+          onCancel={noteOps.handleCancelForm}
         />
       )}
     </div>
