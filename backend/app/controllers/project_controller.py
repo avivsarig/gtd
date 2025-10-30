@@ -6,7 +6,7 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 
 from app.models.project import Project
-from app.repositories import project_repository
+from app.repositories.protocols import ProjectRepositoryProtocol
 from app.schemas.project import (
     ProjectCreate,
     ProjectResponse,
@@ -16,7 +16,7 @@ from app.schemas.project import (
 )
 
 
-def list_projects(db: Session) -> list[Project]:
+def list_projects(db: Session, repository: ProjectRepositoryProtocol) -> list[Project]:
     """
     Get list of all active (non-deleted) projects.
 
@@ -26,69 +26,81 @@ def list_projects(db: Session) -> list[Project]:
 
     Args:
         db: Database session
+        repository: Project repository instance
 
     Returns:
         List of Project objects
     """
-    return project_repository.get_all(db, include_deleted=False)
+    return repository.get_all(db, include_deleted=False)
 
 
-def list_projects_with_stats(db: Session) -> list[ProjectWithStats]:
+def list_projects_with_stats(
+    db: Session, repository: ProjectRepositoryProtocol
+) -> list[ProjectWithStats]:
     """
     Get list of projects with task statistics.
 
     Args:
         db: Database session
+        repository: Project repository instance
 
     Returns:
         List of ProjectWithStats objects
     """
-    projects = project_repository.get_all(db, include_deleted=False)
+    projects = repository.get_all(db, include_deleted=False)
     result = []
 
     for project in projects:
-        stats = project_repository.get_task_stats(db, project.id)
+        stats = repository.get_task_stats(db, project.id)
         project_response = ProjectResponse.model_validate(project)
         result.append(ProjectWithStats.from_project_and_stats(project_response, stats))
 
     return result
 
 
-def get_project(db: Session, project_id: UUID) -> Project | None:
+def get_project(
+    db: Session, repository: ProjectRepositoryProtocol, project_id: UUID
+) -> Project | None:
     """
     Get a single project by ID.
 
     Args:
         db: Database session
+        repository: Project repository instance
         project_id: UUID of the project to retrieve
 
     Returns:
         Project object if found and not deleted, None otherwise
     """
-    return project_repository.get_by_id(db, project_id)
+    return repository.get_by_id(db, project_id)
 
 
-def get_project_with_stats(db: Session, project_id: UUID) -> ProjectWithStats | None:
+def get_project_with_stats(
+    db: Session, repository: ProjectRepositoryProtocol, project_id: UUID
+) -> ProjectWithStats | None:
     """
     Get a single project with task statistics.
 
     Args:
         db: Database session
+        repository: Project repository instance
         project_id: UUID of the project
 
     Returns:
         ProjectWithStats object if found, None otherwise
     """
-    project = project_repository.get_by_id(db, project_id)
+    project = repository.get_by_id(db, project_id)
     if project is None:
         return None
 
-    stats = project_repository.get_task_stats(db, project.id)
+    stats = repository.get_task_stats(db, project.id)
     project_response = ProjectResponse.model_validate(project)
     return ProjectWithStats.from_project_and_stats(project_response, stats)
 
 
-def create_project(db: Session, project_data: ProjectCreate) -> Project:
+def create_project(
+    db: Session, repository: ProjectRepositoryProtocol, project_data: ProjectCreate
+) -> Project:
     """
     Create a new project.
 
@@ -97,19 +109,25 @@ def create_project(db: Session, project_data: ProjectCreate) -> Project:
 
     Args:
         db: Database session
+        repository: Project repository instance
         project_data: Project creation data
 
     Returns:
         Created Project object
     """
-    project = project_repository.create(db, project_data)
+    project = repository.create(db, project_data)
     project.last_activity_at = project.created_at
     db.commit()
     db.refresh(project)
     return project
 
 
-def update_project(db: Session, project_id: UUID, project_data: ProjectUpdate) -> Project | None:
+def update_project(
+    db: Session,
+    repository: ProjectRepositoryProtocol,
+    project_id: UUID,
+    project_data: ProjectUpdate,
+) -> Project | None:
     """
     Update an existing project.
 
@@ -119,13 +137,14 @@ def update_project(db: Session, project_id: UUID, project_data: ProjectUpdate) -
 
     Args:
         db: Database session
+        repository: Project repository instance
         project_id: UUID of project to update
         project_data: Update data
 
     Returns:
         Updated Project object if found, None if project doesn't exist
     """
-    project = project_repository.get_by_id(db, project_id)
+    project = repository.get_by_id(db, project_id)
     if project is None:
         return None
 
@@ -136,10 +155,12 @@ def update_project(db: Session, project_id: UUID, project_data: ProjectUpdate) -
     # Update last_activity_at
     project.last_activity_at = datetime.now(UTC)
 
-    return project_repository.update(db, project, project_data)
+    return repository.update(db, project, project_data)
 
 
-def delete_project(db: Session, project_id: UUID) -> Project | None:
+def delete_project(
+    db: Session, repository: ProjectRepositoryProtocol, project_id: UUID
+) -> Project | None:
     """
     Soft delete a project.
 
@@ -147,19 +168,22 @@ def delete_project(db: Session, project_id: UUID) -> Project | None:
 
     Args:
         db: Database session
+        repository: Project repository instance
         project_id: UUID of project to delete
 
     Returns:
         Deleted Project object if found, None if project doesn't exist
     """
-    project = project_repository.get_by_id(db, project_id)
+    project = repository.get_by_id(db, project_id)
     if project is None:
         return None
 
-    return project_repository.soft_delete(db, project)
+    return repository.soft_delete(db, project)
 
 
-def complete_project(db: Session, project_id: UUID) -> Project | None:
+def complete_project(
+    db: Session, repository: ProjectRepositoryProtocol, project_id: UUID
+) -> Project | None:
     """
     Mark a project as completed.
 
@@ -170,12 +194,13 @@ def complete_project(db: Session, project_id: UUID) -> Project | None:
 
     Args:
         db: Database session
+        repository: Project repository instance
         project_id: UUID of project to complete
 
     Returns:
         Completed Project object if found, None if project doesn't exist
     """
-    project = project_repository.get_by_id(db, project_id)
+    project = repository.get_by_id(db, project_id)
     if project is None:
         return None
 

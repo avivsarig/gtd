@@ -133,17 +133,17 @@
 - Currently none
 
 ### 🔄 Medium Priority (Important fixes)
-- Currently none
+- Introduce a maximum line count per file
 
 ### 🔄 Low Priority (Polish)
 - **Dependency injection with repository protocols** (testability, SOLID compliance)
-  - Phase 1: Define repository protocols (TaskRepositoryProtocol, NoteRepositoryProtocol, etc.) - 1-2h
-  - Phase 2: Create dependency provider functions in `app/dependencies.py` - 30min
-  - Phase 3: Update controllers to accept protocol dependencies - 2-3h
-  - Phase 4: Wire dependencies in API routes using `Depends()` - 2-3h
-  - Phase 5: Refactor unit tests to use protocol mocks (eliminate `patch()` calls) - 3-4h
-  - Phase 6: Remove deprecated module-level function exports from repositories - 30min
-  - **Out of scope:** Converting controllers to classes, search repository refactor, advanced DI containers
+  - DONE: Define repository protocols (TaskRepositoryProtocol, NoteRepositoryProtocol, etc.)
+  - DONE: Create dependency provider functions in `app/dependencies.py`
+  - DONE: Update controllers to accept protocol dependencies
+  - DONE: Wire dependencies in API routes using `Depends()`
+  - Phase 5: Refactor unit tests to use protocol mocks (eliminate `patch()` calls)
+  - Phase 6: Remove deprecated module-level function exports from repositories
+- Converting controllers to classes, search repository refactor, advanced DI containers
 - Refactor Tailwind with cn() utility (maintainability)
 
 ---

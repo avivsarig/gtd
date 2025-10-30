@@ -70,9 +70,10 @@ module = "app.repositories.*"
 disable_error_code = ["assignment", "attr-defined", "override"]
 
 # Controllers interact with models and perform assignments
+# Also use protocol-based dependency injection which returns Any (duck typing)
 [[tool.mypy.overrides]]
 module = "app.controllers.*"
-disable_error_code = ["assignment", "arg-type"]
+disable_error_code = ["assignment", "arg-type", "no-any-return"]
 
 # API layer does FastAPI automatic ORM->Pydantic conversion
 [[tool.mypy.overrides]]

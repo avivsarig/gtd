@@ -5,11 +5,13 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 
 from app.models.note import Note
-from app.repositories import note_repository
+from app.repositories.protocols import NoteRepositoryProtocol
 from app.schemas.note import NoteCreate, NoteUpdate
 
 
-def list_notes(db: Session, project_id: UUID | None = None) -> list[Note]:
+def list_notes(
+    db: Session, repository: NoteRepositoryProtocol, project_id: UUID | None = None
+) -> list[Note]:
     """
     Get list of all active (non-deleted) notes.
 
@@ -20,29 +22,31 @@ def list_notes(db: Session, project_id: UUID | None = None) -> list[Note]:
 
     Args:
         db: Database session
+        repository: Note repository instance
         project_id: Optional project UUID to filter by
 
     Returns:
         List of Note objects
     """
-    return note_repository.get_all(db, include_deleted=False, project_id=project_id)
+    return repository.get_all(db, include_deleted=False, project_id=project_id)
 
 
-def get_note(db: Session, note_id: UUID) -> Note | None:
+def get_note(db: Session, repository: NoteRepositoryProtocol, note_id: UUID) -> Note | None:
     """
     Get a single note by ID.
 
     Args:
         db: Database session
+        repository: Note repository instance
         note_id: UUID of the note to retrieve
 
     Returns:
         Note object if found and not deleted, None otherwise
     """
-    return note_repository.get_by_id(db, note_id)
+    return repository.get_by_id(db, note_id)
 
 
-def create_note(db: Session, note_data: NoteCreate) -> Note:
+def create_note(db: Session, repository: NoteRepositoryProtocol, note_data: NoteCreate) -> Note:
     """
     Create a new note.
 
@@ -52,15 +56,18 @@ def create_note(db: Session, note_data: NoteCreate) -> Note:
 
     Args:
         db: Database session
+        repository: Note repository instance
         note_data: Note creation data
 
     Returns:
         Created Note object
     """
-    return note_repository.create(db, note_data)
+    return repository.create(db, note_data)
 
 
-def update_note(db: Session, note_id: UUID, note_data: NoteUpdate) -> Note | None:
+def update_note(
+    db: Session, repository: NoteRepositoryProtocol, note_id: UUID, note_data: NoteUpdate
+) -> Note | None:
     """
     Update an existing note.
 
@@ -71,20 +78,21 @@ def update_note(db: Session, note_id: UUID, note_data: NoteUpdate) -> Note | Non
 
     Args:
         db: Database session
+        repository: Note repository instance
         note_id: UUID of the note to update
         note_data: Update data
 
     Returns:
         Updated Note object if found, None otherwise
     """
-    note = note_repository.get_by_id(db, note_id)
+    note = repository.get_by_id(db, note_id)
     if not note:
         return None
 
-    return note_repository.update(db, note, note_data)
+    return repository.update(db, note, note_data)
 
 
-def delete_note(db: Session, note_id: UUID) -> Note | None:
+def delete_note(db: Session, repository: NoteRepositoryProtocol, note_id: UUID) -> Note | None:
     """
     Soft delete a note.
 
@@ -94,13 +102,14 @@ def delete_note(db: Session, note_id: UUID) -> Note | None:
 
     Args:
         db: Database session
+        repository: Note repository instance
         note_id: UUID of the note to delete
 
     Returns:
         Deleted Note object if found, None otherwise
     """
-    note = note_repository.get_by_id(db, note_id)
+    note = repository.get_by_id(db, note_id)
     if not note:
         return None
 
-    return note_repository.soft_delete(db, note)
+    return repository.soft_delete(db, note)

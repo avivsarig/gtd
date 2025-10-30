@@ -1,10 +1,11 @@
 """Unit tests for Search controller."""
 
 from datetime import UTC, datetime
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 from uuid import uuid4
 
 from app.controllers import search_controller
+from app.repositories.protocols import SearchRepositoryProtocol
 from app.schemas.search import SearchResponse
 
 
@@ -14,6 +15,7 @@ class TestSearch:
     def test_search_calls_repository_with_correct_parameters(self):
         """Should call repository search_all with query and limit."""
         mock_db = Mock()
+        mock_repository = Mock(spec=SearchRepositoryProtocol)
         query = "test query"
         limit = 50
 
@@ -29,52 +31,46 @@ class TestSearch:
             }
         ]
 
-        with patch(
-            "app.controllers.search_controller.search_repository.search_all",
-            return_value=mock_results,
-        ) as mock_search_all:
-            result = search_controller.search(mock_db, query, limit)
+        mock_repository.search_all.return_value = mock_results
+        result = search_controller.search(mock_db, mock_repository, query, limit)
 
-            mock_search_all.assert_called_once_with(mock_db, query, limit)
-            assert isinstance(result, SearchResponse)
-            assert result.query == query
-            assert result.total_results == 1
-            assert len(result.results) == 1
+        mock_repository.search_all.assert_called_once_with(mock_db, query, limit)
+        assert isinstance(result, SearchResponse)
+        assert result.query == query
+        assert result.total_results == 1
+        assert len(result.results) == 1
 
     def test_search_enforces_maximum_limit_of_100(self):
         """Should cap limit at 100 even if higher value provided."""
         mock_db = Mock()
+        mock_repository = Mock(spec=SearchRepositoryProtocol)
         query = "test"
         excessive_limit = 500
 
-        with patch(
-            "app.controllers.search_controller.search_repository.search_all",
-            return_value=[],
-        ) as mock_search_all:
-            search_controller.search(mock_db, query, excessive_limit)
+        mock_repository.search_all.return_value = []
+        search_controller.search(mock_db, mock_repository, query, excessive_limit)
 
-            # Should be called with 100, not 500
-            mock_search_all.assert_called_once_with(mock_db, query, 100)
+        # Should be called with 100, not 500
+        mock_repository.search_all.assert_called_once_with(mock_db, query, 100)
 
     def test_search_returns_empty_results_when_no_matches(self):
         """Should return SearchResponse with empty results list when nothing found."""
         mock_db = Mock()
+        mock_repository = Mock(spec=SearchRepositoryProtocol)
         query = "nonexistent"
 
-        with patch(
-            "app.controllers.search_controller.search_repository.search_all",
-            return_value=[],
-        ):
-            result = search_controller.search(mock_db, query)
+        mock_repository.search_all.return_value = []
+        result = search_controller.search(mock_db, mock_repository, query)
 
-            assert isinstance(result, SearchResponse)
-            assert result.query == query
-            assert result.total_results == 0
-            assert result.results == []
+        assert isinstance(result, SearchResponse)
+        assert result.query == query
+        assert result.total_results == 0
+        assert result.results == []
 
     def test_search_converts_repository_results_to_schema_objects(self):
         """Should convert dict results from repository to SearchResultItem objects."""
         mock_db = Mock()
+        mock_repository = Mock(spec=SearchRepositoryProtocol)
         query = "convert test"
         task_id = uuid4()
         project_id = uuid4()
@@ -92,36 +88,32 @@ class TestSearch:
             }
         ]
 
-        with patch(
-            "app.controllers.search_controller.search_repository.search_all",
-            return_value=mock_results,
-        ):
-            result = search_controller.search(mock_db, query)
+        mock_repository.search_all.return_value = mock_results
+        result = search_controller.search(mock_db, mock_repository, query)
 
-            assert result.results[0].id == task_id
-            assert result.results[0].type == "task"
-            assert result.results[0].title == "Convert Task"
-            assert result.results[0].snippet == "Description"
-            assert result.results[0].rank == 0.9
-            assert result.results[0].project_id == project_id
+        assert result.results[0].id == task_id
+        assert result.results[0].type == "task"
+        assert result.results[0].title == "Convert Task"
+        assert result.results[0].snippet == "Description"
+        assert result.results[0].rank == 0.9
+        assert result.results[0].project_id == project_id
 
     def test_search_default_limit_is_50(self):
         """Should use default limit of 50 when not specified."""
         mock_db = Mock()
+        mock_repository = Mock(spec=SearchRepositoryProtocol)
         query = "default test"
 
-        with patch(
-            "app.controllers.search_controller.search_repository.search_all",
-            return_value=[],
-        ) as mock_search_all:
-            search_controller.search(mock_db, query)
+        mock_repository.search_all.return_value = []
+        search_controller.search(mock_db, mock_repository, query)
 
-            # Should be called with default limit of 50
-            mock_search_all.assert_called_once_with(mock_db, query, 50)
+        # Should be called with default limit of 50
+        mock_repository.search_all.assert_called_once_with(mock_db, query, 50)
 
     def test_search_handles_multiple_result_types(self):
         """Should handle mixed results from tasks, notes, and projects."""
         mock_db = Mock()
+        mock_repository = Mock(spec=SearchRepositoryProtocol)
         query = "mixed"
 
         mock_results = [
@@ -154,20 +146,18 @@ class TestSearch:
             },
         ]
 
-        with patch(
-            "app.controllers.search_controller.search_repository.search_all",
-            return_value=mock_results,
-        ):
-            result = search_controller.search(mock_db, query)
+        mock_repository.search_all.return_value = mock_results
+        result = search_controller.search(mock_db, mock_repository, query)
 
-            assert result.total_results == 3
-            assert result.results[0].type == "task"
-            assert result.results[1].type == "note"
-            assert result.results[2].type == "project"
+        assert result.total_results == 3
+        assert result.results[0].type == "task"
+        assert result.results[1].type == "note"
+        assert result.results[2].type == "project"
 
     def test_search_total_results_matches_results_length(self):
         """Should set total_results to match the actual number of results."""
         mock_db = Mock()
+        mock_repository = Mock(spec=SearchRepositoryProtocol)
         query = "count test"
 
         mock_results = [
@@ -183,11 +173,8 @@ class TestSearch:
             for i in range(5)
         ]
 
-        with patch(
-            "app.controllers.search_controller.search_repository.search_all",
-            return_value=mock_results,
-        ):
-            result = search_controller.search(mock_db, query)
+        mock_repository.search_all.return_value = mock_results
+        result = search_controller.search(mock_db, mock_repository, query)
 
-            assert result.total_results == 5
-            assert len(result.results) == 5
+        assert result.total_results == 5
+        assert len(result.results) == 5

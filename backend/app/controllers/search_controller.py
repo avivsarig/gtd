@@ -2,11 +2,13 @@
 
 from sqlalchemy.orm import Session
 
-from app.repositories import search_repository
+from app.repositories.protocols import SearchRepositoryProtocol
 from app.schemas.search import SearchResponse, SearchResultItem
 
 
-def search(db: Session, query: str, limit: int = 50) -> SearchResponse:
+def search(
+    db: Session, repository: SearchRepositoryProtocol, query: str, limit: int = 50
+) -> SearchResponse:
     """
     Perform full-text search across tasks, notes, and projects.
 
@@ -17,6 +19,7 @@ def search(db: Session, query: str, limit: int = 50) -> SearchResponse:
 
     Args:
         db: Database session
+        repository: Search repository instance
         query: Search query string
         limit: Maximum number of results (default 50, max 100)
 
@@ -28,7 +31,7 @@ def search(db: Session, query: str, limit: int = 50) -> SearchResponse:
         limit = 100
 
     # Perform search
-    results = search_repository.search_all(db, query, limit)
+    results = repository.search_all(db, query, limit)
 
     # Convert to response objects
     search_items = [SearchResultItem(**item) for item in results]
