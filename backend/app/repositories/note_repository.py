@@ -85,14 +85,3 @@ class NoteRepository(BaseRepository[Note, NoteCreate, NoteUpdate]):
         db.commit()
         db.refresh(note)
         return note
-
-
-# Singleton instance for backward compatibility with existing code
-_repository = NoteRepository()
-
-# Export functions at module level for backward compatibility
-get_all = _repository.get_all
-get_by_id = _repository.get_by_id
-create = _repository.create
-update = _repository.update
-soft_delete = _repository.soft_delete

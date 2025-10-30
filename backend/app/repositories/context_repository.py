@@ -86,15 +86,3 @@ class ContextRepository(BaseRepository[Context, ContextCreate, ContextUpdate]):
             return None
 
         return self.soft_delete(db, context)
-
-
-# Singleton instance for backward compatibility with existing code
-_repository = ContextRepository()
-
-# Export functions at module level for backward compatibility
-get_all = _repository.get_all
-get_by_id = _repository.get_by_id
-get_by_name = _repository.get_by_name
-create = _repository.create
-update = _repository.update_by_id
-delete = _repository.delete

@@ -65,8 +65,8 @@ describe("useAsyncAction", () => {
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false)
+        expect(result.current.error).toBe("Test error")
       })
-      expect(result.current.error).toBe("Test error")
     })
 
     it("should use default error message for non-Error objects", async () => {
@@ -178,8 +178,8 @@ describe("useAsyncAction", () => {
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false)
+        expect(result.current.error).toBeNull()
       })
-      expect(result.current.error).toBeNull()
     })
   })
 

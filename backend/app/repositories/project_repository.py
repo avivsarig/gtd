@@ -82,15 +82,3 @@ class ProjectRepository(BaseRepository[Project, ProjectCreate, ProjectUpdate]):
             "completed_task_count": completed,
             "next_task_count": next_tasks,
         }
-
-
-# Singleton instance for backward compatibility with existing code
-_repository = ProjectRepository()
-
-# Export functions at module level for backward compatibility
-get_all = _repository.get_all
-get_by_id = _repository.get_by_id
-create = _repository.create
-update = _repository.update  # Inherited from BaseRepository
-soft_delete = _repository.soft_delete  # Inherited from BaseRepository
-get_task_stats = _repository.get_task_stats

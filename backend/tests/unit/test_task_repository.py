@@ -5,7 +5,10 @@ from unittest.mock import Mock
 from uuid import uuid4
 
 from app.models.task import Task
-from app.repositories import task_repository
+from app.repositories.task_repository import TaskRepository
+
+# Create repository instance for testing
+task_repository = TaskRepository()
 
 
 class TestGetAll:

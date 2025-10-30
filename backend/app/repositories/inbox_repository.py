@@ -100,16 +100,3 @@ class InboxRepository(BaseRepository[InboxItem, InboxItemCreate, InboxItemUpdate
             .filter(InboxItem.processed_at.is_(None), InboxItem.deleted_at.is_(None))
             .count()
         )
-
-
-# Singleton instance for backward compatibility with existing code
-_repository = InboxRepository()
-
-# Export functions at module level for backward compatibility
-get_all = _repository.get_all
-get_by_id = _repository.get_by_id
-create = _repository.create
-update = _repository.update
-soft_delete = _repository.soft_delete
-mark_processed = _repository.mark_processed
-count_unprocessed = _repository.count_unprocessed

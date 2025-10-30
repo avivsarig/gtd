@@ -5,8 +5,11 @@ from unittest.mock import Mock
 from uuid import uuid4
 
 from app.models.inbox_item import InboxItem
-from app.repositories import inbox_repository
+from app.repositories.inbox_repository import InboxRepository
 from app.schemas.inbox import InboxItemCreate, InboxItemUpdate
+
+# Create repository instance for testing
+inbox_repository = InboxRepository()
 
 
 class TestGetAll:

@@ -128,6 +128,7 @@
 15. **Inbox.tsx refactoring** - Reduced from 255 to 159 lines (38% reduction)
    - Created `useInboxKeyboardNavigation` hook - separated keyboard handling from business logic
    - Created `InboxEmptyState`, `InboxErrorState`, `InboxItemDisplay` components - improved readability
+16.  **Dependency injection with repository protocols** (testability, SOLID compliance)
 
 ### 🔄 High Priority (Critical/Quick Win)
 - Currently none
@@ -136,13 +137,6 @@
 - Introduce a maximum line count per file
 
 ### 🔄 Low Priority (Polish)
-- **Dependency injection with repository protocols** (testability, SOLID compliance)
-  - DONE: Define repository protocols (TaskRepositoryProtocol, NoteRepositoryProtocol, etc.)
-  - DONE: Create dependency provider functions in `app/dependencies.py`
-  - DONE: Update controllers to accept protocol dependencies
-  - DONE: Wire dependencies in API routes using `Depends()`
-  - Phase 5: Refactor unit tests to use protocol mocks (eliminate `patch()` calls)
-  - Phase 6: Remove deprecated module-level function exports from repositories
 - Converting controllers to classes, search repository refactor, advanced DI containers
 - Refactor Tailwind with cn() utility (maintainability)
 

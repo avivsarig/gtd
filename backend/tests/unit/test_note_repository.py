@@ -4,8 +4,11 @@ from unittest.mock import Mock
 from uuid import uuid4
 
 from app.models.note import Note
-from app.repositories import note_repository
+from app.repositories.note_repository import NoteRepository
 from app.schemas.note import NoteCreate, NoteUpdate
+
+# Create repository instance for testing
+note_repository = NoteRepository()
 
 
 class TestGetAll:

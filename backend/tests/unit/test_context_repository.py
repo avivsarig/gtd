@@ -5,7 +5,10 @@ from unittest.mock import Mock
 from uuid import uuid4
 
 from app.models.context import Context
-from app.repositories import context_repository
+from app.repositories.context_repository import ContextRepository
+
+# Create repository instance for testing
+context_repository = ContextRepository()
 
 
 class TestGetAll:

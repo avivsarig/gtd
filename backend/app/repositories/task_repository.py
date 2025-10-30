@@ -134,14 +134,3 @@ class TaskRepository(BaseRepository[Task, TaskCreate, TaskUpdate]):
         db.commit()
         db.refresh(task)
         return task
-
-
-# Singleton instance for backward compatibility with existing code
-_repository = TaskRepository()
-
-# Export functions at module level for backward compatibility
-get_all = _repository.get_all
-get_by_id = _repository.get_by_id
-create = _repository.create
-update = _repository.update
-soft_delete = _repository.soft_delete
