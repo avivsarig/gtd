@@ -3,9 +3,7 @@
  *
  * Zero-friction capture: just content, no classification required
  *
- * Refactored to use:
- * - useFormSubmission hook (eliminates manual state management)
- * - validateRequired + sanitizeInput utilities
+ * Refactored to use EntityModal infrastructure with custom UI text
  */
 
 import { createInboxItem } from "@/lib/api"
@@ -15,12 +13,13 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { MESSAGES } from "@/lib/messages"
-import { useFormSubmission } from "@/hooks/useFormSubmission"
-import { validateRequired, sanitizeInput } from "@/lib/validation"
+import { useEntityForm } from "@/hooks/useEntityForm"
+import { inboxConfig } from "@/config/entities/inboxConfig"
+import { TextareaField } from "./form/TextareaField"
+import { useEffect } from "react"
 
 interface UniversalCaptureProps {
   open: boolean
@@ -33,30 +32,31 @@ export function UniversalCapture({
   onOpenChange,
   onSuccess,
 }: UniversalCaptureProps) {
-  const { data, updateField, handleSubmit, isSubmitting, error, reset } =
-    useFormSubmission(
-      { content: "" },
-      {
-        validate: (formData) => validateRequired(formData.content),
-        onSuccess: () => {
-          onOpenChange(false)
-          onSuccess?.()
-        },
-        defaultErrorMessage: MESSAGES.errors.CAPTURE_FAILED,
-        resetOnSuccess: true,
-      },
-    )
+  const formState = useEntityForm({
+    initialData: inboxConfig.getInitialData(),
+    validate: inboxConfig.validate,
+    onSubmit: async (data) => {
+      const submitData = inboxConfig.formatForSubmit?.(data) ?? data
+      return createInboxItem(submitData as { content: string })
+    },
+    onSuccess: () => {
+      onSuccess?.()
+      onOpenChange(false)
+    },
+    resetOnSuccess: true,
+    defaultErrorMessage: "Failed to capture",
+  })
 
-  const handleOpenChange = (newOpen: boolean) => {
-    if (!newOpen) {
-      // Clear form when closing
-      reset()
+  // Reset form when modal opens/closes
+  useEffect(() => {
+    if (open) {
+      formState.reset()
     }
-    onOpenChange(newOpen)
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open])
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Quick Capture</DialogTitle>
@@ -65,41 +65,40 @@ export function UniversalCapture({
           </DialogDescription>
         </DialogHeader>
 
-        <form
-          onSubmit={handleSubmit(async (formData) => {
-            await createInboxItem({ content: sanitizeInput(formData.content)! })
-          })}
-          className="space-y-4"
-        >
-          <Textarea
-            autoFocus
+        <form onSubmit={formState.handleSubmit} className="space-y-4">
+          <TextareaField
+            label="Content"
+            value={formState.data.content}
+            onChange={(value) => formState.updateField("content", value)}
+            error={formState.fieldErrors.content}
             placeholder="What's on your mind?"
-            value={data.content}
-            onChange={(e) => updateField("content", e.target.value)}
-            className="min-h-[100px] resize-none"
-            disabled={isSubmitting}
+            autoFocus
+            rows={4}
+            disabled={formState.isSubmitting}
           />
 
-          {error && <p className="text-sm text-red-500">{error}</p>}
+          {formState.error && (
+            <p className="text-sm text-red-500">{formState.error}</p>
+          )}
 
-          <div className="flex justify-end gap-2">
+          <DialogFooter>
             <Button
               type="button"
               variant="outline"
-              onClick={() => handleOpenChange(false)}
-              disabled={isSubmitting}
+              onClick={() => onOpenChange(false)}
+              disabled={formState.isSubmitting}
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              disabled={isSubmitting || !data.content.trim()}
+              disabled={
+                formState.isSubmitting || !formState.data.content.trim()
+              }
             >
-              {isSubmitting
-                ? MESSAGES.buttons.CAPTURING
-                : MESSAGES.buttons.CAPTURE}
+              {formState.isSubmitting ? "Capturing..." : "Capture"}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

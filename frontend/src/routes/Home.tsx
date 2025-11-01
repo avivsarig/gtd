@@ -13,7 +13,7 @@
 import { QuickCapture } from "@/components/QuickCapture"
 import { UniversalCapture } from "@/components/UniversalCapture"
 import { SearchBar } from "@/components/SearchBar"
-import { NoteForm } from "@/components/NoteForm"
+import { NoteFormModal } from "@/components/NoteFormModal"
 import { DashboardHeader } from "@/components/DashboardHeader"
 import { InboxSection } from "@/components/InboxSection"
 import { TasksSection } from "@/components/TasksSection"
@@ -192,16 +192,17 @@ export function Home() {
       />
 
       {/* Note Form Modal */}
-      {noteOps.showNoteForm && (
-        <NoteForm
-          note={noteOps.editingNote}
-          projects={projects ?? []}
-          onSubmit={
-            noteOps.editingNote ? noteOps.handleUpdate : noteOps.handleCreate
-          }
-          onCancel={noteOps.handleCancelForm}
-        />
-      )}
+      <NoteFormModal
+        open={noteOps.showNoteForm}
+        onOpenChange={(open) => {
+          if (!open) noteOps.handleCancelForm()
+        }}
+        note={noteOps.editingNote}
+        projects={projects ?? []}
+        onSubmit={
+          noteOps.editingNote ? noteOps.handleUpdate : noteOps.handleCreate
+        }
+      />
     </div>
   )
 }
