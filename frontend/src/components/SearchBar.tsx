@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { CheckSquare, FileText, Folder } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface SearchBarProps {
   open: boolean
@@ -157,28 +158,30 @@ export function SearchBar({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
           />
 
-          {error && <p className="text-sm text-red-500">{error}</p>}
+          {error && <p className="text-destructive text-sm">{error}</p>}
 
           {(isSearching || query.trim().length >= 2) &&
             results.length === 0 &&
-            !error && <p className="text-sm text-gray-500">Searching...</p>}
+            !error && (
+              <p className="text-muted-foreground text-sm">Searching...</p>
+            )}
 
           {!isSearching && query.trim().length < 2 && results.length === 0 && (
-            <p className="text-sm text-gray-500">
+            <p className="text-muted-foreground text-sm">
               Type at least 2 characters to search
             </p>
           )}
 
           {!isSearching && query.trim().length >= 2 && results.length === 0 && (
-            <p className="text-sm text-gray-500">No results found</p>
+            <p className="text-muted-foreground text-sm">No results found</p>
           )}
 
           {!isSearching && results.length > 0 && (
             <>
-              <p className="text-sm text-gray-600">
+              <p className="text-muted-foreground text-sm">
                 {totalResults} {totalResults === 1 ? "result" : "results"}
               </p>
               <div className="max-h-[400px] space-y-2 overflow-y-auto">
@@ -187,18 +190,19 @@ export function SearchBar({
                     key={result.id}
                     data-selected={index === selectedIndex ? "true" : "false"}
                     onClick={() => handleResultClick(result)}
-                    className={`cursor-pointer rounded-md border p-3 transition-colors ${
+                    className={cn(
+                      "cursor-pointer rounded-md border p-3 transition-colors",
                       index === selectedIndex
-                        ? "border-blue-500 bg-blue-50"
-                        : "border-gray-200 hover:bg-gray-50"
-                    }`}
+                        ? "border-ring bg-accent"
+                        : "border-border hover:bg-accent/50",
+                    )}
                   >
                     <div className="flex items-start gap-2">
                       <div className="mt-1">{getResultIcon(result.type)}</div>
                       <div className="flex-1">
                         <h4 className="text-sm font-medium">{result.title}</h4>
                         {result.snippet && (
-                          <p className="mt-1 text-xs text-gray-600">
+                          <p className="text-muted-foreground mt-1 text-xs">
                             {truncateSnippet(result.snippet)}
                           </p>
                         )}

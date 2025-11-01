@@ -18,6 +18,7 @@ import { Plus, X } from "lucide-react"
 import { MESSAGES } from "@/lib/messages"
 import { useFormSubmission } from "@/hooks/useFormSubmission"
 import { validateRequired, sanitizeInput } from "@/lib/validation"
+import { Input } from "@/components/ui/input"
 
 interface ContextManagerProps {
   contexts: Context[]
@@ -100,15 +101,15 @@ export function ContextManager({
           >
             <div>
               <label htmlFor="context-name" className="text-sm font-medium">
-                Name <span className="text-red-500">*</span>
+                Name <span className="text-destructive">*</span>
               </label>
-              <input
+              <Input
                 id="context-name"
                 type="text"
                 value={formData.name}
                 onChange={(e) => updateField("name", e.target.value)}
                 placeholder="e.g., @home, @computer, @phone"
-                className="bg-background mt-1 w-full rounded border px-3 py-2 text-sm"
+                className="mt-1"
                 disabled={isSubmitting}
                 autoFocus
               />
@@ -118,13 +119,13 @@ export function ContextManager({
               <label htmlFor="context-icon" className="text-sm font-medium">
                 Icon (emoji)
               </label>
-              <input
+              <Input
                 id="context-icon"
                 type="text"
                 value={formData.icon}
                 onChange={(e) => updateField("icon", e.target.value)}
                 placeholder="e.g., 🏠 💻 📱"
-                className="bg-background mt-1 w-full rounded border px-3 py-2 text-sm"
+                className="mt-1"
                 disabled={isSubmitting}
                 maxLength={10}
               />
@@ -137,18 +138,18 @@ export function ContextManager({
               >
                 Description
               </label>
-              <input
+              <Input
                 id="context-description"
                 type="text"
                 value={formData.description}
                 onChange={(e) => updateField("description", e.target.value)}
                 placeholder="When to use this context"
-                className="bg-background mt-1 w-full rounded border px-3 py-2 text-sm"
+                className="mt-1"
                 disabled={isSubmitting}
               />
             </div>
 
-            {error && <p className="text-sm text-red-500">{error}</p>}
+            {error && <p className="text-destructive text-sm">{error}</p>}
 
             <div className="flex gap-2">
               <Button type="submit" disabled={isSubmitting} size="sm">

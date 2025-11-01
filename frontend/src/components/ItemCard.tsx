@@ -8,6 +8,7 @@
 import { type ReactNode } from "react"
 import { Button } from "@/components/ui/button"
 import { Pencil, Trash2 } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface ItemCardProps {
   /** Main content area */
@@ -41,7 +42,10 @@ export function ItemCard({
 
   return (
     <div
-      className={`hover:bg-accent/50 rounded-lg border p-4 transition-colors ${className}`}
+      className={cn(
+        "hover:bg-accent/50 rounded-lg border p-4 transition-colors",
+        className,
+      )}
     >
       <div className="flex items-start gap-3">
         {/* Main Content */}

@@ -11,6 +11,7 @@ import { ContextSelect } from "@/components/ContextSelect"
 import { EmptyState } from "@/components/EmptyState"
 import { Button } from "@/components/ui/button"
 import { Check, Circle } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface TaskListProps {
   tasks: Task[]
@@ -47,17 +48,18 @@ export function TaskList({
           onEdit={onEdit ? () => onEdit(task) : undefined}
           onDelete={onDelete ? () => onDelete(task.id) : undefined}
           deleteConfirmMessage="Delete this task?"
-          className={task.completed_at ? "opacity-60" : ""}
+          className={cn(task.completed_at && "opacity-60")}
           actions={
             <Button
               size="icon"
               variant="ghost"
               onClick={() => onToggleComplete(task)}
-              className={`h-8 w-8 ${
+              className={cn(
+                "h-8 w-8",
                 task.completed_at
                   ? "text-green-500 hover:text-green-600"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
+                  : "text-muted-foreground hover:text-foreground",
+              )}
               title={
                 task.completed_at ? "Mark as incomplete" : "Mark as complete"
               }
@@ -71,9 +73,10 @@ export function TaskList({
           }
         >
           <h3
-            className={`font-medium ${
-              task.completed_at ? "text-muted-foreground line-through" : ""
-            }`}
+            className={cn(
+              "font-medium",
+              task.completed_at && "text-muted-foreground line-through",
+            )}
           >
             {task.title}
           </h3>

@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react"
 import { type Note, type Project } from "@/lib/api"
 import { ProjectSelect } from "./ProjectSelect"
+import { Input } from "./ui/input"
+import { Textarea } from "./ui/textarea"
 
 interface NoteFormProps {
   note?: Note | null
@@ -57,13 +59,12 @@ export function NoteForm({
         <label htmlFor="note-title" className="mb-2 block text-sm font-medium">
           Title *
         </label>
-        <input
+        <Input
           id="note-title"
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Enter note title..."
-          className="bg-background border-border focus:ring-primary w-full rounded-lg border px-3 py-2 focus:ring-2 focus:outline-none"
           disabled={isLoading}
           autoFocus
         />
@@ -76,13 +77,13 @@ export function NoteForm({
         >
           Content
         </label>
-        <textarea
+        <Textarea
           id="note-content"
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="Enter note content..."
           rows={6}
-          className="bg-background border-border focus:ring-primary w-full resize-y rounded-lg border px-3 py-2 focus:ring-2 focus:outline-none"
+          className="resize-y"
           disabled={isLoading}
         />
       </div>

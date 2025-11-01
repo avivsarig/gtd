@@ -108,40 +108,6 @@
 
 ---
 
-## Code Quality Improvements
-
-### ✅ Done
-1. **BaseRepository pattern** - Eliminated ~70% duplication across 5 repositories
-2. **Model Mixins (TimestampMixin, SoftDeletableMixin, SearchableMixin)** - DRY compliance across models
-3. **TaskStatus enum** - Backend/frontend use enum references vs magic strings
-4. **UUID utilities module** - Centralized app.core.uuid_utils
-5. **Custom hooks (useFormSubmission, useResourceLoader, useAsyncAction)** - Eliminated state duplication
-6. **MESSAGES constants** - Centralized error/success messages in lib/messages.ts
-7. **BaseSelect component** - Unified select implementation with CVA variants, eliminated NoteForm inline duplication
-8. **Project dict duplication** - duplication eliminated
-9. **Home.tsx refactoring** - Reduced from 540 to 205 lines (62% reduction)
-10. **Datetime standardization** - All code now uses `datetime.now(UTC)` (modern, timezone-aware)
-11. **Environment configuration** - Centralized config module with VITE_API_BASE_URL support
-12. **ProjectWithStats LSP violation** - Fixed by removing inheritance, using explicit fields with factory method
-13. **alert() usage (17 occurrences)** - Toast system introduced
-14. **Pydantic base schemas** - ResponseBase/SoftDeletableResponseBase inheritance eliminates ~20 lines of boilerplate across Task/Note/Project/Context schemas
-15. **Inbox.tsx refactoring** - Reduced from 255 to 159 lines (38% reduction)
-   - Created `useInboxKeyboardNavigation` hook - separated keyboard handling from business logic
-   - Created `InboxEmptyState`, `InboxErrorState`, `InboxItemDisplay` components - improved readability
-16. **Dependency injection with repository protocols** (testability, SOLID compliance)
-17. **Class-based controllers & DI container** - All 6 controllers converted to classes (TaskController, NoteController, ProjectController, ContextController, InboxController, SearchController)
-
-### 🔄 High Priority (Critical/Quick Win)
-- Currently none
-
-### 🔄 Medium Priority (Important fixes)
-- Introduce a maximum line count per file
-
-### 🔄 Low Priority (Polish)
-- Refactor Tailwind with cn() utility (maintainability)
-
----
-
 ## Critical Missing Features (Next Priorities)
 
 ### High Priority (Core GTD Workflow)
