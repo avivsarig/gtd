@@ -6,10 +6,9 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.controllers import task_controller
+from app.controllers.task_controller import TaskController
 from app.db.database import get_db
-from app.dependencies import get_task_repository
-from app.repositories.protocols import TaskRepositoryProtocol
+from app.dependencies import get_task_controller
 from app.schemas.task import (
     BulkStatusUpdate,
     BulkStatusUpdateResponse,
@@ -34,10 +33,9 @@ def list_tasks(
         None, description="Filter tasks scheduled before this date"
     ),
     db: Session = Depends(get_db),
-    repository: TaskRepositoryProtocol = Depends(get_task_repository),
+    controller: TaskController = Depends(get_task_controller),
 ):
-    """
-    Get all active tasks with optional filters.
+    """Get all active tasks with optional filters.
 
     Returns list of all non-deleted tasks ordered by created_at descending.
 
@@ -52,9 +50,8 @@ def list_tasks(
     - /tasks?status=next&context_id=abc123 - Next actions with specific context
     - /tasks?project_id=xyz789&status=waiting - Waiting tasks in project
     """
-    return task_controller.list_tasks(
+    return controller.list_tasks(
         db,
-        repository,
         status=status,
         project_id=project_id,
         context_id=context_id,
@@ -67,15 +64,14 @@ def list_tasks(
 def get_task(
     task_id: UUID,
     db: Session = Depends(get_db),
-    repository: TaskRepositoryProtocol = Depends(get_task_repository),
+    controller: TaskController = Depends(get_task_controller),
 ):
-    """
-    Get a single task by ID.
+    """Get a single task by ID.
 
     Raises:
         404: Task not found or has been deleted
     """
-    task = task_controller.get_task(db, repository, task_id)
+    task = controller.get_task(db, task_id)
     if task is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=f"Task with id {task_id} not found"
@@ -87,15 +83,14 @@ def get_task(
 def create_task(
     task_data: TaskCreate,
     db: Session = Depends(get_db),
-    repository: TaskRepositoryProtocol = Depends(get_task_repository),
+    controller: TaskController = Depends(get_task_controller),
 ):
-    """
-    Create a new task.
+    """Create a new task.
 
     Business rules applied:
     - Tasks with blocked_by_task_id are automatically set to 'waiting' status
     """
-    return task_controller.create_task(db, repository, task_data)
+    return controller.create_task(db, task_data)
 
 
 @router.put("/{task_id}", response_model=TaskResponse)
@@ -103,10 +98,9 @@ def update_task(
     task_id: UUID,
     task_data: TaskUpdate,
     db: Session = Depends(get_db),
-    repository: TaskRepositoryProtocol = Depends(get_task_repository),
+    controller: TaskController = Depends(get_task_controller),
 ):
-    """
-    Update an existing task.
+    """Update an existing task.
 
     Business rules applied:
     - If blocked_by_task_id is set, status is automatically changed to 'waiting'
@@ -114,7 +108,7 @@ def update_task(
     Raises:
         404: Task not found or has been deleted
     """
-    task = task_controller.update_task(db, repository, task_id, task_data)
+    task = controller.update_task(db, task_id, task_data)
     if task is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=f"Task with id {task_id} not found"
@@ -126,10 +120,9 @@ def update_task(
 def delete_task(
     task_id: UUID,
     db: Session = Depends(get_db),
-    repository: TaskRepositoryProtocol = Depends(get_task_repository),
+    controller: TaskController = Depends(get_task_controller),
 ):
-    """
-    Delete (archive) a task.
+    """Delete (archive) a task.
 
     Soft deletes the task by setting deleted_at timestamp.
     The task remains in database but is excluded from normal queries.
@@ -137,7 +130,7 @@ def delete_task(
     Raises:
         404: Task not found or already deleted
     """
-    task = task_controller.delete_task(db, repository, task_id)
+    task = controller.delete_task(db, task_id)
     if task is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=f"Task with id {task_id} not found"
@@ -149,17 +142,16 @@ def delete_task(
 def complete_task(
     task_id: UUID,
     db: Session = Depends(get_db),
-    repository: TaskRepositoryProtocol = Depends(get_task_repository),
+    controller: TaskController = Depends(get_task_controller),
 ):
-    """
-    Mark a task as completed.
+    """Mark a task as completed.
 
     Sets completed_at timestamp. Task remains visible until archived.
 
     Raises:
         404: Task not found or has been deleted
     """
-    task = task_controller.complete_task(db, repository, task_id)
+    task = controller.complete_task(db, task_id)
     if task is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=f"Task with id {task_id} not found"
@@ -171,17 +163,16 @@ def complete_task(
 def uncomplete_task(
     task_id: UUID,
     db: Session = Depends(get_db),
-    repository: TaskRepositoryProtocol = Depends(get_task_repository),
+    controller: TaskController = Depends(get_task_controller),
 ):
-    """
-    Mark a completed task as incomplete.
+    """Mark a completed task as incomplete.
 
     Clears completed_at timestamp.
 
     Raises:
         404: Task not found or has been deleted
     """
-    task = task_controller.uncomplete_task(db, repository, task_id)
+    task = controller.uncomplete_task(db, task_id)
     if task is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=f"Task with id {task_id} not found"
@@ -193,19 +184,16 @@ def uncomplete_task(
 def bulk_update_status(
     bulk_update: BulkStatusUpdate,
     db: Session = Depends(get_db),
-    repository: TaskRepositoryProtocol = Depends(get_task_repository),
+    controller: TaskController = Depends(get_task_controller),
 ):
-    """
-    Update status for multiple tasks at once.
+    """Update status for multiple tasks at once.
 
     Only updates tasks that exist and are not deleted.
     Silently ignores task IDs that don't exist.
 
     Returns count of updated tasks and their IDs.
     """
-    updated_tasks = task_controller.bulk_update_status(
-        db, repository, bulk_update.task_ids, bulk_update.status
-    )
+    updated_tasks = controller.bulk_update_status(db, bulk_update.task_ids, bulk_update.status)
     return BulkStatusUpdateResponse(
         updated_count=len(updated_tasks), task_ids=[task.id for task in updated_tasks]
     )

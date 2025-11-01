@@ -5,7 +5,7 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
-from app.controllers import note_controller, project_controller, task_controller
+from app.core.base_controller import BaseController
 from app.models.inbox_item import InboxItem
 from app.models.note import Note
 from app.models.project import Project
@@ -28,272 +28,273 @@ from app.schemas.project import ProjectCreate
 from app.schemas.task import TaskCreate
 
 
-def list_inbox_items(
-    db: Session, repository: InboxRepositoryProtocol, include_processed: bool = False
-) -> list[InboxItem]:
+class InboxController(BaseController[InboxItem, InboxRepositoryProtocol]):  # type: ignore[type-var]
+    """Controller for InboxItem entity with business logic and conversion workflows.
+
+    This controller handles the GTD processing workflow by converting inbox items
+    into tasks, notes, or projects. It requires access to other domain controllers
+    for the conversion operations.
     """
-    Get list of inbox items.
 
-    Business logic:
-    - By default, only return unprocessed items (processed_at IS NULL)
-    - Always exclude deleted items
-    - Ordered oldest first for processing workflow
+    def __init__(
+        self,
+        repository: InboxRepositoryProtocol,
+        task_repository: TaskRepositoryProtocol | None = None,
+        note_repository: NoteRepositoryProtocol | None = None,
+        project_repository: ProjectRepositoryProtocol | None = None,
+    ):
+        """Initialize inbox controller with repository and optional related repositories.
 
-    Args:
-        db: Database session
-        repository: Inbox repository instance
-        include_processed: If True, include processed items (default: False)
+        Args:
+            repository: Inbox repository instance
+            task_repository: Task repository for task conversions
+            note_repository: Note repository for note conversions
+            project_repository: Project repository for project conversions
+        """
+        super().__init__(repository)
+        self.task_repository = task_repository
+        self.note_repository = note_repository
+        self.project_repository = project_repository
 
-    Returns:
-        List of InboxItem objects
-    """
-    return repository.get_all(db, include_processed=include_processed, include_deleted=False)
+    def list_inbox_items(self, db: Session, include_processed: bool = False) -> list[InboxItem]:
+        """Get list of inbox items.
 
+        Business logic:
+        - By default, only return unprocessed items (processed_at IS NULL)
+        - Always exclude deleted items
+        - Ordered oldest first for processing workflow
 
-def get_inbox_item(
-    db: Session, repository: InboxRepositoryProtocol, item_id: UUID
-) -> InboxItem | None:
-    """
-    Get a single inbox item by ID.
+        Args:
+            db: Database session
+            include_processed: If True, include processed items (default: False)
 
-    Args:
-        db: Database session
-        repository: Inbox repository instance
-        item_id: UUID of the inbox item to retrieve
+        Returns:
+            List of InboxItem objects
+        """
+        return self.repository.get_all(
+            db, include_processed=include_processed, include_deleted=False
+        )
 
-    Returns:
-        InboxItem object if found and not deleted, None otherwise
-    """
-    return repository.get_by_id(db, item_id)
+    def get_inbox_item(self, db: Session, item_id: UUID) -> InboxItem | None:
+        """Get a single inbox item by ID.
 
+        Args:
+            db: Database session
+            item_id: UUID of the inbox item to retrieve
 
-def create_inbox_item(
-    db: Session, repository: InboxRepositoryProtocol, item_data: InboxItemCreate
-) -> InboxItem:
-    """
-    Create a new inbox item (universal capture).
+        Returns:
+            InboxItem object if found and not deleted, None otherwise
+        """
+        return self.repository.get_by_id(db, item_id)
 
-    Business logic:
-    - No validation beyond content required
-    - Auto-timestamp creation
-    - Defaults to unprocessed (processed_at = NULL)
+    def create_inbox_item(self, db: Session, item_data: InboxItemCreate) -> InboxItem:
+        """Create a new inbox item (universal capture).
 
-    Args:
-        db: Database session
-        repository: Inbox repository instance
-        item_data: Inbox item creation data
+        Business logic:
+        - No validation beyond content required
+        - Auto-timestamp creation
+        - Defaults to unprocessed (processed_at = NULL)
 
-    Returns:
-        Created InboxItem object
-    """
-    return repository.create(db, item_data)
+        Args:
+            db: Database session
+            item_data: Inbox item creation data
 
+        Returns:
+            Created InboxItem object
+        """
+        return self.repository.create(db, item_data)
 
-def update_inbox_item(
-    db: Session, repository: InboxRepositoryProtocol, item_id: UUID, item_data: InboxItemUpdate
-) -> InboxItem | None:
-    """
-    Update an existing inbox item.
+    def update_inbox_item(
+        self, db: Session, item_id: UUID, item_data: InboxItemUpdate
+    ) -> InboxItem | None:
+        """Update an existing inbox item.
 
-    Args:
-        db: Database session
-        repository: Inbox repository instance
-        item_id: UUID of inbox item to update
-        item_data: Update data
+        Args:
+            db: Database session
+            item_id: UUID of inbox item to update
+            item_data: Update data
 
-    Returns:
-        Updated InboxItem object if found, None if item doesn't exist
-    """
-    item = repository.get_by_id(db, item_id)
-    if not item:
-        return None
+        Returns:
+            Updated InboxItem object if found, None if item doesn't exist
+        """
+        item = self.repository.get_by_id(db, item_id)
+        if not item:
+            return None
 
-    return repository.update(db, item, item_data)
+        return self.repository.update(db, item, item_data)
 
+    def delete_inbox_item(self, db: Session, item_id: UUID) -> InboxItem | None:
+        """Soft delete an inbox item.
 
-def delete_inbox_item(
-    db: Session, repository: InboxRepositoryProtocol, item_id: UUID
-) -> InboxItem | None:
-    """
-    Soft delete an inbox item.
+        Business logic:
+        - Sets deleted_at timestamp
+        - Item remains in database for audit trail
 
-    Business logic:
-    - Sets deleted_at timestamp
-    - Item remains in database for audit trail
+        Args:
+            db: Database session
+            item_id: UUID of inbox item to delete
 
-    Args:
-        db: Database session
-        repository: Inbox repository instance
-        item_id: UUID of inbox item to delete
+        Returns:
+            Deleted InboxItem object if found, None if item doesn't exist
+        """
+        item = self.repository.get_by_id(db, item_id)
+        if not item:
+            return None
 
-    Returns:
-        Deleted InboxItem object if found, None if item doesn't exist
-    """
-    item = repository.get_by_id(db, item_id)
-    if not item:
-        return None
+        return self.repository.soft_delete(db, item)
 
-    return repository.soft_delete(db, item)
+    def convert_to_task(
+        self, db: Session, item_id: UUID, convert_data: ConvertToTaskRequest
+    ) -> Task | None:
+        """Convert an inbox item to a task (GTD processing workflow).
 
+        Business logic:
+        1. Create new task with content from inbox item
+        2. Mark inbox item as processed (sets processed_at timestamp)
+        3. Use provided fields or default to inbox content
+        4. Task defaults to 'next' status
 
-def convert_to_task(
-    db: Session,
-    inbox_repository: InboxRepositoryProtocol,
-    task_repository: TaskRepositoryProtocol,
-    item_id: UUID,
-    convert_data: ConvertToTaskRequest,
-) -> Task | None:
-    """
-    Convert an inbox item to a task (GTD processing workflow).
+        Args:
+            db: Database session
+            item_id: UUID of inbox item to convert
+            convert_data: Optional task fields (title, description, project_id, etc.)
 
-    Business logic:
-    1. Create new task with content from inbox item
-    2. Mark inbox item as processed (sets processed_at timestamp)
-    3. Use provided fields or default to inbox content
-    4. Task defaults to 'next' status
+        Returns:
+            Created Task object if successful, None if inbox item doesn't exist
 
-    Args:
-        db: Database session
-        inbox_repository: Inbox repository instance
-        task_repository: Task repository instance
-        item_id: UUID of inbox item to convert
-        convert_data: Optional task fields (title, description, project_id, etc.)
+        Raises:
+            RuntimeError: If task_repository not provided during initialization
+        """
+        if self.task_repository is None:
+            raise RuntimeError("task_repository required for convert_to_task operation")
 
-    Returns:
-        Created Task object if successful, None if inbox item doesn't exist
-    """
-    item = inbox_repository.get_by_id(db, item_id)
-    if not item:
-        return None
+        item = self.repository.get_by_id(db, item_id)
+        if not item:
+            return None
 
-    # Build task data from inbox item + conversion request
-    task_data = TaskCreate(
-        title=convert_data.title or item.content,
-        description=convert_data.description,
-        project_id=convert_data.project_id,
-        scheduled_date=(
-            date.fromisoformat(convert_data.scheduled_date) if convert_data.scheduled_date else None
-        ),
-    )
+        # Build task data from inbox item + conversion request
+        task_data = TaskCreate(
+            title=convert_data.title or item.content,
+            description=convert_data.description,
+            project_id=convert_data.project_id,
+            scheduled_date=(
+                date.fromisoformat(convert_data.scheduled_date)
+                if convert_data.scheduled_date
+                else None
+            ),
+        )
 
-    # Create the task
-    task = task_controller.create_task(db, task_repository, task_data)
+        # Create the task using the repository directly
+        task = self.task_repository.create(db, task_data)
 
-    # Mark inbox item as processed
-    inbox_repository.mark_processed(db, item)
+        # Mark inbox item as processed
+        self.repository.mark_processed(db, item)
 
-    return task
+        return task
 
+    def convert_to_note(
+        self, db: Session, item_id: UUID, convert_data: ConvertToNoteRequest
+    ) -> Note | None:
+        """Convert an inbox item to a note (GTD processing workflow).
 
-def convert_to_note(
-    db: Session,
-    inbox_repository: InboxRepositoryProtocol,
-    note_repository: NoteRepositoryProtocol,
-    item_id: UUID,
-    convert_data: ConvertToNoteRequest,
-) -> Note | None:
-    """
-    Convert an inbox item to a note (GTD processing workflow).
+        Business logic:
+        1. Create new note with content from inbox item
+        2. Mark inbox item as processed (sets processed_at timestamp)
+        3. If title not provided, use first line or truncated content
 
-    Business logic:
-    1. Create new note with content from inbox item
-    2. Mark inbox item as processed (sets processed_at timestamp)
-    3. If title not provided, use first line or truncated content
+        Args:
+            db: Database session
+            item_id: UUID of inbox item to convert
+            convert_data: Optional note fields (title, content, project_id)
 
-    Args:
-        db: Database session
-        inbox_repository: Inbox repository instance
-        note_repository: Note repository instance
-        item_id: UUID of inbox item to convert
-        convert_data: Optional note fields (title, content, project_id)
+        Returns:
+            Created Note object if successful, None if inbox item doesn't exist
 
-    Returns:
-        Created Note object if successful, None if inbox item doesn't exist
-    """
-    item = inbox_repository.get_by_id(db, item_id)
-    if not item:
-        return None
+        Raises:
+            RuntimeError: If note_repository not provided during initialization
+        """
+        if self.note_repository is None:
+            raise RuntimeError("note_repository required for convert_to_note operation")
 
-    # Generate title from content if not provided
-    title = convert_data.title
-    if not title:
-        # Use first line or first 50 chars
-        lines = str(item.content).split("\n", 1)
-        title = lines[0][:50]
+        item = self.repository.get_by_id(db, item_id)
+        if not item:
+            return None
 
-    # Build note data from inbox item + conversion request
-    note_data = NoteCreate(
-        title=title,
-        content=convert_data.content or item.content,
-        project_id=convert_data.project_id,
-    )
+        # Generate title from content if not provided
+        title = convert_data.title
+        if not title:
+            # Use first line or first 50 chars
+            lines = str(item.content).split("\n", 1)
+            title = lines[0][:50]
 
-    # Create the note
-    note = note_controller.create_note(db, note_repository, note_data)
+        # Build note data from inbox item + conversion request
+        note_data = NoteCreate(
+            title=title,
+            content=convert_data.content or item.content,
+            project_id=convert_data.project_id,
+        )
 
-    # Mark inbox item as processed
-    inbox_repository.mark_processed(db, item)
+        # Create the note using the repository directly
+        note = self.note_repository.create(db, note_data)
 
-    return note
+        # Mark inbox item as processed
+        self.repository.mark_processed(db, item)
 
+        return note
 
-def convert_to_project(
-    db: Session,
-    inbox_repository: InboxRepositoryProtocol,
-    project_repository: ProjectRepositoryProtocol,
-    item_id: UUID,
-    convert_data: ConvertToProjectRequest,
-) -> Project | None:
-    """
-    Convert an inbox item to a project (GTD processing workflow).
+    def convert_to_project(
+        self, db: Session, item_id: UUID, convert_data: ConvertToProjectRequest
+    ) -> Project | None:
+        """Convert an inbox item to a project (GTD processing workflow).
 
-    Business logic:
-    1. Create new project with name from inbox item
-    2. Mark inbox item as processed (sets processed_at timestamp)
-    3. Use inbox content as project name if not provided
+        Business logic:
+        1. Create new project with name from inbox item
+        2. Mark inbox item as processed (sets processed_at timestamp)
+        3. Use inbox content as project name if not provided
 
-    Args:
-        db: Database session
-        inbox_repository: Inbox repository instance
-        project_repository: Project repository instance
-        item_id: UUID of inbox item to convert
-        convert_data: Optional project fields (name, outcome_statement)
+        Args:
+            db: Database session
+            item_id: UUID of inbox item to convert
+            convert_data: Optional project fields (name, outcome_statement)
 
-    Returns:
-        Created Project object if successful, None if inbox item doesn't exist
-    """
-    item = inbox_repository.get_by_id(db, item_id)
-    if not item:
-        return None
+        Returns:
+            Created Project object if successful, None if inbox item doesn't exist
 
-    # Build project data from inbox item + conversion request
-    project_data = ProjectCreate(
-        name=convert_data.name or str(item.content)[:200],
-        outcome_statement=convert_data.outcome_statement,
-    )
+        Raises:
+            RuntimeError: If project_repository not provided during initialization
+        """
+        if self.project_repository is None:
+            raise RuntimeError("project_repository required for convert_to_project operation")
 
-    # Create the project
-    project = project_controller.create_project(db, project_repository, project_data)
+        item = self.repository.get_by_id(db, item_id)
+        if not item:
+            return None
 
-    # Mark inbox item as processed
-    inbox_repository.mark_processed(db, item)
+        # Build project data from inbox item + conversion request
+        project_data = ProjectCreate(
+            name=convert_data.name or str(item.content)[:200],
+            outcome_statement=convert_data.outcome_statement,
+        )
 
-    return project
+        # Create the project using the repository directly
+        project = self.project_repository.create(db, project_data)
 
+        # Mark inbox item as processed
+        self.repository.mark_processed(db, item)
 
-def get_unprocessed_count(db: Session, repository: InboxRepositoryProtocol) -> int:
-    """
-    Get count of unprocessed inbox items.
+        return project
 
-    Business logic:
-    - Counts items where processed_at IS NULL and deleted_at IS NULL
-    - Used for inbox badge/counter in UI
+    def get_unprocessed_count(self, db: Session) -> int:
+        """Get count of unprocessed inbox items.
 
-    Args:
-        db: Database session
-        repository: Inbox repository instance
+        Business logic:
+        - Counts items where processed_at IS NULL and deleted_at IS NULL
+        - Used for inbox badge/counter in UI
 
-    Returns:
-        Integer count of unprocessed items
-    """
-    return repository.count_unprocessed(db)
+        Args:
+            db: Database session
+
+        Returns:
+            Integer count of unprocessed items
+        """
+        return self.repository.count_unprocessed(db)

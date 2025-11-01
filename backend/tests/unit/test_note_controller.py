@@ -3,7 +3,7 @@
 from unittest.mock import Mock
 from uuid import uuid4
 
-from app.controllers import note_controller
+from app.controllers.note_controller import NoteController
 from app.models.note import Note
 from app.repositories.protocols import NoteRepositoryProtocol
 from app.schemas.note import NoteCreate, NoteUpdate
@@ -18,7 +18,9 @@ class TestListNotes:
         mock_repository = Mock(spec=NoteRepositoryProtocol)
         mock_repository.get_all.return_value = []
 
-        result = note_controller.list_notes(mock_db, mock_repository)
+        controller = NoteController(repository=mock_repository)
+
+        result = controller.list_notes(mock_db)
 
         mock_repository.get_all.assert_called_once_with(
             mock_db, include_deleted=False, project_id=None
@@ -32,7 +34,9 @@ class TestListNotes:
         project_id = uuid4()
         mock_repository.get_all.return_value = []
 
-        note_controller.list_notes(mock_db, mock_repository, project_id=project_id)
+        controller = NoteController(repository=mock_repository)
+
+        controller.list_notes(mock_db, project_id=project_id)
 
         mock_repository.get_all.assert_called_once_with(
             mock_db, include_deleted=False, project_id=project_id
@@ -50,7 +54,9 @@ class TestGetNote:
         mock_note = Mock(spec=Note, id=note_id)
         mock_repository.get_by_id.return_value = mock_note
 
-        result = note_controller.get_note(mock_db, mock_repository, note_id)
+        controller = NoteController(repository=mock_repository)
+
+        result = controller.get_note(mock_db, note_id)
 
         assert result == mock_note
         mock_repository.get_by_id.assert_called_once_with(mock_db, note_id)
@@ -61,7 +67,9 @@ class TestGetNote:
         mock_repository = Mock(spec=NoteRepositoryProtocol)
         mock_repository.get_by_id.return_value = None
 
-        result = note_controller.get_note(mock_db, mock_repository, uuid4())
+        controller = NoteController(repository=mock_repository)
+
+        result = controller.get_note(mock_db, uuid4())
 
         assert result is None
 
@@ -77,7 +85,9 @@ class TestCreateNote:
         mock_note = Mock(spec=Note)
         mock_repository.create.return_value = mock_note
 
-        result = note_controller.create_note(mock_db, mock_repository, note_data)
+        controller = NoteController(repository=mock_repository)
+
+        result = controller.create_note(mock_db, note_data)
 
         assert result == mock_note
         mock_repository.create.assert_called_once_with(mock_db, note_data)
@@ -98,7 +108,9 @@ class TestUpdateNote:
         mock_repository.get_by_id.return_value = mock_note
         mock_repository.update.return_value = mock_updated_note
 
-        result = note_controller.update_note(mock_db, mock_repository, note_id, note_data)
+        controller = NoteController(repository=mock_repository)
+
+        result = controller.update_note(mock_db, note_id, note_data)
 
         assert result == mock_updated_note
         mock_repository.get_by_id.assert_called_once_with(mock_db, note_id)
@@ -110,7 +122,9 @@ class TestUpdateNote:
         mock_repository = Mock(spec=NoteRepositoryProtocol)
         mock_repository.get_by_id.return_value = None
 
-        result = note_controller.update_note(mock_db, mock_repository, uuid4(), NoteUpdate())
+        controller = NoteController(repository=mock_repository)
+
+        result = controller.update_note(mock_db, uuid4(), NoteUpdate())
 
         assert result is None
         mock_repository.update.assert_not_called()
@@ -130,7 +144,9 @@ class TestDeleteNote:
         mock_repository.get_by_id.return_value = mock_note
         mock_repository.soft_delete.return_value = mock_deleted_note
 
-        result = note_controller.delete_note(mock_db, mock_repository, note_id)
+        controller = NoteController(repository=mock_repository)
+
+        result = controller.delete_note(mock_db, note_id)
 
         assert result == mock_deleted_note
         mock_repository.get_by_id.assert_called_once_with(mock_db, note_id)
@@ -142,7 +158,9 @@ class TestDeleteNote:
         mock_repository = Mock(spec=NoteRepositoryProtocol)
         mock_repository.get_by_id.return_value = None
 
-        result = note_controller.delete_note(mock_db, mock_repository, uuid4())
+        controller = NoteController(repository=mock_repository)
+
+        result = controller.delete_note(mock_db, uuid4())
 
         assert result is None
         mock_repository.soft_delete.assert_not_called()

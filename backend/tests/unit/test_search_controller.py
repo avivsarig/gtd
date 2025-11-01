@@ -4,7 +4,7 @@ from datetime import UTC, datetime
 from unittest.mock import Mock
 from uuid import uuid4
 
-from app.controllers import search_controller
+from app.controllers.search_controller import SearchController
 from app.repositories.protocols import SearchRepositoryProtocol
 from app.schemas.search import SearchResponse
 
@@ -32,7 +32,9 @@ class TestSearch:
         ]
 
         mock_repository.search_all.return_value = mock_results
-        result = search_controller.search(mock_db, mock_repository, query, limit)
+        controller = SearchController(repository=mock_repository)
+
+        result = controller.search(mock_db, query, limit)
 
         mock_repository.search_all.assert_called_once_with(mock_db, query, limit)
         assert isinstance(result, SearchResponse)
@@ -48,7 +50,9 @@ class TestSearch:
         excessive_limit = 500
 
         mock_repository.search_all.return_value = []
-        search_controller.search(mock_db, mock_repository, query, excessive_limit)
+        controller = SearchController(repository=mock_repository)
+
+        controller.search(mock_db, query, excessive_limit)
 
         # Should be called with 100, not 500
         mock_repository.search_all.assert_called_once_with(mock_db, query, 100)
@@ -60,7 +64,9 @@ class TestSearch:
         query = "nonexistent"
 
         mock_repository.search_all.return_value = []
-        result = search_controller.search(mock_db, mock_repository, query)
+        controller = SearchController(repository=mock_repository)
+
+        result = controller.search(mock_db, query)
 
         assert isinstance(result, SearchResponse)
         assert result.query == query
@@ -89,7 +95,9 @@ class TestSearch:
         ]
 
         mock_repository.search_all.return_value = mock_results
-        result = search_controller.search(mock_db, mock_repository, query)
+        controller = SearchController(repository=mock_repository)
+
+        result = controller.search(mock_db, query)
 
         assert result.results[0].id == task_id
         assert result.results[0].type == "task"
@@ -105,7 +113,9 @@ class TestSearch:
         query = "default test"
 
         mock_repository.search_all.return_value = []
-        search_controller.search(mock_db, mock_repository, query)
+        controller = SearchController(repository=mock_repository)
+
+        controller.search(mock_db, query)
 
         # Should be called with default limit of 50
         mock_repository.search_all.assert_called_once_with(mock_db, query, 50)
@@ -147,7 +157,9 @@ class TestSearch:
         ]
 
         mock_repository.search_all.return_value = mock_results
-        result = search_controller.search(mock_db, mock_repository, query)
+        controller = SearchController(repository=mock_repository)
+
+        result = controller.search(mock_db, query)
 
         assert result.total_results == 3
         assert result.results[0].type == "task"
@@ -174,7 +186,9 @@ class TestSearch:
         ]
 
         mock_repository.search_all.return_value = mock_results
-        result = search_controller.search(mock_db, mock_repository, query)
+        controller = SearchController(repository=mock_repository)
+
+        result = controller.search(mock_db, query)
 
         assert result.total_results == 5
         assert len(result.results) == 5

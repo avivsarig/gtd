@@ -3,7 +3,7 @@
 from unittest.mock import Mock
 from uuid import uuid4
 
-from app.controllers import task_controller
+from app.controllers.task_controller import TaskController
 from app.models.task import Task
 from app.repositories.protocols import TaskRepositoryProtocol
 from app.schemas.task import TaskCreate, TaskStatus
@@ -20,7 +20,9 @@ class TestCreateTask:
         mock_task = Mock(spec=Task)
         mock_repository.create.return_value = mock_task
 
-        created_task = task_controller.create_task(mock_db, mock_repository, task_data)
+        controller = TaskController(repository=mock_repository)
+
+        created_task = controller.create_task(mock_db, task_data)
 
         mock_repository.create.assert_called_once_with(mock_db, task_data)
         assert created_task == mock_task
@@ -40,7 +42,9 @@ class TestCreateTask:
         mock_task = Mock(spec=Task, status="waiting")
         mock_repository.create.return_value = mock_task
 
-        task_controller.create_task(mock_db, mock_repository, task_data)
+        controller = TaskController(repository=mock_repository)
+
+        controller.create_task(mock_db, task_data)
 
         # Verify status was changed to 'waiting'
         assert task_data.status == TaskStatus.WAITING
@@ -54,7 +58,9 @@ class TestCreateTask:
         mock_task = Mock(spec=Task, status="next")
         mock_repository.create.return_value = mock_task
 
-        task_controller.create_task(mock_db, mock_repository, task_data)
+        controller = TaskController(repository=mock_repository)
+
+        controller.create_task(mock_db, task_data)
 
         # Verify status was NOT changed
         assert task_data.status == TaskStatus.NEXT
@@ -68,7 +74,9 @@ class TestCreateTask:
         mock_task = Mock(spec=Task)
         mock_repository.create.return_value = mock_task
 
-        task_controller.create_task(mock_db, mock_repository, task_data)
+        controller = TaskController(repository=mock_repository)
+
+        controller.create_task(mock_db, task_data)
 
         # Default status from schema should be 'next'
         assert task_data.status == TaskStatus.NEXT

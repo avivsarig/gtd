@@ -4,7 +4,7 @@ from datetime import UTC, datetime
 from unittest.mock import Mock
 from uuid import uuid4
 
-from app.controllers import project_controller
+from app.controllers.project_controller import ProjectController
 from app.models.project import Project
 from app.repositories.protocols import ProjectRepositoryProtocol
 from app.schemas.project import (
@@ -28,7 +28,9 @@ class TestListProjects:
         ]
         mock_repository.get_all.return_value = mock_projects
 
-        result = project_controller.list_projects(mock_db, mock_repository)
+        controller = ProjectController(repository=mock_repository)
+
+        result = controller.list_projects(mock_db)
 
         mock_repository.get_all.assert_called_once_with(mock_db, include_deleted=False)
         assert result == mock_projects
@@ -40,7 +42,9 @@ class TestListProjects:
         expected_projects = []
         mock_repository.get_all.return_value = expected_projects
 
-        result = project_controller.list_projects(mock_db, mock_repository)
+        controller = ProjectController(repository=mock_repository)
+
+        result = controller.list_projects(mock_db)
 
         assert result == expected_projects
 
@@ -75,7 +79,9 @@ class TestListProjectsWithStats:
         mock_repository.get_all.return_value = [mock_project]
         mock_repository.get_task_stats.return_value = mock_stats
 
-        result = project_controller.list_projects_with_stats(mock_db, mock_repository)
+        controller = ProjectController(repository=mock_repository)
+
+        result = controller.list_projects_with_stats(mock_db)
 
         mock_repository.get_all.assert_called_once_with(mock_db, include_deleted=False)
         mock_repository.get_task_stats.assert_called_once_with(mock_db, project_id)
@@ -91,7 +97,9 @@ class TestListProjectsWithStats:
         mock_repository = Mock(spec=ProjectRepositoryProtocol)
         mock_repository.get_all.return_value = []
 
-        result = project_controller.list_projects_with_stats(mock_db, mock_repository)
+        controller = ProjectController(repository=mock_repository)
+
+        result = controller.list_projects_with_stats(mock_db)
 
         assert result == []
 
@@ -107,7 +115,9 @@ class TestGetProject:
         mock_project = Mock(spec=Project, id=project_id, name="Test Project")
         mock_repository.get_by_id.return_value = mock_project
 
-        result = project_controller.get_project(mock_db, mock_repository, project_id)
+        controller = ProjectController(repository=mock_repository)
+
+        result = controller.get_project(mock_db, project_id)
 
         mock_repository.get_by_id.assert_called_once_with(mock_db, project_id)
         assert result == mock_project
@@ -119,7 +129,9 @@ class TestGetProject:
         project_id = uuid4()
         mock_repository.get_by_id.return_value = None
 
-        result = project_controller.get_project(mock_db, mock_repository, project_id)
+        controller = ProjectController(repository=mock_repository)
+
+        result = controller.get_project(mock_db, project_id)
 
         assert result is None
 
@@ -154,7 +166,9 @@ class TestGetProjectWithStats:
         mock_repository.get_by_id.return_value = mock_project
         mock_repository.get_task_stats.return_value = mock_stats
 
-        result = project_controller.get_project_with_stats(mock_db, mock_repository, project_id)
+        controller = ProjectController(repository=mock_repository)
+
+        result = controller.get_project_with_stats(mock_db, project_id)
 
         mock_repository.get_by_id.assert_called_once_with(mock_db, project_id)
         mock_repository.get_task_stats.assert_called_once_with(mock_db, project_id)
@@ -170,7 +184,9 @@ class TestGetProjectWithStats:
         project_id = uuid4()
         mock_repository.get_by_id.return_value = None
 
-        result = project_controller.get_project_with_stats(mock_db, mock_repository, project_id)
+        controller = ProjectController(repository=mock_repository)
+
+        result = controller.get_project_with_stats(mock_db, project_id)
 
         assert result is None
         mock_repository.get_task_stats.assert_not_called()
@@ -191,7 +207,9 @@ class TestCreateProject:
         )
         mock_repository.create.return_value = mock_project
 
-        result = project_controller.create_project(mock_db, mock_repository, project_data)
+        controller = ProjectController(repository=mock_repository)
+
+        result = controller.create_project(mock_db, project_data)
 
         mock_repository.create.assert_called_once_with(mock_db, project_data)
         assert mock_project.last_activity_at == mock_project.created_at
@@ -218,9 +236,8 @@ class TestUpdateProject:
         mock_repository.get_by_id.return_value = mock_project
         mock_repository.update.return_value = mock_updated_project
 
-        result = project_controller.update_project(
-            mock_db, mock_repository, project_id, project_data
-        )
+        controller = ProjectController(repository=mock_repository)
+        result = controller.update_project(mock_db, project_id, project_data)
 
         mock_repository.get_by_id.assert_called_once_with(mock_db, project_id)
         mock_repository.update.assert_called_once_with(mock_db, mock_project, project_data)
@@ -242,9 +259,8 @@ class TestUpdateProject:
         mock_repository.get_by_id.return_value = mock_project
         mock_repository.update.return_value = mock_updated_project
 
-        result = project_controller.update_project(
-            mock_db, mock_repository, project_id, project_data
-        )
+        controller = ProjectController(repository=mock_repository)
+        result = controller.update_project(mock_db, project_id, project_data)
 
         assert isinstance(mock_project.completed_at, datetime)
         assert result == mock_updated_project
@@ -265,9 +281,8 @@ class TestUpdateProject:
         mock_repository.get_by_id.return_value = mock_project
         mock_repository.update.return_value = mock_updated_project
 
-        result = project_controller.update_project(
-            mock_db, mock_repository, project_id, project_data
-        )
+        controller = ProjectController(repository=mock_repository)
+        result = controller.update_project(mock_db, project_id, project_data)
 
         assert mock_project.completed_at == existing_completed_at
         assert result == mock_updated_project
@@ -280,9 +295,8 @@ class TestUpdateProject:
         project_data = ProjectUpdate(description="Updated")
         mock_repository.get_by_id.return_value = None
 
-        result = project_controller.update_project(
-            mock_db, mock_repository, project_id, project_data
-        )
+        controller = ProjectController(repository=mock_repository)
+        result = controller.update_project(mock_db, project_id, project_data)
 
         assert result is None
         mock_repository.update.assert_not_called()
@@ -301,7 +315,9 @@ class TestDeleteProject:
         mock_repository.get_by_id.return_value = mock_project
         mock_repository.soft_delete.return_value = mock_deleted_project
 
-        result = project_controller.delete_project(mock_db, mock_repository, project_id)
+        controller = ProjectController(repository=mock_repository)
+
+        result = controller.delete_project(mock_db, project_id)
 
         mock_repository.get_by_id.assert_called_once_with(mock_db, project_id)
         mock_repository.soft_delete.assert_called_once_with(mock_db, mock_project)
@@ -314,7 +330,9 @@ class TestDeleteProject:
         project_id = uuid4()
         mock_repository.get_by_id.return_value = None
 
-        result = project_controller.delete_project(mock_db, mock_repository, project_id)
+        controller = ProjectController(repository=mock_repository)
+
+        result = controller.delete_project(mock_db, project_id)
 
         assert result is None
         mock_repository.soft_delete.assert_not_called()
@@ -337,7 +355,9 @@ class TestCompleteProject:
         )
         mock_repository.get_by_id.return_value = mock_project
 
-        result = project_controller.complete_project(mock_db, mock_repository, project_id)
+        controller = ProjectController(repository=mock_repository)
+
+        result = controller.complete_project(mock_db, project_id)
 
         mock_repository.get_by_id.assert_called_once_with(mock_db, project_id)
         assert isinstance(mock_project.completed_at, datetime)
@@ -354,7 +374,9 @@ class TestCompleteProject:
         project_id = uuid4()
         mock_repository.get_by_id.return_value = None
 
-        result = project_controller.complete_project(mock_db, mock_repository, project_id)
+        controller = ProjectController(repository=mock_repository)
+
+        result = controller.complete_project(mock_db, project_id)
 
         assert result is None
         mock_db.commit.assert_not_called()

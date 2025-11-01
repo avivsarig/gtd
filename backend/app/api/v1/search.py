@@ -3,10 +3,9 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.controllers import search_controller
+from app.controllers.search_controller import SearchController
 from app.db.database import get_db
-from app.dependencies import get_search_repository
-from app.repositories.protocols import SearchRepositoryProtocol
+from app.dependencies import get_search_controller
 from app.schemas.search import SearchResponse
 
 router = APIRouter(prefix="/search", tags=["search"])
@@ -17,7 +16,7 @@ def search(
     q: str = Query(..., min_length=2, description="Search query (minimum 2 characters)"),
     limit: int = Query(50, ge=1, le=100, description="Maximum number of results (1-100)"),
     db: Session = Depends(get_db),
-    repository: SearchRepositoryProtocol = Depends(get_search_repository),
+    controller: SearchController = Depends(get_search_controller),
 ):
     """
     Full-text search across tasks, notes, and projects.
@@ -47,4 +46,4 @@ def search(
             detail="Search query must be at least 2 characters long",
         )
 
-    return search_controller.search(db, repository, q.strip(), limit)
+    return controller.search(db, q.strip(), limit)

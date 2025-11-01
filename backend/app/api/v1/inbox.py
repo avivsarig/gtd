@@ -5,20 +5,9 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.controllers import inbox_controller
+from app.controllers.inbox_controller import InboxController
 from app.db.database import get_db
-from app.dependencies import (
-    get_inbox_repository,
-    get_note_repository,
-    get_project_repository,
-    get_task_repository,
-)
-from app.repositories.protocols import (
-    InboxRepositoryProtocol,
-    NoteRepositoryProtocol,
-    ProjectRepositoryProtocol,
-    TaskRepositoryProtocol,
-)
+from app.dependencies import get_inbox_controller
 from app.schemas.inbox import (
     ConvertToNoteRequest,
     ConvertToProjectRequest,
@@ -39,10 +28,9 @@ router = APIRouter(prefix="/inbox", tags=["inbox"])
 def list_inbox_items(
     include_processed: bool = Query(False, description="Include processed items"),
     db: Session = Depends(get_db),
-    repository: InboxRepositoryProtocol = Depends(get_inbox_repository),
+    controller: InboxController = Depends(get_inbox_controller),
 ):
-    """
-    Get all inbox items.
+    """Get all inbox items.
 
     By default, returns only unprocessed items (processed_at IS NULL).
     Items are ordered oldest first for processing workflow.
@@ -53,23 +41,22 @@ def list_inbox_items(
     Returns:
         List of inbox items
     """
-    return inbox_controller.list_inbox_items(db, repository, include_processed=include_processed)
+    return controller.list_inbox_items(db, include_processed=include_processed)
 
 
 @router.get("/count", response_model=InboxItemCount)
 def get_unprocessed_count(
     db: Session = Depends(get_db),
-    repository: InboxRepositoryProtocol = Depends(get_inbox_repository),
+    controller: InboxController = Depends(get_inbox_controller),
 ):
-    """
-    Get count of unprocessed inbox items.
+    """Get count of unprocessed inbox items.
 
     Used for inbox badge/counter in UI to show pending items.
 
     Returns:
         Count of unprocessed items (processed_at IS NULL, deleted_at IS NULL)
     """
-    count = inbox_controller.get_unprocessed_count(db, repository)
+    count = controller.get_unprocessed_count(db)
     return InboxItemCount(count=count)
 
 
@@ -77,15 +64,14 @@ def get_unprocessed_count(
 def get_inbox_item(
     item_id: UUID,
     db: Session = Depends(get_db),
-    repository: InboxRepositoryProtocol = Depends(get_inbox_repository),
+    controller: InboxController = Depends(get_inbox_controller),
 ):
-    """
-    Get a single inbox item by ID.
+    """Get a single inbox item by ID.
 
     Raises:
         404: Inbox item not found or has been deleted
     """
-    item = inbox_controller.get_inbox_item(db, repository, item_id)
+    item = controller.get_inbox_item(db, item_id)
     if item is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -98,10 +84,9 @@ def get_inbox_item(
 def create_inbox_item(
     item_data: InboxItemCreate,
     db: Session = Depends(get_db),
-    repository: InboxRepositoryProtocol = Depends(get_inbox_repository),
+    controller: InboxController = Depends(get_inbox_controller),
 ):
-    """
-    Create a new inbox item (universal capture).
+    """Create a new inbox item (universal capture).
 
     This is the primary GTD capture endpoint - minimal friction, content only.
     Processing happens later during review workflow.
@@ -112,7 +97,7 @@ def create_inbox_item(
     Returns:
         Created inbox item
     """
-    return inbox_controller.create_inbox_item(db, repository, item_data)
+    return controller.create_inbox_item(db, item_data)
 
 
 @router.put("/{item_id}", response_model=InboxItemResponse)
@@ -120,15 +105,14 @@ def update_inbox_item(
     item_id: UUID,
     item_data: InboxItemUpdate,
     db: Session = Depends(get_db),
-    repository: InboxRepositoryProtocol = Depends(get_inbox_repository),
+    controller: InboxController = Depends(get_inbox_controller),
 ):
-    """
-    Update an existing inbox item.
+    """Update an existing inbox item.
 
     Raises:
         404: Inbox item not found
     """
-    item = inbox_controller.update_inbox_item(db, repository, item_id, item_data)
+    item = controller.update_inbox_item(db, item_id, item_data)
     if item is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -141,17 +125,16 @@ def update_inbox_item(
 def delete_inbox_item(
     item_id: UUID,
     db: Session = Depends(get_db),
-    repository: InboxRepositoryProtocol = Depends(get_inbox_repository),
+    controller: InboxController = Depends(get_inbox_controller),
 ):
-    """
-    Delete an inbox item (soft delete).
+    """Delete an inbox item (soft delete).
 
     Sets deleted_at timestamp. Item remains in database for audit trail.
 
     Raises:
         404: Inbox item not found
     """
-    item = inbox_controller.delete_inbox_item(db, repository, item_id)
+    item = controller.delete_inbox_item(db, item_id)
     if item is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -165,11 +148,9 @@ def convert_inbox_to_task(
     item_id: UUID,
     convert_data: ConvertToTaskRequest = ConvertToTaskRequest(),
     db: Session = Depends(get_db),
-    inbox_repository: InboxRepositoryProtocol = Depends(get_inbox_repository),
-    task_repository: TaskRepositoryProtocol = Depends(get_task_repository),
+    controller: InboxController = Depends(get_inbox_controller),
 ):
-    """
-    Convert an inbox item to a task (GTD processing workflow).
+    """Convert an inbox item to a task (GTD processing workflow).
 
     Business logic:
     - Creates new task with inbox content
@@ -187,9 +168,7 @@ def convert_inbox_to_task(
     Raises:
         404: Inbox item not found
     """
-    task = inbox_controller.convert_to_task(
-        db, inbox_repository, task_repository, item_id, convert_data
-    )
+    task = controller.convert_to_task(db, item_id, convert_data)
     if task is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -203,11 +182,9 @@ def convert_inbox_to_note(
     item_id: UUID,
     convert_data: ConvertToNoteRequest = ConvertToNoteRequest(),
     db: Session = Depends(get_db),
-    inbox_repository: InboxRepositoryProtocol = Depends(get_inbox_repository),
-    note_repository: NoteRepositoryProtocol = Depends(get_note_repository),
+    controller: InboxController = Depends(get_inbox_controller),
 ):
-    """
-    Convert an inbox item to a note (GTD processing workflow).
+    """Convert an inbox item to a note (GTD processing workflow).
 
     Business logic:
     - Creates new note with inbox content
@@ -224,9 +201,7 @@ def convert_inbox_to_note(
     Raises:
         404: Inbox item not found
     """
-    note = inbox_controller.convert_to_note(
-        db, inbox_repository, note_repository, item_id, convert_data
-    )
+    note = controller.convert_to_note(db, item_id, convert_data)
     if note is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -240,11 +215,9 @@ def convert_inbox_to_project(
     item_id: UUID,
     convert_data: ConvertToProjectRequest = ConvertToProjectRequest(),
     db: Session = Depends(get_db),
-    inbox_repository: InboxRepositoryProtocol = Depends(get_inbox_repository),
-    project_repository: ProjectRepositoryProtocol = Depends(get_project_repository),
+    controller: InboxController = Depends(get_inbox_controller),
 ):
-    """
-    Convert an inbox item to a project (GTD processing workflow).
+    """Convert an inbox item to a project (GTD processing workflow).
 
     Business logic:
     - Creates new project with inbox content as name
@@ -261,9 +234,7 @@ def convert_inbox_to_project(
     Raises:
         404: Inbox item not found
     """
-    project = inbox_controller.convert_to_project(
-        db, inbox_repository, project_repository, item_id, convert_data
-    )
+    project = controller.convert_to_project(db, item_id, convert_data)
     if project is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

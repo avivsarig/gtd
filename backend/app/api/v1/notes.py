@@ -5,10 +5,9 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.controllers import note_controller
+from app.controllers.note_controller import NoteController
 from app.db.database import get_db
-from app.dependencies import get_note_repository
-from app.repositories.protocols import NoteRepositoryProtocol
+from app.dependencies import get_note_controller
 from app.schemas.note import NoteCreate, NoteResponse, NoteUpdate
 
 router = APIRouter(prefix="/notes", tags=["notes"])
@@ -18,7 +17,7 @@ router = APIRouter(prefix="/notes", tags=["notes"])
 def list_notes(
     project_id: UUID | None = Query(None, description="Filter by project ID"),
     db: Session = Depends(get_db),
-    repository: NoteRepositoryProtocol = Depends(get_note_repository),
+    controller: NoteController = Depends(get_note_controller),
 ) -> list[NoteResponse]:
     """
     Get all active notes.
@@ -26,14 +25,14 @@ def list_notes(
     Returns list of all non-deleted notes ordered by updated_at descending.
     Use ?project_id=<uuid> to filter by project.
     """
-    return note_controller.list_notes(db, repository, project_id=project_id)
+    return controller.list_notes(db, project_id=project_id)
 
 
 @router.get("/{note_id}")
 def get_note(
     note_id: UUID,
     db: Session = Depends(get_db),
-    repository: NoteRepositoryProtocol = Depends(get_note_repository),
+    controller: NoteController = Depends(get_note_controller),
 ) -> NoteResponse:
     """
     Get a single note by ID.
@@ -41,7 +40,7 @@ def get_note(
     Raises:
         404: Note not found or has been deleted
     """
-    note = note_controller.get_note(db, repository, note_id)
+    note = controller.get_note(db, note_id)
     if note is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=f"Note with id {note_id} not found"
@@ -53,7 +52,7 @@ def get_note(
 def create_note(
     note: NoteCreate,
     db: Session = Depends(get_db),
-    repository: NoteRepositoryProtocol = Depends(get_note_repository),
+    controller: NoteController = Depends(get_note_controller),
 ) -> NoteResponse:
     """
     Create a new note.
@@ -65,7 +64,7 @@ def create_note(
         - content (text)
         - project_id (UUID)
     """
-    return note_controller.create_note(db, repository, note)
+    return controller.create_note(db, note)
 
 
 @router.put("/{note_id}")
@@ -73,7 +72,7 @@ def update_note(
     note_id: UUID,
     note: NoteUpdate,
     db: Session = Depends(get_db),
-    repository: NoteRepositoryProtocol = Depends(get_note_repository),
+    controller: NoteController = Depends(get_note_controller),
 ) -> NoteResponse:
     """
     Update an existing note.
@@ -83,7 +82,7 @@ def update_note(
     Raises:
         404: Note not found or has been deleted
     """
-    updated_note = note_controller.update_note(db, repository, note_id, note)
+    updated_note = controller.update_note(db, note_id, note)
     if updated_note is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=f"Note with id {note_id} not found"
@@ -95,7 +94,7 @@ def update_note(
 def delete_note(
     note_id: UUID,
     db: Session = Depends(get_db),
-    repository: NoteRepositoryProtocol = Depends(get_note_repository),
+    controller: NoteController = Depends(get_note_controller),
 ):
     """
     Soft delete a note.
@@ -105,7 +104,7 @@ def delete_note(
     Raises:
         404: Note not found or has been already deleted
     """
-    deleted_note = note_controller.delete_note(db, repository, note_id)
+    deleted_note = controller.delete_note(db, note_id)
     if deleted_note is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=f"Note with id {note_id} not found"

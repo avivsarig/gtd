@@ -5,10 +5,9 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.controllers import context_controller
+from app.controllers.context_controller import ContextController
 from app.db.database import get_db
-from app.dependencies import get_context_repository
-from app.repositories.protocols import ContextRepositoryProtocol
+from app.dependencies import get_context_controller
 from app.schemas.context import ContextCreate, ContextResponse, ContextUpdate
 
 router = APIRouter(prefix="/contexts", tags=["contexts"])
@@ -17,21 +16,21 @@ router = APIRouter(prefix="/contexts", tags=["contexts"])
 @router.get("/", response_model=list[ContextResponse])
 def list_contexts(
     db: Session = Depends(get_db),
-    repository: ContextRepositoryProtocol = Depends(get_context_repository),
+    controller: ContextController = Depends(get_context_controller),
 ):
     """
     Get all contexts.
 
     Returns list of all contexts ordered by sort_order, then name.
     """
-    return context_controller.list_contexts(db, repository)
+    return controller.list_contexts(db)
 
 
 @router.get("/{context_id}", response_model=ContextResponse)
 def get_context(
     context_id: UUID,
     db: Session = Depends(get_db),
-    repository: ContextRepositoryProtocol = Depends(get_context_repository),
+    controller: ContextController = Depends(get_context_controller),
 ):
     """
     Get a single context by ID.
@@ -39,7 +38,7 @@ def get_context(
     Raises:
         404: Context not found
     """
-    context = context_controller.get_context(db, repository, context_id)
+    context = controller.get_context(db, context_id)
     if context is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -52,7 +51,7 @@ def get_context(
 def create_context(
     context_data: ContextCreate,
     db: Session = Depends(get_db),
-    repository: ContextRepositoryProtocol = Depends(get_context_repository),
+    controller: ContextController = Depends(get_context_controller),
 ):
     """
     Create a new context.
@@ -63,7 +62,7 @@ def create_context(
     Raises:
         409: Context name already exists
     """
-    return context_controller.create_context(db, repository, context_data)
+    return controller.create_context(db, context_data)
 
 
 @router.put("/{context_id}", response_model=ContextResponse)
@@ -71,7 +70,7 @@ def update_context(
     context_id: UUID,
     context_data: ContextUpdate,
     db: Session = Depends(get_db),
-    repository: ContextRepositoryProtocol = Depends(get_context_repository),
+    controller: ContextController = Depends(get_context_controller),
 ):
     """
     Update an existing context.
@@ -82,7 +81,7 @@ def update_context(
         404: Context not found
         409: New context name conflicts with existing context
     """
-    context = context_controller.update_context(db, repository, context_id, context_data)
+    context = controller.update_context(db, context_id, context_data)
     if context is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -95,7 +94,7 @@ def update_context(
 def delete_context(
     context_id: UUID,
     db: Session = Depends(get_db),
-    repository: ContextRepositoryProtocol = Depends(get_context_repository),
+    controller: ContextController = Depends(get_context_controller),
 ):
     """
     Soft-delete a context.
@@ -105,7 +104,7 @@ def delete_context(
     Raises:
         404: Context not found
     """
-    context = context_controller.delete_context(db, repository, context_id)
+    context = controller.delete_context(db, context_id)
     if context is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

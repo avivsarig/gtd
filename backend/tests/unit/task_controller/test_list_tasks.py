@@ -2,7 +2,7 @@
 
 from unittest.mock import Mock
 
-from app.controllers import task_controller
+from app.controllers.task_controller import TaskController
 from app.models.task import Task
 from app.repositories.protocols import TaskRepositoryProtocol
 
@@ -20,7 +20,8 @@ class TestListTasks:
         ]
         mock_repository.get_all.return_value = mock_tasks
 
-        created_task = task_controller.list_tasks(mock_db, mock_repository)
+        controller = TaskController(repository=mock_repository)
+        created_task = controller.list_tasks(mock_db)
 
         # Verify repository was called correctly
         mock_repository.get_all.assert_called_once_with(
@@ -41,6 +42,7 @@ class TestListTasks:
         expected_tasks = []
         mock_repository.get_all.return_value = expected_tasks
 
-        created_task = task_controller.list_tasks(mock_db, mock_repository)
+        controller = TaskController(repository=mock_repository)
+        created_task = controller.list_tasks(mock_db)
 
         assert created_task == expected_tasks

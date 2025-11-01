@@ -3,7 +3,7 @@
 from unittest.mock import Mock
 from uuid import uuid4
 
-from app.controllers import inbox_controller
+from app.controllers.inbox_controller import InboxController
 from app.models.inbox_item import InboxItem
 from app.models.note import Note
 from app.models.project import Project
@@ -31,7 +31,9 @@ class TestListInboxItems:
         mock_inbox_repo = Mock(spec=InboxRepositoryProtocol)
         mock_inbox_repo.get_all.return_value = []
 
-        result = inbox_controller.list_inbox_items(mock_db, mock_inbox_repo)
+        controller = InboxController(repository=mock_inbox_repo)
+
+        result = controller.list_inbox_items(mock_db)
 
         mock_inbox_repo.get_all.assert_called_once_with(
             mock_db, include_processed=False, include_deleted=False
@@ -44,7 +46,8 @@ class TestListInboxItems:
         mock_inbox_repo = Mock(spec=InboxRepositoryProtocol)
         mock_inbox_repo.get_all.return_value = []
 
-        inbox_controller.list_inbox_items(mock_db, mock_inbox_repo, include_processed=True)
+        controller = InboxController(repository=mock_inbox_repo)
+        controller.list_inbox_items(mock_db, include_processed=True)
 
         mock_inbox_repo.get_all.assert_called_once_with(
             mock_db, include_processed=True, include_deleted=False
@@ -62,7 +65,9 @@ class TestCreateInboxItem:
         mock_item = Mock(spec=InboxItem, content="Random thought")
         mock_inbox_repo.create.return_value = mock_item
 
-        result = inbox_controller.create_inbox_item(mock_db, mock_inbox_repo, item_data)
+        controller = InboxController(repository=mock_inbox_repo)
+
+        result = controller.create_inbox_item(mock_db, item_data)
 
         mock_inbox_repo.create.assert_called_once_with(mock_db, item_data)
         assert result == mock_item
@@ -89,9 +94,8 @@ class TestConvertToTask:
         # Convert with no custom data
         convert_data = ConvertToTaskRequest()
 
-        result = inbox_controller.convert_to_task(
-            mock_db, mock_inbox_repo, mock_task_repo, item_id, convert_data
-        )
+        controller = InboxController(repository=mock_inbox_repo, task_repository=mock_task_repo)
+        result = controller.convert_to_task(mock_db, item_id, convert_data)
 
         # Verify task was created with inbox content as title
         assert result == mock_task
@@ -115,9 +119,8 @@ class TestConvertToTask:
 
         convert_data = ConvertToTaskRequest(title="Custom title")
 
-        result = inbox_controller.convert_to_task(
-            mock_db, mock_inbox_repo, mock_task_repo, item_id, convert_data
-        )
+        controller = InboxController(repository=mock_inbox_repo, task_repository=mock_task_repo)
+        result = controller.convert_to_task(mock_db, item_id, convert_data)
 
         assert result == mock_task
         mock_inbox_repo.mark_processed.assert_called_once()
@@ -132,9 +135,8 @@ class TestConvertToTask:
         mock_inbox_repo.get_by_id.return_value = None
 
         convert_data = ConvertToTaskRequest()
-        result = inbox_controller.convert_to_task(
-            mock_db, mock_inbox_repo, mock_task_repo, item_id, convert_data
-        )
+        controller = InboxController(repository=mock_inbox_repo, task_repository=mock_task_repo)
+        result = controller.convert_to_task(mock_db, item_id, convert_data)
 
         assert result is None
 
@@ -162,9 +164,8 @@ class TestConvertToNote:
 
         convert_data = ConvertToNoteRequest()
 
-        result = inbox_controller.convert_to_note(
-            mock_db, mock_inbox_repo, mock_note_repo, item_id, convert_data
-        )
+        controller = InboxController(repository=mock_inbox_repo, note_repository=mock_note_repo)
+        result = controller.convert_to_note(mock_db, item_id, convert_data)
 
         assert result == mock_note
         mock_inbox_repo.mark_processed.assert_called_once_with(mock_db, mock_item)
@@ -184,9 +185,8 @@ class TestConvertToNote:
 
         convert_data = ConvertToNoteRequest(title="Custom Note Title")
 
-        result = inbox_controller.convert_to_note(
-            mock_db, mock_inbox_repo, mock_note_repo, item_id, convert_data
-        )
+        controller = InboxController(repository=mock_inbox_repo, note_repository=mock_note_repo)
+        result = controller.convert_to_note(mock_db, item_id, convert_data)
 
         assert result == mock_note
         mock_inbox_repo.mark_processed.assert_called_once()
@@ -201,9 +201,8 @@ class TestConvertToNote:
         mock_inbox_repo.get_by_id.return_value = None
 
         convert_data = ConvertToNoteRequest()
-        result = inbox_controller.convert_to_note(
-            mock_db, mock_inbox_repo, mock_note_repo, item_id, convert_data
-        )
+        controller = InboxController(repository=mock_inbox_repo, note_repository=mock_note_repo)
+        result = controller.convert_to_note(mock_db, item_id, convert_data)
 
         assert result is None
 
@@ -226,9 +225,10 @@ class TestConvertToProject:
 
         convert_data = ConvertToProjectRequest()
 
-        result = inbox_controller.convert_to_project(
-            mock_db, mock_inbox_repo, mock_project_repo, item_id, convert_data
+        controller = InboxController(
+            repository=mock_inbox_repo, project_repository=mock_project_repo
         )
+        result = controller.convert_to_project(mock_db, item_id, convert_data)
 
         assert result == mock_project
         mock_inbox_repo.mark_processed.assert_called_once_with(mock_db, mock_item)
@@ -250,9 +250,10 @@ class TestConvertToProject:
 
         convert_data = ConvertToProjectRequest()
 
-        result = inbox_controller.convert_to_project(
-            mock_db, mock_inbox_repo, mock_project_repo, item_id, convert_data
+        controller = InboxController(
+            repository=mock_inbox_repo, project_repository=mock_project_repo
         )
+        result = controller.convert_to_project(mock_db, item_id, convert_data)
 
         assert result == mock_project
 
@@ -266,9 +267,10 @@ class TestConvertToProject:
         mock_inbox_repo.get_by_id.return_value = None
 
         convert_data = ConvertToProjectRequest()
-        result = inbox_controller.convert_to_project(
-            mock_db, mock_inbox_repo, mock_project_repo, item_id, convert_data
+        controller = InboxController(
+            repository=mock_inbox_repo, project_repository=mock_project_repo
         )
+        result = controller.convert_to_project(mock_db, item_id, convert_data)
 
         assert result is None
 
@@ -282,7 +284,9 @@ class TestGetUnprocessedCount:
         mock_inbox_repo = Mock(spec=InboxRepositoryProtocol)
         mock_inbox_repo.count_unprocessed.return_value = 7
 
-        count = inbox_controller.get_unprocessed_count(mock_db, mock_inbox_repo)
+        controller = InboxController(repository=mock_inbox_repo)
+
+        count = controller.get_unprocessed_count(mock_db)
 
         assert count == 7
         mock_inbox_repo.count_unprocessed.assert_called_once_with(mock_db)

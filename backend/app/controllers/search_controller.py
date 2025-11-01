@@ -6,34 +6,41 @@ from app.repositories.protocols import SearchRepositoryProtocol
 from app.schemas.search import SearchResponse, SearchResultItem
 
 
-def search(
-    db: Session, repository: SearchRepositoryProtocol, query: str, limit: int = 50
-) -> SearchResponse:
-    """
-    Perform full-text search across tasks, notes, and projects.
+class SearchController:
+    """Controller for search operations with business logic."""
 
-    Business rules:
-    - Minimum query length should be 2 characters for performance
-    - Results ordered by relevance (most relevant first)
-    - Limit to 50 results by default to maintain <1s performance target
+    def __init__(self, repository: SearchRepositoryProtocol):
+        """Initialize search controller with repository.
 
-    Args:
-        db: Database session
-        repository: Search repository instance
-        query: Search query string
-        limit: Maximum number of results (default 50, max 100)
+        Args:
+            repository: Search repository instance
+        """
+        self.repository = repository
 
-    Returns:
-        SearchResponse with query, total count, and results
-    """
-    # Enforce maximum limit for performance
-    if limit > 100:
-        limit = 100
+    def search(self, db: Session, query: str, limit: int = 50) -> SearchResponse:
+        """Perform full-text search across tasks, notes, and projects.
 
-    # Perform search
-    results = repository.search_all(db, query, limit)
+        Business rules:
+        - Minimum query length should be 2 characters for performance
+        - Results ordered by relevance (most relevant first)
+        - Limit to 50 results by default to maintain <1s performance target
 
-    # Convert to response objects
-    search_items = [SearchResultItem(**item) for item in results]
+        Args:
+            db: Database session
+            query: Search query string
+            limit: Maximum number of results (default 50, max 100)
 
-    return SearchResponse(query=query, total_results=len(search_items), results=search_items)
+        Returns:
+            SearchResponse with query, total count, and results
+        """
+        # Enforce maximum limit for performance
+        if limit > 100:
+            limit = 100
+
+        # Perform search
+        results = self.repository.search_all(db, query, limit)
+
+        # Convert to response objects
+        search_items = [SearchResultItem(**item) for item in results]
+
+        return SearchResponse(query=query, total_results=len(search_items), results=search_items)

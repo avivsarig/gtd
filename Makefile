@@ -1,5 +1,3 @@
-# GTD Task Management Makefile
-
 DC := docker compose
 EXEC := $(DC) exec $(if $(shell [ -t 0 ] || echo 1),-T,)
 
@@ -69,3 +67,5 @@ test-be:
 	@$(EXEC) backend pytest tests/
 test-fe:
 	@$(EXEC) frontend npm test
+
+code: format lint typecheck test

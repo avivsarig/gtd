@@ -3,7 +3,7 @@
 from unittest.mock import Mock
 from uuid import uuid4
 
-from app.controllers import task_controller
+from app.controllers.task_controller import TaskController
 from app.models.task import Task
 from app.repositories.protocols import TaskRepositoryProtocol
 from app.schemas.task import TaskStatus, TaskUpdate
@@ -22,7 +22,9 @@ class TestUpdateTask:
         mock_repository.get_by_id.return_value = mock_task
         mock_repository.update.return_value = mock_task
 
-        task_controller.update_task(mock_db, mock_repository, task_id, update_data)
+        controller = TaskController(repository=mock_repository)
+
+        controller.update_task(mock_db, task_id, update_data)
 
         mock_repository.get_by_id.assert_called_once_with(mock_db, task_id)
         mock_repository.update.assert_called_once_with(mock_db, mock_task, update_data)
@@ -35,7 +37,9 @@ class TestUpdateTask:
         update_data = TaskUpdate(title="New title")
         mock_repository.get_by_id.return_value = None
 
-        created_task = task_controller.update_task(mock_db, mock_repository, task_id, update_data)
+        controller = TaskController(repository=mock_repository)
+
+        created_task = controller.update_task(mock_db, task_id, update_data)
 
         assert created_task is None
         # Should not call update if task not found
@@ -53,7 +57,9 @@ class TestUpdateTask:
         mock_repository.get_by_id.return_value = mock_task
         mock_repository.update.return_value = mock_task
 
-        task_controller.update_task(mock_db, mock_repository, task_id, update_data)
+        controller = TaskController(repository=mock_repository)
+
+        controller.update_task(mock_db, task_id, update_data)
 
         # Verify status was auto-set to waiting
         assert update_data.status == TaskStatus.WAITING
@@ -69,7 +75,9 @@ class TestUpdateTask:
         mock_repository.get_by_id.return_value = mock_task
         mock_repository.update.return_value = mock_task
 
-        task_controller.update_task(mock_db, mock_repository, task_id, update_data)
+        controller = TaskController(repository=mock_repository)
+
+        controller.update_task(mock_db, task_id, update_data)
 
         # Status should not be set
         assert update_data.status is None

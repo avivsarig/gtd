@@ -5,10 +5,9 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.controllers import project_controller
+from app.controllers.project_controller import ProjectController
 from app.db.database import get_db
-from app.dependencies import get_project_repository
-from app.repositories.protocols import ProjectRepositoryProtocol
+from app.dependencies import get_project_controller
 from app.schemas.project import ProjectCreate, ProjectResponse, ProjectUpdate, ProjectWithStats
 
 router = APIRouter(prefix="/projects", tags=["projects"])
@@ -18,7 +17,7 @@ router = APIRouter(prefix="/projects", tags=["projects"])
 def list_projects(
     with_stats: bool = Query(False, description="Include task statistics"),
     db: Session = Depends(get_db),
-    repository: ProjectRepositoryProtocol = Depends(get_project_repository),
+    controller: ProjectController = Depends(get_project_controller),
 ) -> list[ProjectResponse] | list[ProjectWithStats]:
     """
     Get all active projects.
@@ -27,8 +26,8 @@ def list_projects(
     Use ?with_stats=true to include task counts.
     """
     if with_stats:
-        return project_controller.list_projects_with_stats(db, repository)
-    return project_controller.list_projects(db, repository)
+        return controller.list_projects_with_stats(db)
+    return controller.list_projects(db)
 
 
 @router.get("/{project_id}")
@@ -36,7 +35,7 @@ def get_project(
     project_id: UUID,
     with_stats: bool = Query(False, description="Include task statistics"),
     db: Session = Depends(get_db),
-    repository: ProjectRepositoryProtocol = Depends(get_project_repository),
+    controller: ProjectController = Depends(get_project_controller),
 ) -> ProjectResponse | ProjectWithStats:
     """
     Get a single project by ID.
@@ -47,9 +46,9 @@ def get_project(
         404: Project not found or has been deleted
     """
     if with_stats:
-        project = project_controller.get_project_with_stats(db, repository, project_id)
+        project = controller.get_project_with_stats(db, project_id)
     else:
-        project = project_controller.get_project(db, repository, project_id)
+        project = controller.get_project(db, project_id)
 
     if project is None:
         raise HTTPException(
@@ -62,7 +61,7 @@ def get_project(
 def create_project(
     project_data: ProjectCreate,
     db: Session = Depends(get_db),
-    repository: ProjectRepositoryProtocol = Depends(get_project_repository),
+    controller: ProjectController = Depends(get_project_controller),
 ):
     """
     Create a new project.
@@ -70,7 +69,7 @@ def create_project(
     Business rules applied:
     - Sets initial last_activity_at to creation time
     """
-    return project_controller.create_project(db, repository, project_data)
+    return controller.create_project(db, project_data)
 
 
 @router.put("/{project_id}", response_model=ProjectResponse)
@@ -78,7 +77,7 @@ def update_project(
     project_id: UUID,
     project_data: ProjectUpdate,
     db: Session = Depends(get_db),
-    repository: ProjectRepositoryProtocol = Depends(get_project_repository),
+    controller: ProjectController = Depends(get_project_controller),
 ):
     """
     Update an existing project.
@@ -90,7 +89,7 @@ def update_project(
     Raises:
         404: Project not found or has been deleted
     """
-    project = project_controller.update_project(db, repository, project_id, project_data)
+    project = controller.update_project(db, project_id, project_data)
     if project is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=f"Project with id {project_id} not found"
@@ -102,7 +101,7 @@ def update_project(
 def delete_project(
     project_id: UUID,
     db: Session = Depends(get_db),
-    repository: ProjectRepositoryProtocol = Depends(get_project_repository),
+    controller: ProjectController = Depends(get_project_controller),
 ):
     """
     Delete (soft delete) a project.
@@ -113,7 +112,7 @@ def delete_project(
     Raises:
         404: Project not found or already deleted
     """
-    project = project_controller.delete_project(db, repository, project_id)
+    project = controller.delete_project(db, project_id)
     if project is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=f"Project with id {project_id} not found"
@@ -125,7 +124,7 @@ def delete_project(
 def complete_project(
     project_id: UUID,
     db: Session = Depends(get_db),
-    repository: ProjectRepositoryProtocol = Depends(get_project_repository),
+    controller: ProjectController = Depends(get_project_controller),
 ):
     """
     Mark a project as completed.
@@ -135,7 +134,7 @@ def complete_project(
     Raises:
         404: Project not found or has been deleted
     """
-    project = project_controller.complete_project(db, repository, project_id)
+    project = controller.complete_project(db, project_id)
     if project is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=f"Project with id {project_id} not found"

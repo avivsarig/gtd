@@ -2,122 +2,97 @@
 
 from uuid import UUID
 
-from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.core.base_controller import BaseController
+from app.models.context import Context
 from app.repositories.protocols import ContextRepositoryProtocol
 from app.schemas.context import ContextCreate, ContextUpdate
 
 
-def list_contexts(db: Session, repository: ContextRepositoryProtocol):
-    """
-    Get all contexts.
+class ContextController(BaseController[Context, ContextRepositoryProtocol]):
+    """Controller for Context entity with business logic."""
 
-    Returns contexts ordered by sort_order, then name for consistent UI display.
+    def list_contexts(self, db: Session):
+        """Get all contexts.
 
-    Args:
-        db: Database session
-        repository: Context repository instance
+        Returns contexts ordered by sort_order, then name for consistent UI display.
 
-    Returns:
-        List of all contexts
-    """
-    return repository.get_all(db)
+        Args:
+            db: Database session
 
+        Returns:
+            List of all contexts
+        """
+        return self.repository.get_all(db)
 
-def get_context(db: Session, repository: ContextRepositoryProtocol, context_id: UUID):
-    """
-    Get a single context by ID.
+    def get_context(self, db: Session, context_id: UUID):
+        """Get a single context by ID.
 
-    Args:
-        db: Database session
-        repository: Context repository instance
-        context_id: UUID of context to retrieve
+        Args:
+            db: Database session
+            context_id: UUID of context to retrieve
 
-    Returns:
-        Context if found, None otherwise
-    """
-    return repository.get_by_id(db, context_id)
+        Returns:
+            Context if found, None otherwise
+        """
+        return self.repository.get_by_id(db, context_id)
 
+    def create_context(self, db: Session, context_data: ContextCreate):
+        """Create a new context.
 
-def create_context(db: Session, repository: ContextRepositoryProtocol, context_data: ContextCreate):
-    """
-    Create a new context.
+        Business rules:
+        - Context names must be unique (enforced by database constraint)
 
-    Business rules:
-    - Context names must be unique (enforced by database constraint)
+        Args:
+            db: Database session
+            context_data: Context data from request
 
-    Args:
-        db: Database session
-        repository: Context repository instance
-        context_data: Context data from request
+        Returns:
+            Created context
 
-    Returns:
-        Created context
+        Raises:
+            HTTPException: If context name already exists
+        """
+        # Use base controller helper for uniqueness validation
+        self.validate_unique_name(db, context_data.name, "Context")
 
-    Raises:
-        HTTPException: If context name already exists
-    """
-    # Check if context name already exists
-    existing = repository.get_by_name(db, context_data.name)
-    if existing:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"Context with name '{context_data.name}' already exists",
-        )
+        return self.repository.create(db, context_data)
 
-    return repository.create(db, context_data)
+    def update_context(self, db: Session, context_id: UUID, context_data: ContextUpdate):
+        """Update an existing context.
 
+        Business rules:
+        - If name is being changed, ensure new name doesn't conflict
 
-def update_context(
-    db: Session,
-    repository: ContextRepositoryProtocol,
-    context_id: UUID,
-    context_data: ContextUpdate,
-):
-    """
-    Update an existing context.
+        Args:
+            db: Database session
+            context_id: UUID of context to update
+            context_data: Updated context data
 
-    Business rules:
-    - If name is being changed, ensure new name doesn't conflict
+        Returns:
+            Updated context if found, None otherwise
 
-    Args:
-        db: Database session
-        repository: Context repository instance
-        context_id: UUID of context to update
-        context_data: Updated context data
+        Raises:
+            HTTPException: If new name conflicts with existing context
+        """
+        # If name is being updated, check for conflicts
+        if context_data.name is not None:
+            self.validate_unique_name(db, context_data.name, "Context", exclude_id=context_id)
 
-    Returns:
-        Updated context if found, None otherwise
+        return self.repository.update_by_id(db, context_id, context_data)
 
-    Raises:
-        HTTPException: If new name conflicts with existing context
-    """
-    # If name is being updated, check for conflicts
-    if context_data.name is not None:
-        existing = repository.get_by_name(db, context_data.name)
-        if existing and existing.id != context_id:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail=f"Context with name '{context_data.name}' already exists",
-            )
+    def delete_context(self, db: Session, context_id: UUID):
+        """Soft-delete a context.
 
-    return repository.update_by_id(db, context_id, context_data)
+        Sets deleted_at timestamp instead of removing from database.
+        Task associations remain in the database for potential restoration.
 
+        Args:
+            db: Database session
+            context_id: UUID of context to delete
 
-def delete_context(db: Session, repository: ContextRepositoryProtocol, context_id: UUID):
-    """
-    Soft-delete a context.
-
-    Sets deleted_at timestamp instead of removing from database.
-    Task associations remain in the database for potential restoration.
-
-    Args:
-        db: Database session
-        repository: Context repository instance
-        context_id: UUID of context to delete
-
-    Returns:
-        Soft-deleted context if found, None otherwise
-    """
-    return repository.delete(db, context_id)
+        Returns:
+            Soft-deleted context if found, None otherwise
+        """
+        return self.repository.delete(db, context_id)

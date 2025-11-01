@@ -3,7 +3,7 @@
 from unittest.mock import Mock
 from uuid import uuid4
 
-from app.controllers import task_controller
+from app.controllers.task_controller import TaskController
 from app.models.task import Task
 from app.repositories.protocols import TaskRepositoryProtocol
 
@@ -20,7 +20,9 @@ class TestDeleteTask:
         mock_repository.get_by_id.return_value = mock_task
         mock_repository.soft_delete.return_value = mock_task
 
-        result = task_controller.delete_task(mock_db, mock_repository, task_id)
+        controller = TaskController(repository=mock_repository)
+
+        result = controller.delete_task(mock_db, task_id)
 
         mock_repository.get_by_id.assert_called_once_with(mock_db, task_id)
         mock_repository.soft_delete.assert_called_once_with(mock_db, mock_task)
@@ -33,7 +35,9 @@ class TestDeleteTask:
         task_id = uuid4()
         mock_repository.get_by_id.return_value = None
 
-        created_task = task_controller.delete_task(mock_db, mock_repository, task_id)
+        controller = TaskController(repository=mock_repository)
+
+        created_task = controller.delete_task(mock_db, task_id)
 
         assert created_task is None
         # Should not call soft_delete if task not found

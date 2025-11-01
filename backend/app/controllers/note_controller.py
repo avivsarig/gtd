@@ -4,112 +4,98 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
+from app.core.base_controller import BaseController
 from app.models.note import Note
 from app.repositories.protocols import NoteRepositoryProtocol
 from app.schemas.note import NoteCreate, NoteUpdate
 
 
-def list_notes(
-    db: Session, repository: NoteRepositoryProtocol, project_id: UUID | None = None
-) -> list[Note]:
-    """
-    Get list of all active (non-deleted) notes.
+class NoteController(BaseController[Note, NoteRepositoryProtocol]):
+    """Controller for Note entity with business logic."""
 
-    Business logic:
-    - Only return non-deleted notes
-    - Optionally filter by project
-    - Ordered by updated_at descending
+    def list_notes(self, db: Session, project_id: UUID | None = None) -> list[Note]:
+        """Get list of all active (non-deleted) notes.
 
-    Args:
-        db: Database session
-        repository: Note repository instance
-        project_id: Optional project UUID to filter by
+        Business logic:
+        - Only return non-deleted notes
+        - Optionally filter by project
+        - Ordered by updated_at descending
 
-    Returns:
-        List of Note objects
-    """
-    return repository.get_all(db, include_deleted=False, project_id=project_id)
+        Args:
+            db: Database session
+            project_id: Optional project UUID to filter by
 
+        Returns:
+            List of Note objects
+        """
+        return self.repository.get_all(db, include_deleted=False, project_id=project_id)
 
-def get_note(db: Session, repository: NoteRepositoryProtocol, note_id: UUID) -> Note | None:
-    """
-    Get a single note by ID.
+    def get_note(self, db: Session, note_id: UUID) -> Note | None:
+        """Get a single note by ID.
 
-    Args:
-        db: Database session
-        repository: Note repository instance
-        note_id: UUID of the note to retrieve
+        Args:
+            db: Database session
+            note_id: UUID of the note to retrieve
 
-    Returns:
-        Note object if found and not deleted, None otherwise
-    """
-    return repository.get_by_id(db, note_id)
+        Returns:
+            Note object if found and not deleted, None otherwise
+        """
+        return self.repository.get_by_id(db, note_id)
 
+    def create_note(self, db: Session, note_data: NoteCreate) -> Note:
+        """Create a new note.
 
-def create_note(db: Session, repository: NoteRepositoryProtocol, note_data: NoteCreate) -> Note:
-    """
-    Create a new note.
+        Business logic:
+        - Validate note data (handled by Pydantic)
+        - Set timestamps automatically
 
-    Business logic:
-    - Validate note data (handled by Pydantic)
-    - Set timestamps automatically
+        Args:
+            db: Database session
+            note_data: Note creation data
 
-    Args:
-        db: Database session
-        repository: Note repository instance
-        note_data: Note creation data
+        Returns:
+            Created Note object
+        """
+        return self.repository.create(db, note_data)
 
-    Returns:
-        Created Note object
-    """
-    return repository.create(db, note_data)
+    def update_note(self, db: Session, note_id: UUID, note_data: NoteUpdate) -> Note | None:
+        """Update an existing note.
 
+        Business logic:
+        - Only update non-deleted notes
+        - Update timestamp is automatically set
+        - Only update provided fields
 
-def update_note(
-    db: Session, repository: NoteRepositoryProtocol, note_id: UUID, note_data: NoteUpdate
-) -> Note | None:
-    """
-    Update an existing note.
+        Args:
+            db: Database session
+            note_id: UUID of the note to update
+            note_data: Update data
 
-    Business logic:
-    - Only update non-deleted notes
-    - Update timestamp is automatically set
-    - Only update provided fields
+        Returns:
+            Updated Note object if found, None otherwise
+        """
+        note = self.repository.get_by_id(db, note_id)
+        if not note:
+            return None
 
-    Args:
-        db: Database session
-        repository: Note repository instance
-        note_id: UUID of the note to update
-        note_data: Update data
+        return self.repository.update(db, note, note_data)
 
-    Returns:
-        Updated Note object if found, None otherwise
-    """
-    note = repository.get_by_id(db, note_id)
-    if not note:
-        return None
+    def delete_note(self, db: Session, note_id: UUID) -> Note | None:
+        """Soft delete a note.
 
-    return repository.update(db, note, note_data)
+        Business logic:
+        - Only delete non-deleted notes
+        - Soft delete sets deleted_at timestamp
 
+        Args:
+            db: Database session
+            note_id: UUID of the note to delete
 
-def delete_note(db: Session, repository: NoteRepositoryProtocol, note_id: UUID) -> Note | None:
-    """
-    Soft delete a note.
+        Returns:
+            Deleted Note object if found, None otherwise
+        """
+        note = self.repository.get_by_id(db, note_id)
+        if not note:
+            return None
 
-    Business logic:
-    - Only delete non-deleted notes
-    - Soft delete sets deleted_at timestamp
-
-    Args:
-        db: Database session
-        repository: Note repository instance
-        note_id: UUID of the note to delete
-
-    Returns:
-        Deleted Note object if found, None otherwise
-    """
-    note = repository.get_by_id(db, note_id)
-    if not note:
-        return None
-
-    return repository.soft_delete(db, note)
+        return self.repository.soft_delete(db, note)

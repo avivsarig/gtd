@@ -3,7 +3,7 @@
 from unittest.mock import Mock
 from uuid import uuid4
 
-from app.controllers import task_controller
+from app.controllers.task_controller import TaskController
 from app.models.task import Task
 from app.repositories.protocols import TaskRepositoryProtocol
 from app.schemas.task import TaskStatus
@@ -34,9 +34,8 @@ class TestBulkUpdateStatus:
 
         mock_repository.get_by_id.side_effect = get_by_id_side_effect
 
-        updated_tasks = task_controller.bulk_update_status(
-            mock_db, mock_repository, task_ids, TaskStatus.WAITING
-        )
+        controller = TaskController(repository=mock_repository)
+        updated_tasks = controller.bulk_update_status(mock_db, task_ids, TaskStatus.WAITING)
 
         assert len(updated_tasks) == 3
         assert mock_task1.status == TaskStatus.WAITING.value
@@ -65,8 +64,9 @@ class TestBulkUpdateStatus:
 
         mock_repository.get_by_id.side_effect = get_by_id_side_effect
 
-        updated_tasks = task_controller.bulk_update_status(
-            mock_db, mock_repository, [task_id1, task_id2, task_id3], TaskStatus.SOMEDAY
+        controller = TaskController(repository=mock_repository)
+        updated_tasks = controller.bulk_update_status(
+            mock_db, [task_id1, task_id2, task_id3], TaskStatus.SOMEDAY
         )
 
         # Should only return 2 tasks (1 and 3)
@@ -79,9 +79,8 @@ class TestBulkUpdateStatus:
         mock_db = Mock()
         mock_repository = Mock(spec=TaskRepositoryProtocol)
 
-        updated_tasks = task_controller.bulk_update_status(
-            mock_db, mock_repository, [], TaskStatus.NEXT
-        )
+        controller = TaskController(repository=mock_repository)
+        updated_tasks = controller.bulk_update_status(mock_db, [], TaskStatus.NEXT)
 
         assert len(updated_tasks) == 0
         mock_db.commit.assert_called_once()

@@ -128,7 +128,8 @@
 15. **Inbox.tsx refactoring** - Reduced from 255 to 159 lines (38% reduction)
    - Created `useInboxKeyboardNavigation` hook - separated keyboard handling from business logic
    - Created `InboxEmptyState`, `InboxErrorState`, `InboxItemDisplay` components - improved readability
-16.  **Dependency injection with repository protocols** (testability, SOLID compliance)
+16. **Dependency injection with repository protocols** (testability, SOLID compliance)
+17. **Class-based controllers & DI container** - All 6 controllers converted to classes (TaskController, NoteController, ProjectController, ContextController, InboxController, SearchController)
 
 ### 🔄 High Priority (Critical/Quick Win)
 - Currently none
@@ -137,7 +138,6 @@
 - Introduce a maximum line count per file
 
 ### 🔄 Low Priority (Polish)
-- Converting controllers to classes, search repository refactor, advanced DI containers
 - Refactor Tailwind with cn() utility (maintainability)
 
 ---

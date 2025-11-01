@@ -3,7 +3,7 @@
 from unittest.mock import Mock
 from uuid import uuid4
 
-from app.controllers import task_controller
+from app.controllers.task_controller import TaskController
 from app.models.task import Task
 from app.repositories.protocols import TaskRepositoryProtocol
 
@@ -19,7 +19,9 @@ class TestCompleteTask:
         mock_task = Mock(spec=Task, id=task_id, completed_at=None)
         mock_repository.get_by_id.return_value = mock_task
 
-        task_controller.complete_task(mock_db, mock_repository, task_id)
+        controller = TaskController(repository=mock_repository)
+
+        controller.complete_task(mock_db, task_id)
 
         assert mock_task.completed_at is not None
         mock_db.commit.assert_called_once()
@@ -32,7 +34,9 @@ class TestCompleteTask:
         task_id = uuid4()
         mock_repository.get_by_id.return_value = None
 
-        created_task = task_controller.complete_task(mock_db, mock_repository, task_id)
+        controller = TaskController(repository=mock_repository)
+
+        created_task = controller.complete_task(mock_db, task_id)
 
         assert created_task is None
         mock_db.commit.assert_not_called()

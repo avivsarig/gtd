@@ -6,7 +6,7 @@ from uuid import uuid4
 from fastapi import HTTPException
 from pytest import raises
 
-from app.controllers import context_controller
+from app.controllers.context_controller import ContextController
 from app.models.context import Context
 from app.repositories.protocols import ContextRepositoryProtocol
 from app.schemas.context import ContextCreate, ContextUpdate
@@ -25,7 +25,9 @@ class TestListContexts:
         ]
         mock_repository.get_all.return_value = mock_contexts
 
-        result = context_controller.list_contexts(mock_db, mock_repository)
+        controller = ContextController(repository=mock_repository)
+
+        result = controller.list_contexts(mock_db)
 
         mock_repository.get_all.assert_called_once_with(mock_db)
         assert result == mock_contexts
@@ -37,7 +39,9 @@ class TestListContexts:
         expected_contexts = []
         mock_repository.get_all.return_value = expected_contexts
 
-        result = context_controller.list_contexts(mock_db, mock_repository)
+        controller = ContextController(repository=mock_repository)
+
+        result = controller.list_contexts(mock_db)
 
         assert result == expected_contexts
 
@@ -53,7 +57,9 @@ class TestGetContext:
         mock_context = Mock(spec=Context, id=str(context_id), name="@home")
         mock_repository.get_by_id.return_value = mock_context
 
-        result = context_controller.get_context(mock_db, mock_repository, context_id)
+        controller = ContextController(repository=mock_repository)
+
+        result = controller.get_context(mock_db, context_id)
 
         mock_repository.get_by_id.assert_called_once_with(mock_db, context_id)
         assert result == mock_context
@@ -65,7 +71,9 @@ class TestGetContext:
         context_id = uuid4()
         mock_repository.get_by_id.return_value = None
 
-        result = context_controller.get_context(mock_db, mock_repository, context_id)
+        controller = ContextController(repository=mock_repository)
+
+        result = controller.get_context(mock_db, context_id)
 
         assert result is None
 
@@ -82,7 +90,9 @@ class TestCreateContext:
         mock_repository.get_by_name.return_value = None
         mock_repository.create.return_value = mock_context
 
-        result = context_controller.create_context(mock_db, mock_repository, context_data)
+        controller = ContextController(repository=mock_repository)
+
+        result = controller.create_context(mock_db, context_data)
 
         mock_repository.create.assert_called_once_with(mock_db, context_data)
         assert result == mock_context
@@ -96,7 +106,9 @@ class TestCreateContext:
         mock_repository.get_by_name.return_value = existing_context
 
         with raises(HTTPException) as exc_info:
-            context_controller.create_context(mock_db, mock_repository, context_data)
+            controller = ContextController(repository=mock_repository)
+
+            controller.create_context(mock_db, context_data)
 
         assert exc_info.value.status_code == 409
         assert "@home" in exc_info.value.detail
@@ -114,9 +126,8 @@ class TestUpdateContext:
         mock_context = Mock(spec=Context)
         mock_repository.update_by_id.return_value = mock_context
 
-        result = context_controller.update_context(
-            mock_db, mock_repository, context_id, context_data
-        )
+        controller = ContextController(repository=mock_repository)
+        result = controller.update_context(mock_db, context_id, context_data)
 
         mock_repository.update_by_id.assert_called_once_with(mock_db, context_id, context_data)
         assert result == mock_context
@@ -132,7 +143,9 @@ class TestUpdateContext:
         mock_repository.get_by_name.return_value = existing_context
 
         with raises(HTTPException) as exc_info:
-            context_controller.update_context(mock_db, mock_repository, context_id, context_data)
+            controller = ContextController(repository=mock_repository)
+
+            controller.update_context(mock_db, context_id, context_data)
 
         assert exc_info.value.status_code == 409
         assert "@work" in exc_info.value.detail
@@ -148,9 +161,8 @@ class TestUpdateContext:
         mock_repository.get_by_name.return_value = existing_context
         mock_repository.update_by_id.return_value = updated_context
 
-        result = context_controller.update_context(
-            mock_db, mock_repository, context_id, context_data
-        )
+        controller = ContextController(repository=mock_repository)
+        result = controller.update_context(mock_db, context_id, context_data)
 
         mock_repository.update_by_id.assert_called_once_with(mock_db, context_id, context_data)
         assert result == updated_context
@@ -167,7 +179,9 @@ class TestDeleteContext:
         mock_context = Mock(spec=Context, id=str(context_id), name="@home")
         mock_repository.delete.return_value = mock_context
 
-        result = context_controller.delete_context(mock_db, mock_repository, context_id)
+        controller = ContextController(repository=mock_repository)
+
+        result = controller.delete_context(mock_db, context_id)
 
         mock_repository.delete.assert_called_once_with(mock_db, context_id)
         assert result == mock_context
@@ -179,6 +193,8 @@ class TestDeleteContext:
         context_id = uuid4()
         mock_repository.delete.return_value = None
 
-        result = context_controller.delete_context(mock_db, mock_repository, context_id)
+        controller = ContextController(repository=mock_repository)
+
+        result = controller.delete_context(mock_db, context_id)
 
         assert result is None
