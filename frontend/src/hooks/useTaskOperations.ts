@@ -2,13 +2,13 @@
  * useTaskOperations Hook
  *
  * Encapsulates all task-related business logic and operations.
- * Handles task CRUD operations, status updates, completion toggles,
- * and project/context assignments.
+ * Now uses useEntityOperations base hook for common CRUD patterns,
+ * plus task-specific operations (status, completion, project, context).
  *
  * Single Responsibility: Task domain operations only
  */
 
-import { useState, useCallback } from "react"
+import { useCallback } from "react"
 import {
   createTask,
   updateTask,
@@ -20,7 +20,7 @@ import {
   type CreateTaskInput,
 } from "@/lib/api"
 import { MESSAGES } from "@/lib/messages"
-import { notifyError } from "@/lib/errorHandling"
+import { useEntityOperations, type EntityAPI } from "./useEntityOperations"
 
 export interface UseTaskOperationsOptions {
   /** Callback to reload tasks after operations */
@@ -73,61 +73,23 @@ export function useTaskOperations(
 ): UseTaskOperationsResult {
   const { onReload, onUpdate } = options
 
-  const [showTaskForm, setShowTaskForm] = useState(false)
-  const [editingTask, setEditingTask] = useState<Task | null>(null)
+  const api: EntityAPI<Task, CreateTaskInput> = {
+    create: createTask,
+    update: updateTask,
+    delete: deleteTask,
+  }
 
-  const handleCreate = useCallback(
-    async (data: CreateTaskInput) => {
-      try {
-        const newTask = await createTask(data)
-        if (onUpdate) {
-          onUpdate((prev) => [newTask, ...prev])
-        } else {
-          await onReload()
-        }
-        setShowTaskForm(false)
-      } catch (err) {
-        console.error(MESSAGES.errors.console.CREATE_TASK_FAILED, err)
-      }
-    },
-    [onReload, onUpdate],
-  )
-
-  const handleUpdate = useCallback(
-    async (data: CreateTaskInput) => {
-      if (!editingTask) return
-
-      try {
-        const updatedTask = await updateTask(editingTask.id, data)
-        if (onUpdate) {
-          onUpdate((prev) =>
-            prev.map((task) =>
-              task.id === editingTask.id ? updatedTask : task,
-            ),
-          )
-        } else {
-          await onReload()
-        }
-        setEditingTask(null)
-        setShowTaskForm(false)
-      } catch (err) {
-        console.error(MESSAGES.errors.console.UPDATE_TASK_FAILED, err)
-      }
-    },
-    [editingTask, onReload, onUpdate],
-  )
-
-  const handleEdit = useCallback((task: Task) => {
-    setEditingTask(task)
-    setShowTaskForm(true)
-  }, [])
+  const base = useEntityOperations(api, {
+    onReload,
+    onUpdate,
+    entityName: "task",
+  })
 
   const handleUpdateStatus = useCallback(
     async (taskId: string, status: TaskStatus) => {
       try {
         const updatedTask = await updateTask(taskId, { status })
 
-        // Optimistic update if callback provided
         if (onUpdate) {
           onUpdate((prev) =>
             prev.map((task) => (task.id === taskId ? updatedTask : task)),
@@ -137,7 +99,6 @@ export function useTaskOperations(
         }
       } catch (err) {
         console.error(MESSAGES.errors.console.UPDATE_TASK_STATUS_FAILED, err)
-        // Reload on error to ensure UI is in sync
         await onReload()
       }
     },
@@ -151,7 +112,6 @@ export function useTaskOperations(
           ? await uncompleteTask(task.id)
           : await completeTask(task.id)
 
-        // Optimistic update if callback provided
         if (onUpdate) {
           onUpdate((prev) =>
             prev.map((t) => (t.id === task.id ? updatedTask : t)),
@@ -210,40 +170,17 @@ export function useTaskOperations(
     [onReload, onUpdate],
   )
 
-  const handleDelete = useCallback(
-    async (taskId: string) => {
-      try {
-        await deleteTask(taskId)
-
-        if (onUpdate) {
-          onUpdate((prev) => prev.filter((task) => task.id !== taskId))
-        } else {
-          await onReload()
-        }
-      } catch (err) {
-        console.error(MESSAGES.errors.console.DELETE_TASK_FAILED, err)
-        notifyError(MESSAGES.errors.DELETE_TASK_FAILED)
-      }
-    },
-    [onReload, onUpdate],
-  )
-
-  const handleCancelForm = useCallback(() => {
-    setEditingTask(null)
-    setShowTaskForm(false)
-  }, [])
-
   return {
-    showTaskForm,
-    editingTask,
-    handleCreate,
-    handleUpdate,
-    handleEdit,
+    showTaskForm: base.showForm,
+    editingTask: base.editingEntity,
+    handleCreate: base.handleCreate,
+    handleUpdate: base.handleUpdate,
+    handleEdit: base.handleEdit,
     handleUpdateStatus,
     handleToggleComplete,
     handleUpdateProject,
     handleUpdateContext,
-    handleDelete,
-    handleCancelForm,
+    handleDelete: base.handleDelete,
+    handleCancelForm: base.handleCancelForm,
   }
 }

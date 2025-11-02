@@ -188,6 +188,62 @@ export async function createProject(
   return response.json()
 }
 
+export interface UpdateProjectInput {
+  name?: string
+  outcome_statement?: string
+  status?: ProjectStatus
+  parent_project_id?: string | null
+}
+
+export async function getProject(
+  id: string,
+  withStats = false,
+): Promise<Project> {
+  const url = withStats
+    ? `${API_BASE_URL}/api/v1/projects/${id}?with_stats=true`
+    : `${API_BASE_URL}/api/v1/projects/${id}`
+  const response = await fetch(url)
+  if (!response.ok) {
+    throw new Error(MESSAGES.api.FETCH_PROJECT_FAILED)
+  }
+  return response.json()
+}
+
+export async function updateProject(
+  id: string,
+  input: UpdateProjectInput,
+): Promise<Project> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/projects/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  })
+  if (!response.ok) {
+    throw new Error(MESSAGES.api.UPDATE_PROJECT_FAILED)
+  }
+  return response.json()
+}
+
+export async function deleteProject(id: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/projects/${id}`, {
+    method: "DELETE",
+  })
+  if (!response.ok) {
+    throw new Error(MESSAGES.api.DELETE_PROJECT_FAILED)
+  }
+}
+
+export async function completeProject(id: string): Promise<Project> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/projects/${id}/complete`,
+    { method: "POST" },
+  )
+  if (!response.ok) {
+    throw new Error(MESSAGES.api.COMPLETE_PROJECT_FAILED)
+  }
+  return response.json()
+}
+
 /**
  * Notes
  */

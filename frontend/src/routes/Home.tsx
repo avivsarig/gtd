@@ -22,6 +22,8 @@ import { InboxSection } from "@/components/InboxSection"
 import { TasksSection } from "@/components/TasksSection"
 import { NotesSection } from "@/components/NotesSection"
 import { ContextsSection } from "@/components/ContextsSection"
+import { ProjectsSection } from "@/components/ProjectsSection"
+import { ProjectFormModal } from "@/components/ProjectFormModal"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   getTasks,
@@ -36,6 +38,7 @@ import { useTaskOperations } from "@/hooks/useTaskOperations"
 import { useNoteOperations } from "@/hooks/useNoteOperations"
 import { useInboxOperations } from "@/hooks/useInboxOperations"
 import { useContextOperations } from "@/hooks/useContextOperations"
+import { useProjectOperations } from "@/hooks/useProjectOperations"
 import { useModalState } from "@/hooks/useModalState"
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts"
 
@@ -49,9 +52,12 @@ export function Home() {
     errorContext: MESSAGES.errors.console.LOAD_TASKS_FAILED,
   })
 
-  const { data: projects } = useResourceLoader(() => getProjects(true), {
-    errorContext: MESSAGES.errors.console.LOAD_PROJECTS_FAILED,
-  })
+  const { data: projects, reload: loadProjects } = useResourceLoader(
+    () => getProjects(true),
+    {
+      errorContext: MESSAGES.errors.console.LOAD_PROJECTS_FAILED,
+    },
+  )
 
   const { data: notes, reload: loadNotes } = useResourceLoader(getNotes, {
     errorContext: MESSAGES.errors.console.LOAD_NOTES_FAILED,
@@ -91,6 +97,10 @@ export function Home() {
 
   const contextOps = useContextOperations({
     onReload: loadContexts,
+  })
+
+  const projectOps = useProjectOperations({
+    onReload: loadProjects,
   })
 
   // Modal state management
@@ -158,18 +168,13 @@ export function Home() {
 
         {/* Bottom Row: Projects + Contexts */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          {/* Projects Placeholder */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Projects</CardTitle>
-              <p className="text-muted-foreground text-sm">Coming soon</p>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground py-8 text-center">
-                Projects view will show active projects and their progress
-              </p>
-            </CardContent>
-          </Card>
+          <ProjectsSection
+            projects={projects ?? []}
+            onEdit={projectOps.handleEdit}
+            onCreate={projectOps.openProjectForm}
+            onDelete={projectOps.handleDelete}
+            onComplete={projectOps.handleComplete}
+          />
 
           <ContextsSection
             contexts={contexts ?? []}
@@ -248,6 +253,21 @@ export function Home() {
           contextOps.editingContext
             ? contextOps.handleUpdate
             : contextOps.handleCreate
+        }
+      />
+
+      {/* Project Form Modal */}
+      <ProjectFormModal
+        open={projectOps.showProjectForm}
+        onOpenChange={(open) => {
+          if (!open) projectOps.handleCancelForm()
+        }}
+        project={projectOps.editingProject}
+        projects={projects ?? []}
+        onSubmit={
+          projectOps.editingProject
+            ? projectOps.handleUpdate
+            : projectOps.handleCreate
         }
       />
     </div>

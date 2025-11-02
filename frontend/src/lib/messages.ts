@@ -21,6 +21,7 @@ export const MESSAGES = {
 
     // Entity-specific errors
     DELETE_TASK_FAILED: "Failed to delete task",
+    DELETE_PROJECT_FAILED: "Failed to delete project",
     UPDATE_CONTEXT_FAILED: "Failed to update context",
     DELETE_CONTEXT_FAILED: "Failed to delete context",
     CAPTURE_FAILED: "Failed to capture",
@@ -44,6 +45,10 @@ export const MESSAGES = {
       CREATE_NOTE_FAILED: "Failed to create note:",
       UPDATE_NOTE_FAILED: "Failed to update note:",
       DELETE_NOTE_FAILED: "Failed to delete note:",
+      CREATE_PROJECT_FAILED: "Failed to create project:",
+      UPDATE_PROJECT_FAILED: "Failed to update project:",
+      DELETE_PROJECT_FAILED: "Failed to delete project:",
+      COMPLETE_PROJECT_FAILED: "Failed to complete project:",
       CREATE_INBOX_FAILED: "Failed to create inbox item:",
       UPDATE_INBOX_FAILED: "Failed to update inbox item:",
       UPDATE_CONTEXT_FAILED: "Failed to update context:",
@@ -56,6 +61,10 @@ export const MESSAGES = {
     CONVERTED_TO_TASK: "✓ Converted to task!",
     CONVERTED_TO_NOTE: "✓ Converted to note!",
     CONVERTED_TO_PROJECT: "✓ Converted to project!",
+    PROJECT_CREATED: "✓ Project created!",
+    PROJECT_UPDATED: "✓ Project updated!",
+    PROJECT_DELETED: "✓ Project deleted!",
+    PROJECT_COMPLETED: "✓ Project completed!",
   },
 
   // Confirmation messages
@@ -99,7 +108,11 @@ export const MESSAGES = {
 
     // Project errors
     FETCH_PROJECTS_FAILED: "Failed to fetch projects",
+    FETCH_PROJECT_FAILED: "Failed to fetch project",
     CREATE_PROJECT_FAILED: "Failed to create project",
+    UPDATE_PROJECT_FAILED: "Failed to update project",
+    DELETE_PROJECT_FAILED: "Failed to delete project",
+    COMPLETE_PROJECT_FAILED: "Failed to complete project",
 
     // Note errors
     FETCH_NOTES_FAILED: "Failed to fetch notes",

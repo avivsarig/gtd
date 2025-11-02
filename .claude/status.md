@@ -3,9 +3,10 @@
 ---
 
 **Test Coverage:**
-- Backend: 251 tests passing (150 unit + 101 integration)
-- Frontend: 539 tests passing (21 test files)
-- Total: **790 tests passing**
+- Backend: 268 tests passing (183 unit + 85 integration) - **~95% coverage** (1150/1203 statements)
+- Frontend: 576 tests passing (23 test files) - **~95% coverage**
+- Total: **844 tests passing**
+- E2E Tests: None (critical gap identified)
 
 ---
 
@@ -15,7 +16,7 @@
 - PostgreSQL database with SQLAlchemy ORM
 - 10 database migrations applied (tasks, contexts, notes, projects, inbox, full-text search, triggers, context soft-delete)
 - Docker containerization with docker-compose
-- 251 backend tests passing (150 unit + 101 integration)
+- 268 backend tests passing (183 unit + 85 integration) at 96% coverage
 - **Code Quality Improvements:**
   - BaseRepository pattern - DRY compliance across all repositories
   - Mixins pattern (SoftDeletableMixin, SearchableMixin) - eliminated model duplication
@@ -25,6 +26,8 @@
   - Centralized UUID utilities module - app.core.uuid_utils with generate_uuid() function
   - BaseSelect UI component - eliminated duplication across select components
   - **Pydantic base schemas** - ResponseBase/SoftDeletableResponseBase reduce schema duplication across 4 schemas
+  - **useEntityOperations base hook** - Generic CRUD operations hook eliminates ~400 lines of duplication across 4 entity hooks (Task/Note/Context/Project) - 75% code reduction
+  - **Progress component** - Reusable progress bar with variants for statistics visualization
 
 **APIs Implemented:**
 - Tasks: Full CRUD + status management + completion + bulk updates + filtering
@@ -39,7 +42,7 @@
 - Dark mode by default
 - Routing configured
 - API client with full type safety
-- 539 frontend tests passing (Vitest + React Testing Library, 21 test files)
+- 576 frontend tests passing (Vitest + React Testing Library, 23 test files) at 94% coverage
 - **Unified EntityModal system** - configuration-driven modals for all entity types
 
 **UI Components:**
@@ -51,10 +54,11 @@
 - Task completion checkbox with visual feedback
 - Project assignment dropdown
 - Notes list with expand/collapse
-- **Edit Modals** - TaskFormModal, InboxFormModal, NoteFormModal, ContextFormModal (unified pattern)
+- **Edit Modals** - TaskFormModal, InboxFormModal, NoteFormModal, ContextFormModal, ProjectFormModal (unified EntityModal pattern)
 - ContextManager and ContextSelect components
 - **SearchBar component** - full-text search with debouncing, type filtering, keyboard navigation
 - **BaseSelect component** - reusable select with CVA variants (default/status/project/context)
+- **Projects Dashboard** - ProjectsSection, ProjectsList, ProjectFormModal with statistics, progress bars, status indicators, and complete actions
 
 ### Development Tooling
 - Makefile with 20+ commands
@@ -72,7 +76,7 @@
 - **US-1.00** (Universal Inbox): Backend + UniversalCapture component + Inbox processing UI
 - **US-1.01** (Quick capture): Backend + Frontend working
 - **US-1.02** (Notes): Full CRUD backend + UI with markdown support
-- **US-1.05** (Projects): Backend + Frontend with assignment UI
+- **US-1.05** (Projects): Full CRUD UI + assignment + statistics + completion + progress visualization
 - **US-1.06** (Move between lists): Status management + UI with filter tabs
 - **US-1.08** (Search): Backend FTS API + SearchBar UI component with keyboard navigation
 
@@ -102,7 +106,7 @@
 | FR-1.05 | Bulk Operations | 🟡 50% | Backend API - no UI |
 | FR-1.06 | Dependencies | 🟡 40% | DB field + auto-waiting |
 | FR-1.07-09 | Notes | 🟢 95% | Full CRUD + markdown + project links |
-| FR-1.10-13 | Projects | 🟢 90% | API + assignment UI - missing dashboard |
+| FR-1.10-13 | Projects | 🟢 100% | Full CRUD UI + statistics + progress + completion |
 | FR-1.14 | Search | 🟢 95% | FTS API + SearchBar UI with debouncing |
 | FR-1.15-17 | Filtering | 🟡 75% | Backend + status tabs - missing context/project filters |
 | FR-1.18-20 | Review/Planning | 🔴 0% | Not started |
@@ -120,8 +124,7 @@
 
 ### Medium Priority (Polish Existing Features)
 5. **Calendar view** - Date fields exist, no scheduling UI
-6. **Project dashboard** - Can assign tasks, no project detail view
-7. **Archive view** - Tasks archived but no dedicated view
+6. **Archive view** - Tasks archived but no dedicated view
 8. **Saved filters** - Backend supports complex filtering, can't save combinations
 9. **Bulk operations UI** - API ready, no multi-select UI
 
