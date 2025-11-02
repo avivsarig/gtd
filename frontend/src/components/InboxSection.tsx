@@ -11,13 +11,13 @@ import { ItemCard } from "@/components/ItemCard"
 import { FileText, CheckSquare } from "lucide-react"
 import { MESSAGES } from "@/lib/messages"
 import { type InboxItem } from "@/lib/api"
-import { notifyInfo } from "@/lib/errorHandling"
 
 export interface InboxSectionProps {
   inboxItems: InboxItem[]
   processingId: string | null
   onConvertToTask: (item: InboxItem) => void
   onConvertToNote: (item: InboxItem) => void
+  onEdit: (item: InboxItem) => void
   onDelete: (id: string) => void
 }
 
@@ -26,6 +26,7 @@ export function InboxSection({
   processingId,
   onConvertToTask,
   onConvertToNote,
+  onEdit,
   onDelete,
 }: InboxSectionProps) {
   return (
@@ -53,9 +54,7 @@ export function InboxSection({
             {inboxItems.map((item) => (
               <ItemCard
                 key={item.id}
-                onEdit={() => {
-                  notifyInfo(MESSAGES.info.COMING_SOON)
-                }}
+                onEdit={() => onEdit(item)}
                 onDelete={() => onDelete(item.id)}
                 deleteConfirmMessage={MESSAGES.confirmations.DELETE_INBOX_ITEM}
                 actions={

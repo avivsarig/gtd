@@ -7,10 +7,12 @@
  * Single Responsibility: Context domain operations only
  */
 
-import { useCallback } from "react"
+import { useState, useCallback } from "react"
 import {
   createContext,
+  updateContext,
   deleteContext,
+  type Context,
   type CreateContextInput,
 } from "@/lib/api"
 import { MESSAGES } from "@/lib/messages"
@@ -22,8 +24,13 @@ export interface UseContextOperationsOptions {
 }
 
 export interface UseContextOperationsResult {
+  showContextForm: boolean
+  editingContext: Context | null
   handleCreate: (data: CreateContextInput) => Promise<void>
+  handleUpdate: (data: CreateContextInput) => Promise<void>
+  handleEdit: (context: Context) => void
   handleDelete: (contextId: string) => Promise<void>
+  handleCancelForm: () => void
 }
 
 /**
@@ -48,17 +55,43 @@ export function useContextOperations(
 ): UseContextOperationsResult {
   const { onReload } = options
 
+  const [showContextForm, setShowContextForm] = useState(false)
+  const [editingContext, setEditingContext] = useState<Context | null>(null)
+
   const handleCreate = useCallback(
     async (data: CreateContextInput) => {
       try {
         await createContext(data)
         await onReload()
+        setShowContextForm(false)
       } catch (err) {
         throw err
       }
     },
     [onReload],
   )
+
+  const handleUpdate = useCallback(
+    async (data: CreateContextInput) => {
+      if (!editingContext) return
+
+      try {
+        await updateContext(editingContext.id, data)
+        await onReload()
+        setEditingContext(null)
+        setShowContextForm(false)
+      } catch (err) {
+        console.error(MESSAGES.errors.console.UPDATE_CONTEXT_FAILED, err)
+        notifyError(MESSAGES.errors.UPDATE_CONTEXT_FAILED)
+      }
+    },
+    [editingContext, onReload],
+  )
+
+  const handleEdit = useCallback((context: Context) => {
+    setEditingContext(context)
+    setShowContextForm(true)
+  }, [])
 
   const handleDelete = useCallback(
     async (contextId: string) => {
@@ -73,8 +106,18 @@ export function useContextOperations(
     [onReload],
   )
 
+  const handleCancelForm = useCallback(() => {
+    setEditingContext(null)
+    setShowContextForm(false)
+  }, [])
+
   return {
+    showContextForm,
+    editingContext,
     handleCreate,
+    handleUpdate,
+    handleEdit,
     handleDelete,
+    handleCancelForm,
   }
 }

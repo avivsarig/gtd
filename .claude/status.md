@@ -4,8 +4,8 @@
 
 **Test Coverage:**
 - Backend: 251 tests passing (150 unit + 101 integration)
-- Frontend: 535 tests passing (21 test files)
-- Total: **786 tests passing**
+- Frontend: 539 tests passing (21 test files)
+- Total: **790 tests passing**
 
 ---
 
@@ -39,7 +39,8 @@
 - Dark mode by default
 - Routing configured
 - API client with full type safety
-- 535 frontend tests passing (Vitest + React Testing Library, 21 test files)
+- 539 frontend tests passing (Vitest + React Testing Library, 21 test files)
+- **Unified EntityModal system** - configuration-driven modals for all entity types
 
 **UI Components:**
 - Home page with task list and notes
@@ -50,7 +51,7 @@
 - Task completion checkbox with visual feedback
 - Project assignment dropdown
 - Notes list with expand/collapse
-- Note creation and editing form
+- **Edit Modals** - TaskFormModal, InboxFormModal, NoteFormModal, ContextFormModal (unified pattern)
 - ContextManager and ContextSelect components
 - **SearchBar component** - full-text search with debouncing, type filtering, keyboard navigation
 - **BaseSelect component** - reusable select with CVA variants (default/status/project/context)

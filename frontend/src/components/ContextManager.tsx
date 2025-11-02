@@ -22,12 +22,14 @@ import { Input } from "@/components/ui/input"
 
 interface ContextManagerProps {
   contexts: Context[]
+  onEdit: (context: Context) => void
   onDelete: (id: string) => void
   onCreate: (data: CreateContextInput) => Promise<void>
 }
 
 export function ContextManager({
   contexts,
+  onEdit,
   onDelete,
   onCreate,
 }: ContextManagerProps) {
@@ -179,6 +181,7 @@ export function ContextManager({
           {contexts.map((context) => (
             <ItemCard
               key={context.id}
+              onEdit={() => onEdit(context)}
               onDelete={() => onDelete(context.id)}
               deleteConfirmMessage={MESSAGES.confirmations.DELETE_CONTEXT(
                 context.name,

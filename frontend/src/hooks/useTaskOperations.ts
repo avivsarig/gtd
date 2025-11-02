@@ -8,14 +8,16 @@
  * Single Responsibility: Task domain operations only
  */
 
-import { useCallback } from "react"
+import { useState, useCallback } from "react"
 import {
+  createTask,
   updateTask,
   completeTask,
   uncompleteTask,
   deleteTask,
   type Task,
   type TaskStatus,
+  type CreateTaskInput,
 } from "@/lib/api"
 import { MESSAGES } from "@/lib/messages"
 import { notifyError } from "@/lib/errorHandling"
@@ -28,6 +30,11 @@ export interface UseTaskOperationsOptions {
 }
 
 export interface UseTaskOperationsResult {
+  showTaskForm: boolean
+  editingTask: Task | null
+  handleCreate: (data: CreateTaskInput) => Promise<void>
+  handleUpdate: (data: CreateTaskInput) => Promise<void>
+  handleEdit: (task: Task) => void
   handleUpdateStatus: (taskId: string, status: TaskStatus) => Promise<void>
   handleToggleComplete: (task: Task) => Promise<void>
   handleUpdateProject: (
@@ -39,6 +46,7 @@ export interface UseTaskOperationsResult {
     contextId: string | null,
   ) => Promise<void>
   handleDelete: (taskId: string) => Promise<void>
+  handleCancelForm: () => void
 }
 
 /**
@@ -64,6 +72,55 @@ export function useTaskOperations(
   options: UseTaskOperationsOptions,
 ): UseTaskOperationsResult {
   const { onReload, onUpdate } = options
+
+  const [showTaskForm, setShowTaskForm] = useState(false)
+  const [editingTask, setEditingTask] = useState<Task | null>(null)
+
+  const handleCreate = useCallback(
+    async (data: CreateTaskInput) => {
+      try {
+        const newTask = await createTask(data)
+        if (onUpdate) {
+          onUpdate((prev) => [newTask, ...prev])
+        } else {
+          await onReload()
+        }
+        setShowTaskForm(false)
+      } catch (err) {
+        console.error(MESSAGES.errors.console.CREATE_TASK_FAILED, err)
+      }
+    },
+    [onReload, onUpdate],
+  )
+
+  const handleUpdate = useCallback(
+    async (data: CreateTaskInput) => {
+      if (!editingTask) return
+
+      try {
+        const updatedTask = await updateTask(editingTask.id, data)
+        if (onUpdate) {
+          onUpdate((prev) =>
+            prev.map((task) =>
+              task.id === editingTask.id ? updatedTask : task,
+            ),
+          )
+        } else {
+          await onReload()
+        }
+        setEditingTask(null)
+        setShowTaskForm(false)
+      } catch (err) {
+        console.error(MESSAGES.errors.console.UPDATE_TASK_FAILED, err)
+      }
+    },
+    [editingTask, onReload, onUpdate],
+  )
+
+  const handleEdit = useCallback((task: Task) => {
+    setEditingTask(task)
+    setShowTaskForm(true)
+  }, [])
 
   const handleUpdateStatus = useCallback(
     async (taskId: string, status: TaskStatus) => {
@@ -171,11 +228,22 @@ export function useTaskOperations(
     [onReload, onUpdate],
   )
 
+  const handleCancelForm = useCallback(() => {
+    setEditingTask(null)
+    setShowTaskForm(false)
+  }, [])
+
   return {
+    showTaskForm,
+    editingTask,
+    handleCreate,
+    handleUpdate,
+    handleEdit,
     handleUpdateStatus,
     handleToggleComplete,
     handleUpdateProject,
     handleUpdateContext,
     handleDelete,
+    handleCancelForm,
   }
 }

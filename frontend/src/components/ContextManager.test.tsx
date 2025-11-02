@@ -11,6 +11,7 @@ describe("ContextManager", () => {
     createMockContext({ name: "@phone", icon: "📱" }),
   ]
 
+  const mockOnEdit = vi.fn()
   const mockOnDelete = vi.fn()
   const mockOnCreate = vi.fn()
 
@@ -24,6 +25,7 @@ describe("ContextManager", () => {
       render(
         <ContextManager
           contexts={mockContexts}
+          onEdit={mockOnEdit}
           onDelete={mockOnDelete}
           onCreate={mockOnCreate}
         />,
@@ -38,6 +40,7 @@ describe("ContextManager", () => {
       render(
         <ContextManager
           contexts={mockContexts}
+          onEdit={mockOnEdit}
           onDelete={mockOnDelete}
           onCreate={mockOnCreate}
         />,
@@ -54,6 +57,7 @@ describe("ContextManager", () => {
       render(
         <ContextManager
           contexts={mockContexts}
+          onEdit={mockOnEdit}
           onDelete={mockOnDelete}
           onCreate={mockOnCreate}
         />,
@@ -70,6 +74,7 @@ describe("ContextManager", () => {
       render(
         <ContextManager
           contexts={mockContexts}
+          onEdit={mockOnEdit}
           onDelete={mockOnDelete}
           onCreate={mockOnCreate}
         />,
@@ -84,6 +89,7 @@ describe("ContextManager", () => {
       render(
         <ContextManager
           contexts={[]}
+          onEdit={mockOnEdit}
           onDelete={mockOnDelete}
           onCreate={mockOnCreate}
         />,
@@ -99,6 +105,7 @@ describe("ContextManager", () => {
       render(
         <ContextManager
           contexts={mockContexts}
+          onEdit={mockOnEdit}
           onDelete={mockOnDelete}
           onCreate={mockOnCreate}
         />,
@@ -115,6 +122,7 @@ describe("ContextManager", () => {
       const { rerender } = render(
         <ContextManager
           contexts={mockContexts}
+          onEdit={mockOnEdit}
           onDelete={mockOnDelete}
           onCreate={mockOnCreate}
         />,
@@ -126,6 +134,7 @@ describe("ContextManager", () => {
       rerender(
         <ContextManager
           contexts={mockContexts}
+          onEdit={mockOnEdit}
           onDelete={mockOnDelete}
           onCreate={mockOnCreate}
         />,
@@ -142,6 +151,7 @@ describe("ContextManager", () => {
       render(
         <ContextManager
           contexts={mockContexts}
+          onEdit={mockOnEdit}
           onDelete={mockOnDelete}
           onCreate={mockOnCreate}
         />,
@@ -180,6 +190,7 @@ describe("ContextManager", () => {
       render(
         <ContextManager
           contexts={mockContexts}
+          onEdit={mockOnEdit}
           onDelete={mockOnDelete}
           onCreate={mockOnCreate}
         />,
@@ -203,6 +214,7 @@ describe("ContextManager", () => {
       render(
         <ContextManager
           contexts={mockContexts}
+          onEdit={mockOnEdit}
           onDelete={mockOnDelete}
           onCreate={mockOnCreate}
         />,
@@ -242,6 +254,7 @@ describe("ContextManager", () => {
       render(
         <ContextManager
           contexts={mockContexts}
+          onEdit={mockOnEdit}
           onDelete={mockOnDelete}
           onCreate={mockOnCreate}
         />,
@@ -272,6 +285,7 @@ describe("ContextManager", () => {
       render(
         <ContextManager
           contexts={mockContexts}
+          onEdit={mockOnEdit}
           onDelete={mockOnDelete}
           onCreate={mockOnCreate}
         />,
@@ -298,6 +312,7 @@ describe("ContextManager", () => {
       render(
         <ContextManager
           contexts={mockContexts}
+          onEdit={mockOnEdit}
           onDelete={mockOnDelete}
           onCreate={mockOnCreate}
         />,
@@ -325,6 +340,7 @@ describe("ContextManager", () => {
       render(
         <ContextManager
           contexts={mockContexts}
+          onEdit={mockOnEdit}
           onDelete={mockOnDelete}
           onCreate={mockOnCreate}
         />,
@@ -352,6 +368,7 @@ describe("ContextManager", () => {
       render(
         <ContextManager
           contexts={mockContexts}
+          onEdit={mockOnEdit}
           onDelete={mockOnDelete}
           onCreate={mockOnCreate}
         />,
@@ -379,6 +396,7 @@ describe("ContextManager", () => {
       render(
         <ContextManager
           contexts={mockContexts}
+          onEdit={mockOnEdit}
           onDelete={mockOnDelete}
           onCreate={mockOnCreate}
         />,
@@ -407,6 +425,7 @@ describe("ContextManager", () => {
       render(
         <ContextManager
           contexts={mockContexts}
+          onEdit={mockOnEdit}
           onDelete={mockOnDelete}
           onCreate={mockOnCreate}
         />,
@@ -429,6 +448,7 @@ describe("ContextManager", () => {
       render(
         <ContextManager
           contexts={mockContexts}
+          onEdit={mockOnEdit}
           onDelete={mockOnDelete}
           onCreate={mockOnCreate}
         />,
@@ -453,6 +473,7 @@ describe("ContextManager", () => {
       render(
         <ContextManager
           contexts={mockContexts}
+          onEdit={mockOnEdit}
           onDelete={mockOnDelete}
           onCreate={mockOnCreate}
         />,
@@ -481,6 +502,7 @@ describe("ContextManager", () => {
       render(
         <ContextManager
           contexts={mockContexts}
+          onEdit={mockOnEdit}
           onDelete={mockOnDelete}
           onCreate={mockOnCreate}
         />,
@@ -508,6 +530,7 @@ describe("ContextManager", () => {
       render(
         <ContextManager
           contexts={mockContexts}
+          onEdit={mockOnEdit}
           onDelete={mockOnDelete}
           onCreate={mockOnCreate}
         />,
@@ -529,6 +552,7 @@ describe("ContextManager", () => {
       render(
         <ContextManager
           contexts={mockContexts}
+          onEdit={mockOnEdit}
           onDelete={mockOnDelete}
           onCreate={mockOnCreate}
         />,
@@ -551,6 +575,7 @@ describe("ContextManager", () => {
       render(
         <ContextManager
           contexts={mockContexts}
+          onEdit={mockOnEdit}
           onDelete={mockOnDelete}
           onCreate={mockOnCreate}
         />,
@@ -570,6 +595,7 @@ describe("ContextManager", () => {
       render(
         <ContextManager
           contexts={[]}
+          onEdit={mockOnEdit}
           onDelete={mockOnDelete}
           onCreate={mockOnCreate}
         />,
@@ -582,6 +608,7 @@ describe("ContextManager", () => {
       render(
         <ContextManager
           contexts={[]}
+          onEdit={mockOnEdit}
           onDelete={mockOnDelete}
           onCreate={mockOnCreate}
         />,
@@ -600,6 +627,7 @@ describe("ContextManager", () => {
       const { container } = render(
         <ContextManager
           contexts={manyContexts}
+          onEdit={mockOnEdit}
           onDelete={mockOnDelete}
           onCreate={mockOnCreate}
         />,
@@ -617,6 +645,7 @@ describe("ContextManager", () => {
       render(
         <ContextManager
           contexts={mockContexts}
+          onEdit={mockOnEdit}
           onDelete={mockOnDelete}
           onCreate={mockOnCreate}
         />,

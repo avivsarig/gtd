@@ -7,14 +7,12 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { TaskList } from "@/components/TaskList"
-import { MESSAGES } from "@/lib/messages"
 import {
   type Task,
   type Project,
   type Context,
   type TaskStatus,
 } from "@/lib/api"
-import { notifyInfo } from "@/lib/errorHandling"
 
 export interface TasksSectionProps {
   tasks: Task[]
@@ -60,10 +58,7 @@ export function TasksSection({
           onToggleComplete={onToggleComplete}
           onUpdateProject={onUpdateProject}
           onUpdateContext={onUpdateContext}
-          onEdit={(task) => {
-            onEdit(task)
-            notifyInfo(MESSAGES.info.COMING_SOON)
-          }}
+          onEdit={onEdit}
           onDelete={onDelete}
         />
       </CardContent>

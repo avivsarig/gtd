@@ -367,6 +367,26 @@ export async function createInboxItem(
 }
 
 /**
+ * Update an inbox item
+ */
+export async function updateInboxItem(
+  id: string,
+  input: CreateInboxItemInput,
+): Promise<InboxItem> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/inbox/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(input),
+  })
+  if (!response.ok) {
+    throw new Error(MESSAGES.api.UPDATE_INBOX_FAILED)
+  }
+  return response.json()
+}
+
+/**
  * Delete an inbox item
  */
 export async function deleteInboxItem(id: string): Promise<void> {

@@ -14,6 +14,9 @@ import { QuickCapture } from "@/components/QuickCapture"
 import { UniversalCapture } from "@/components/UniversalCapture"
 import { SearchBar } from "@/components/SearchBar"
 import { NoteFormModal } from "@/components/NoteFormModal"
+import { TaskFormModal } from "@/components/TaskFormModal"
+import { InboxFormModal } from "@/components/InboxFormModal"
+import { ContextFormModal } from "@/components/ContextFormModal"
 import { DashboardHeader } from "@/components/DashboardHeader"
 import { InboxSection } from "@/components/InboxSection"
 import { TasksSection } from "@/components/TasksSection"
@@ -125,6 +128,7 @@ export function Home() {
             processingId={inboxOps.processingId}
             onConvertToTask={inboxOps.handleConvertToTask}
             onConvertToNote={inboxOps.handleConvertToNote}
+            onEdit={inboxOps.handleEdit}
             onDelete={inboxOps.handleDelete}
           />
         </div>
@@ -139,7 +143,7 @@ export function Home() {
             onToggleComplete={taskOps.handleToggleComplete}
             onUpdateProject={taskOps.handleUpdateProject}
             onUpdateContext={taskOps.handleUpdateContext}
-            onEdit={() => {}}
+            onEdit={taskOps.handleEdit}
             onDelete={taskOps.handleDelete}
           />
 
@@ -169,6 +173,7 @@ export function Home() {
 
           <ContextsSection
             contexts={contexts ?? []}
+            onEdit={contextOps.handleEdit}
             onCreate={contextOps.handleCreate}
             onDelete={contextOps.handleDelete}
           />
@@ -201,6 +206,48 @@ export function Home() {
         projects={projects ?? []}
         onSubmit={
           noteOps.editingNote ? noteOps.handleUpdate : noteOps.handleCreate
+        }
+      />
+
+      {/* Task Form Modal */}
+      <TaskFormModal
+        open={taskOps.showTaskForm}
+        onOpenChange={(open) => {
+          if (!open) taskOps.handleCancelForm()
+        }}
+        task={taskOps.editingTask}
+        projects={projects ?? []}
+        contexts={contexts ?? []}
+        onSubmit={
+          taskOps.editingTask ? taskOps.handleUpdate : taskOps.handleCreate
+        }
+      />
+
+      {/* Inbox Form Modal */}
+      <InboxFormModal
+        open={inboxOps.showInboxForm}
+        onOpenChange={(open) => {
+          if (!open) inboxOps.handleCancelForm()
+        }}
+        inboxItem={inboxOps.editingInboxItem}
+        onSubmit={
+          inboxOps.editingInboxItem
+            ? inboxOps.handleUpdate
+            : inboxOps.handleCreate
+        }
+      />
+
+      {/* Context Form Modal */}
+      <ContextFormModal
+        open={contextOps.showContextForm}
+        onOpenChange={(open) => {
+          if (!open) contextOps.handleCancelForm()
+        }}
+        context={contextOps.editingContext}
+        onSubmit={
+          contextOps.editingContext
+            ? contextOps.handleUpdate
+            : contextOps.handleCreate
         }
       />
     </div>

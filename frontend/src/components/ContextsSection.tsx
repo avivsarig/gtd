@@ -11,12 +11,14 @@ import { type Context, type CreateContextInput } from "@/lib/api"
 
 export interface ContextsSectionProps {
   contexts: Context[]
+  onEdit: (context: Context) => void
   onCreate: (data: CreateContextInput) => Promise<void>
   onDelete: (contextId: string) => void
 }
 
 export function ContextsSection({
   contexts,
+  onEdit,
   onCreate,
   onDelete,
 }: ContextsSectionProps) {
@@ -38,6 +40,7 @@ export function ContextsSection({
       <CardContent className="max-h-[400px] overflow-y-auto">
         <ContextManager
           contexts={contexts}
+          onEdit={onEdit}
           onCreate={onCreate}
           onDelete={onDelete}
         />

@@ -9,10 +9,13 @@
 
 import { useState, useCallback } from "react"
 import {
+  createInboxItem,
+  updateInboxItem,
   deleteInboxItem,
   convertInboxToTask,
   convertInboxToNote,
   type InboxItem,
+  type CreateInboxItemInput,
 } from "@/lib/api"
 import { MESSAGES } from "@/lib/messages"
 import { notifyError } from "@/lib/errorHandling"
@@ -27,10 +30,16 @@ export interface UseInboxOperationsOptions {
 }
 
 export interface UseInboxOperationsResult {
+  showInboxForm: boolean
+  editingInboxItem: InboxItem | null
   processingId: string | null
+  handleCreate: (data: CreateInboxItemInput) => Promise<void>
+  handleUpdate: (data: CreateInboxItemInput) => Promise<void>
+  handleEdit: (item: InboxItem) => void
   handleDelete: (id: string) => Promise<void>
   handleConvertToTask: (item: InboxItem) => Promise<void>
   handleConvertToNote: (item: InboxItem) => Promise<void>
+  handleCancelForm: () => void
 }
 
 /**
@@ -59,7 +68,45 @@ export function useInboxOperations(
 ): UseInboxOperationsResult {
   const { onReloadInbox, onReloadTasks, onReloadNotes } = options
 
+  const [showInboxForm, setShowInboxForm] = useState(false)
+  const [editingInboxItem, setEditingInboxItem] = useState<InboxItem | null>(
+    null,
+  )
   const [processingId, setProcessingId] = useState<string | null>(null)
+
+  const handleCreate = useCallback(
+    async (data: CreateInboxItemInput) => {
+      try {
+        await createInboxItem(data)
+        await onReloadInbox()
+        setShowInboxForm(false)
+      } catch (err) {
+        console.error(MESSAGES.errors.console.CREATE_INBOX_FAILED, err)
+      }
+    },
+    [onReloadInbox],
+  )
+
+  const handleUpdate = useCallback(
+    async (data: CreateInboxItemInput) => {
+      if (!editingInboxItem) return
+
+      try {
+        await updateInboxItem(editingInboxItem.id, data)
+        await onReloadInbox()
+        setEditingInboxItem(null)
+        setShowInboxForm(false)
+      } catch (err) {
+        console.error(MESSAGES.errors.console.UPDATE_INBOX_FAILED, err)
+      }
+    },
+    [editingInboxItem, onReloadInbox],
+  )
+
+  const handleEdit = useCallback((item: InboxItem) => {
+    setEditingInboxItem(item)
+    setShowInboxForm(true)
+  }, [])
 
   const handleDelete = useCallback(
     async (id: string) => {
@@ -114,10 +161,21 @@ export function useInboxOperations(
     [onReloadInbox, onReloadNotes],
   )
 
+  const handleCancelForm = useCallback(() => {
+    setEditingInboxItem(null)
+    setShowInboxForm(false)
+  }, [])
+
   return {
+    showInboxForm,
+    editingInboxItem,
     processingId,
+    handleCreate,
+    handleUpdate,
+    handleEdit,
     handleDelete,
     handleConvertToTask,
     handleConvertToNote,
+    handleCancelForm,
   }
 }
