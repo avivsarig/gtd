@@ -4,8 +4,8 @@
 
 **Test Coverage:**
 - Backend: 278 tests passing (183 unit + 95 integration) - **~97% coverage**
-- Frontend: 604 tests passing (23 test files) - **~96% coverage**
-- Total: **882 tests passing**
+- Frontend: 669 tests passing (26 test files) - **~97% coverage**
+- Total: **947 tests passing**
 - E2E Tests: None (critical gap identified)
 
 ---
@@ -42,7 +42,7 @@
 - Dark mode by default
 - Routing configured
 - API client with full type safety
-- 604 frontend tests passing (Vitest + React Testing Library, 23 test files) at ~96% coverage
+- 669 frontend tests passing (Vitest + React Testing Library, 26 test files) at ~97% coverage
 - **Unified EntityModal system** - configuration-driven modals for all entity types
 
 **UI Components:**
