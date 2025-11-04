@@ -93,8 +93,9 @@ The project uses pre-commit hooks to ensure code quality. Every commit automatic
 - **Lint** - Code style and syntax checks
 - **TypeCheck** - Static type validation
 - **Test** - All unit and integration tests
+- **E2E Tests** - End-to-end tests with Playwright
 
-Hooks only run for files in their respective directories (backend/frontend).
+Hooks only run for files in their respective directories (backend/frontend/e2e).
 
 **Setup:**
 ```bash
