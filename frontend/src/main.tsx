@@ -2,18 +2,17 @@ import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 import { createBrowserRouter, RouterProvider } from "react-router"
 import { Toaster } from "sonner"
-import { Home } from "./routes/Home.tsx"
-import { Inbox } from "./routes/Inbox.tsx"
+import { HomePage, InboxPage } from "./pages"
 import "./styles/global.css"
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Home />,
+    element: <HomePage />,
   },
   {
     path: "/inbox",
-    element: <Inbox />,
+    element: <InboxPage />,
   },
 ])
 
