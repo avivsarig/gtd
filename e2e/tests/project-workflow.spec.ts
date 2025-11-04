@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/auto-cleanup';
 import { navigateTo, createProjectViaAPI, createTaskViaAPI } from '../fixtures/test-helpers';
 
 /**
@@ -23,7 +23,7 @@ test.describe('Project Management Workflow', () => {
       .filter({ has: page.locator('[data-slot="card-title"]', { hasText: 'Projects' }) });
 
     // Click the "+ New Project" button
-    await projectsCard.getByRole('button', { name: /New Project/i }).click();
+    await projectsCard.getByRole('button', { name: '+ New Project' }).click();
 
     // Wait for the project form modal
     await expect(page.getByRole('heading', { name: /Create Project/i })).toBeVisible();
@@ -60,7 +60,7 @@ test.describe('Project Management Workflow', () => {
     const projectContainer = projectsCard
       .locator('[data-slot="card-content"]')
       .filter({ hasText: 'Original Project Name' });
-    await projectContainer.locator('button[aria-label*="edit" i], button:has(svg)').first().click();
+    await projectContainer.getByRole('button', { name: 'Edit' }).click();
 
     // Wait for edit modal
     await expect(page.getByRole('heading', { name: /Edit Project/i })).toBeVisible();
@@ -204,10 +204,11 @@ test.describe('Project Management Workflow', () => {
     const projectContainer = projectsCard
       .locator('[data-slot="card-content"]')
       .filter({ hasText: 'Project to Delete' });
-    await projectContainer.locator('button[aria-label*="delete" i], button:has(svg)').last().click();
 
-    // Confirm deletion
-    await page.getByRole('button', { name: /Delete/i }).click();
+    // Set up dialog handler for browser confirm
+    page.on('dialog', dialog => dialog.accept());
+
+    await projectContainer.getByRole('button', { name: 'Delete' }).click();
 
     // Verify project is removed
     await expect(projectsCard.getByText('Project to Delete')).not.toBeVisible();
@@ -242,7 +243,7 @@ test.describe('Project Management Workflow', () => {
     const projectsCard = page
       .locator('[data-slot="card"]')
       .filter({ has: page.locator('[data-slot="card-title"]', { hasText: 'Projects' }) });
-    await projectsCard.getByRole('button', { name: /New Project/i }).click();
+    await projectsCard.getByRole('button', { name: '+ New Project' }).click();
 
     // Fill in sub-project details
     await page.getByLabel(/Name/i).fill('Sub Project');

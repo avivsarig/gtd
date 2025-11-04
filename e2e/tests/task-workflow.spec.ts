@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/auto-cleanup';
 import { navigateTo, createTaskViaAPI, createProjectViaAPI } from '../fixtures/test-helpers';
 
 /**
@@ -113,16 +113,14 @@ test.describe('Task Lifecycle Workflow', () => {
       .locator('[data-slot="card-content"]')
       .filter({ hasText: 'Send weekly report' });
 
-    // Click the checkbox/complete button
-    const completeButton = taskItem.locator('button[aria-label*="complete" i], input[type="checkbox"]').first();
-    await completeButton.click();
+    // Click the complete button
+    await taskItem.getByRole('button', { name: 'Mark as complete' }).click();
 
-    // Verify task shows as completed (could be strikethrough, hidden, or marked differently)
-    // The task might disappear from active list or show visual indication
-    await page.waitForTimeout(500); // Give UI time to update
+    // Wait for UI to update
+    await page.waitForTimeout(500);
 
-    // Check if task is visually marked as complete or removed from active view
-    // This depends on the UI behavior - adjust selector as needed
+    // Verify task shows as completed (with strikethrough and uncomplete button)
+    await expect(taskItem.getByRole('button', { name: 'Mark as incomplete' })).toBeVisible();
   });
 
   test('can mark completed task as incomplete', async ({ page }) => {
@@ -140,19 +138,21 @@ test.describe('Task Lifecycle Workflow', () => {
 
     await navigateTo(page, '/');
 
-    // Find the completed task (might need to show completed tasks)
+    // Find the completed task
     const taskItem = page
       .locator('[data-slot="card-content"]')
       .filter({ hasText: 'Already completed task' });
 
-    // If visible, click to uncomplete
-    if (await taskItem.isVisible()) {
-      const uncompleteButton = taskItem.locator('button[aria-label*="complete" i], input[type="checkbox"]').first();
-      await uncompleteButton.click();
+    await expect(taskItem).toBeVisible();
 
-      // Verify it's back in active state
-      await expect(taskItem).toBeVisible();
-    }
+    // Click to uncomplete
+    await taskItem.getByRole('button', { name: 'Mark as incomplete' }).click();
+
+    // Wait for UI to update
+    await page.waitForTimeout(500);
+
+    // Verify it's back to incomplete state
+    await expect(taskItem.getByRole('button', { name: 'Mark as complete' })).toBeVisible();
   });
 
   test('can assign task to a project', async ({ page }) => {
@@ -198,7 +198,7 @@ test.describe('Task Lifecycle Workflow', () => {
       .filter({ hasText: 'Original task title' });
 
     // Click edit button
-    await taskItem.locator('button[aria-label*="edit" i], button:has(svg)').first().click();
+    await taskItem.getByRole('button', { name: 'Edit' }).click();
 
     // Wait for edit modal
     await expect(page.getByRole('heading', { name: /Edit Task/i })).toBeVisible();
@@ -230,11 +230,11 @@ test.describe('Task Lifecycle Workflow', () => {
       .filter({ hasText: 'Task to be deleted' });
     await expect(taskItem).toBeVisible();
 
-    // Click delete button
-    await taskItem.locator('button[aria-label*="delete" i], button:has(svg)').last().click();
+    // Set up dialog handler for browser confirm
+    page.on('dialog', dialog => dialog.accept());
 
-    // Confirm deletion
-    await page.getByRole('button', { name: /Delete/i }).click();
+    // Click delete button
+    await taskItem.getByRole('button', { name: 'Delete' }).click();
 
     // Verify task is removed
     await expect(page.getByText('Task to be deleted')).not.toBeVisible();

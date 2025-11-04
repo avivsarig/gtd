@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/auto-cleanup';
 import { navigateTo, createProjectViaAPI } from '../fixtures/test-helpers';
 
 /**
@@ -22,7 +22,7 @@ test.describe('Note Management Workflow', () => {
       .filter({ has: page.locator('[data-slot="card-title"]', { hasText: 'Notes' }) });
 
     // Click the "+ New Note" button
-    await notesCard.getByRole('button', { name: /New Note/i }).click();
+    await notesCard.getByRole('button', { name: '+ New Note' }).click();
 
     // Wait for the note form modal
     await expect(page.getByRole('heading', { name: /Create Note/i })).toBeVisible();
@@ -45,7 +45,7 @@ test.describe('Note Management Workflow', () => {
     const notesCard = page
       .locator('[data-slot="card"]')
       .filter({ has: page.locator('[data-slot="card-title"]', { hasText: 'Notes' }) });
-    await notesCard.getByRole('button', { name: /New Note/i }).click();
+    await notesCard.getByRole('button', { name: '+ New Note' }).click();
 
     // Fill in markdown content
     await page.getByLabel(/Title/i).fill('Technical Documentation');
@@ -65,7 +65,7 @@ test.describe('Note Management Workflow', () => {
     const notesCard = page
       .locator('[data-slot="card"]')
       .filter({ has: page.locator('[data-slot="card-title"]', { hasText: 'Notes' }) });
-    await notesCard.getByRole('button', { name: /New Note/i }).click();
+    await notesCard.getByRole('button', { name: '+ New Note' }).click();
 
     await page.getByLabel(/Title/i).fill('Original Note Title');
     await page.getByLabel(/Content/i).fill('Original content');
@@ -78,7 +78,7 @@ test.describe('Note Management Workflow', () => {
     const noteContainer = notesCard
       .locator('[data-slot="card-content"]')
       .filter({ hasText: 'Original Note Title' });
-    await noteContainer.locator('button[aria-label*="edit" i], button:has(svg)').first().click();
+    await noteContainer.getByRole('button', { name: 'Edit' }).click();
 
     // Wait for edit modal
     await expect(page.getByRole('heading', { name: /Edit Note/i })).toBeVisible();
@@ -107,7 +107,7 @@ test.describe('Note Management Workflow', () => {
     const notesCard = page
       .locator('[data-slot="card"]')
       .filter({ has: page.locator('[data-slot="card-title"]', { hasText: 'Notes' }) });
-    await notesCard.getByRole('button', { name: /New Note/i }).click();
+    await notesCard.getByRole('button', { name: '+ New Note' }).click();
 
     await page.getByLabel(/Title/i).fill('Research Findings');
     await page.getByLabel(/Content/i).fill('Initial research results');
@@ -132,7 +132,7 @@ test.describe('Note Management Workflow', () => {
     const notesCard = page
       .locator('[data-slot="card"]')
       .filter({ has: page.locator('[data-slot="card-title"]', { hasText: 'Notes' }) });
-    await notesCard.getByRole('button', { name: /New Note/i }).click();
+    await notesCard.getByRole('button', { name: '+ New Note' }).click();
 
     await page.getByLabel(/Title/i).fill('Note to Delete');
     await page.getByLabel(/Content/i).fill('This will be deleted');
@@ -145,10 +145,11 @@ test.describe('Note Management Workflow', () => {
     const noteContainer = notesCard
       .locator('[data-slot="card-content"]')
       .filter({ hasText: 'Note to Delete' });
-    await noteContainer.locator('button[aria-label*="delete" i], button:has(svg)').last().click();
 
-    // Confirm deletion
-    await page.getByRole('button', { name: /Delete/i }).click();
+    // Set up dialog handler for browser confirm
+    page.on('dialog', dialog => dialog.accept());
+
+    await noteContainer.getByRole('button', { name: 'Delete' }).click();
 
     // Verify note is removed
     await expect(notesCard.getByText('Note to Delete')).not.toBeVisible();
@@ -162,19 +163,15 @@ test.describe('Note Management Workflow', () => {
     await input.fill('Quick thought for notes');
     await page.getByRole('button', { name: /Capture to Inbox/i }).click();
 
-    // Convert to note
+    // Convert to note (direct API conversion, no modal)
     const noteButton = page
       .locator('[data-slot="card-content"]')
       .filter({ hasText: 'Quick thought for notes' })
       .getByRole('button', { name: /Note/i });
     await noteButton.click();
 
-    // Verify note form opens with pre-filled content
-    await expect(page.getByRole('heading', { name: /Create Note/i })).toBeVisible();
-    await expect(page.getByLabel(/Title/i)).toHaveValue('Quick thought for notes');
-
-    // Submit
-    await page.getByRole('button', { name: /Create Note/i }).click();
+    // Wait for conversion to complete
+    await page.waitForTimeout(500);
 
     // Verify note appears in notes section
     const notesCard = page
@@ -192,13 +189,13 @@ test.describe('Note Management Workflow', () => {
       .filter({ has: page.locator('[data-slot="card-title"]', { hasText: 'Notes' }) });
 
     // Create first note
-    await notesCard.getByRole('button', { name: /New Note/i }).click();
+    await notesCard.getByRole('button', { name: '+ New Note' }).click();
     await page.getByLabel(/Title/i).fill('Note 1');
     await page.getByLabel(/Content/i).fill('Content 1');
     await page.getByRole('button', { name: /Create Note/i }).click();
 
     // Create second note
-    await notesCard.getByRole('button', { name: /New Note/i }).click();
+    await notesCard.getByRole('button', { name: '+ New Note' }).click();
     await page.getByLabel(/Title/i).fill('Note 2');
     await page.getByLabel(/Content/i).fill('Content 2');
     await page.getByRole('button', { name: /Create Note/i }).click();
@@ -217,7 +214,7 @@ test.describe('Note Management Workflow', () => {
     const notesCard = page
       .locator('[data-slot="card"]')
       .filter({ has: page.locator('[data-slot="card-title"]', { hasText: 'Notes' }) });
-    await notesCard.getByRole('button', { name: /New Note/i }).click();
+    await notesCard.getByRole('button', { name: '+ New Note' }).click();
 
     const longContent = `# Project Overview
 
@@ -253,7 +250,7 @@ This section can contain multiple paragraphs with detailed information.`;
     const noteContainer = notesCard
       .locator('[data-slot="card-content"]')
       .filter({ hasText: 'Comprehensive Project Notes' });
-    await noteContainer.locator('button[aria-label*="edit" i], button:has(svg)').first().click();
+    await noteContainer.getByRole('button', { name: 'Edit' }).click();
 
     // Verify content is preserved in edit form
     const contentInput = page.getByLabel(/Content/i);

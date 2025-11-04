@@ -110,3 +110,73 @@ export async function deleteAllTasksViaAPI(page: Page) {
     await page.request.delete(`http://localhost:8000/api/v1/tasks/${task.id}`);
   }
 }
+
+/**
+ * Get all notes via API
+ */
+export async function getNotesViaAPI(page: Page) {
+  const response = await page.request.get('http://localhost:8000/api/v1/notes/');
+  expect(response.ok()).toBeTruthy();
+  return response.json();
+}
+
+/**
+ * Delete all notes via API (for cleanup)
+ */
+export async function deleteAllNotesViaAPI(page: Page) {
+  const notes = await getNotesViaAPI(page);
+  for (const note of notes) {
+    await page.request.delete(`http://localhost:8000/api/v1/notes/${note.id}`);
+  }
+}
+
+/**
+ * Get all projects via API
+ */
+export async function getProjectsViaAPI(page: Page) {
+  const response = await page.request.get('http://localhost:8000/api/v1/projects/');
+  expect(response.ok()).toBeTruthy();
+  return response.json();
+}
+
+/**
+ * Delete all projects via API (for cleanup)
+ */
+export async function deleteAllProjectsViaAPI(page: Page) {
+  const projects = await getProjectsViaAPI(page);
+  for (const project of projects) {
+    await page.request.delete(`http://localhost:8000/api/v1/projects/${project.id}`);
+  }
+}
+
+/**
+ * Get all contexts via API
+ */
+export async function getContextsViaAPI(page: Page) {
+  const response = await page.request.get('http://localhost:8000/api/v1/contexts/');
+  expect(response.ok()).toBeTruthy();
+  return response.json();
+}
+
+/**
+ * Delete all contexts via API (for cleanup)
+ */
+export async function deleteAllContextsViaAPI(page: Page) {
+  const contexts = await getContextsViaAPI(page);
+  for (const context of contexts) {
+    await page.request.delete(`http://localhost:8000/api/v1/contexts/${context.id}`);
+  }
+}
+
+/**
+ * Clean up all test data (comprehensive cleanup)
+ * Order matters: delete tasks first (may reference projects/contexts),
+ * then notes, then projects, then contexts, finally inbox
+ */
+export async function cleanupAllTestData(page: Page) {
+  await deleteAllTasksViaAPI(page);
+  await deleteAllNotesViaAPI(page);
+  await deleteAllProjectsViaAPI(page);
+  await deleteAllContextsViaAPI(page);
+  await deleteAllInboxItemsViaAPI(page);
+}

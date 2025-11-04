@@ -1,5 +1,5 @@
-import { test, expect } from '@playwright/test';
-import { navigateTo, createInboxItemViaAPI, deleteAllInboxItemsViaAPI, deleteAllTasksViaAPI } from '../fixtures/test-helpers';
+import { test, expect } from '../fixtures/auto-cleanup';
+import { navigateTo, createInboxItemViaAPI } from '../fixtures/test-helpers';
 
 /**
  * Inbox Processing Workflow Tests
@@ -11,11 +11,6 @@ import { navigateTo, createInboxItemViaAPI, deleteAllInboxItemsViaAPI, deleteAll
  */
 
 test.describe('Inbox Processing Workflow', () => {
-  // Clean up only what these tests touch
-  test.afterEach(async ({ page }) => {
-    await deleteAllInboxItemsViaAPI(page);
-    await deleteAllTasksViaAPI(page);
-  });
   test('can capture new inbox item via quick capture', async ({ page }) => {
     await navigateTo(page, '/');
 
@@ -46,22 +41,15 @@ test.describe('Inbox Processing Workflow', () => {
     // Find the inbox item
     await expect(page.getByText('Complete project documentation')).toBeVisible();
 
-    // Click the "Task" button to convert
+    // Click the "Task" button to convert (direct API conversion, no modal)
     const taskButton = page
       .locator('[data-slot="card-content"]')
       .filter({ hasText: 'Complete project documentation' })
       .getByRole('button', { name: /Task/i });
     await taskButton.click();
 
-    // Wait for the task form modal to appear
-    await expect(page.getByRole('heading', { name: /Create Task/i })).toBeVisible();
-
-    // Verify the content is pre-filled
-    const titleInput = page.getByLabel(/Task Title/i);
-    await expect(titleInput).toHaveValue('Complete project documentation');
-
-    // Submit the form
-    await page.getByRole('button', { name: /Create Task/i }).click();
+    // Wait for conversion to complete and UI to update
+    await page.waitForTimeout(500);
 
     // Verify task appears in Tasks section
     await expect(
@@ -84,25 +72,21 @@ test.describe('Inbox Processing Workflow', () => {
 
     await navigateTo(page, '/');
 
-    // Find the inbox item
-    await expect(page.getByText('Ideas for new features')).toBeVisible();
+    // Find the inbox item in the inbox card
+    const inboxCard = page
+      .locator('[data-slot="card"]')
+      .filter({ has: page.locator('[data-slot="card-title"]', { hasText: 'Inbox' }) });
+    await expect(inboxCard.getByText('Ideas for new features')).toBeVisible();
 
-    // Click the "Note" button to convert
+    // Click the "Note" button to convert (direct API conversion, no modal)
     const noteButton = page
       .locator('[data-slot="card-content"]')
       .filter({ hasText: 'Ideas for new features' })
       .getByRole('button', { name: /Note/i });
     await noteButton.click();
 
-    // Wait for the note form modal to appear
-    await expect(page.getByRole('heading', { name: /Create Note/i })).toBeVisible();
-
-    // Verify the content is pre-filled
-    const titleInput = page.getByLabel(/^Title$/i);
-    await expect(titleInput).toHaveValue('Ideas for new features');
-
-    // Submit the form
-    await page.getByRole('button', { name: /Create Note/i }).click();
+    // Wait for conversion to complete and UI to update
+    await page.waitForTimeout(500);
 
     // Verify note appears in Notes section
     await expect(
@@ -113,9 +97,6 @@ test.describe('Inbox Processing Workflow', () => {
     ).toBeVisible();
 
     // Verify item is removed from inbox
-    const inboxCard = page
-      .locator('[data-slot="card"]')
-      .filter({ has: page.locator('[data-slot="card-title"]', { hasText: 'Inbox' }) });
     await expect(inboxCard.getByText('Ideas for new features')).not.toBeVisible();
   });
 
@@ -162,10 +143,10 @@ test.describe('Inbox Processing Workflow', () => {
       .locator('[data-slot="card-content"]')
       .filter({ hasText: 'Item to be deleted' });
 
-    await itemContainer.locator('button[aria-label*="delete" i], button:has(svg)').last().click();
+    // Set up dialog handler before clicking delete (browser confirm dialog)
+    page.on('dialog', dialog => dialog.accept());
 
-    // Confirm deletion in the confirmation dialog
-    await page.getByRole('button', { name: /Delete/i }).click();
+    await itemContainer.getByRole('button', { name: 'Delete' }).click();
 
     // Verify item is removed
     await expect(page.getByText('Item to be deleted')).not.toBeVisible();
