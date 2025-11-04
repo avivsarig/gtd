@@ -75,3 +75,14 @@ repos:
         pass_filenames: false
         files: ^frontend/
         stages: [commit]
+
+  # E2E validation (run on host via make)
+  - repo: local
+    hooks:
+      - id: e2e-test
+        name: E2E Tests
+        entry: make test-e2e
+        language: system
+        pass_filenames: false
+        files: ^(frontend/|backend/|e2e/)
+        stages: [commit]

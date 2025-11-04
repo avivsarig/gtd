@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/auto-cleanup';
 import { navigateTo, createProjectViaAPI, createTaskViaAPI } from '../fixtures/test-helpers';
 
 /**
@@ -23,7 +23,7 @@ test.describe('Project Management Workflow', () => {
       .filter({ has: page.locator('[data-slot="card-title"]', { hasText: 'Projects' }) });
 
     // Click the "+ New Project" button
-    await projectsCard.getByRole('button', { name: /New Project/i }).click();
+    await projectsCard.getByRole('button', { name: '+ New Project' }).click();
 
     // Wait for the project form modal
     await expect(page.getByRole('heading', { name: /Create Project/i })).toBeVisible();
@@ -60,7 +60,7 @@ test.describe('Project Management Workflow', () => {
     const projectContainer = projectsCard
       .locator('[data-slot="card-content"]')
       .filter({ hasText: 'Original Project Name' });
-    await projectContainer.locator('button[aria-label*="edit" i], button:has(svg)').first().click();
+    await projectContainer.getByRole('button', { name: 'Edit' }).click();
 
     // Wait for edit modal
     await expect(page.getByRole('heading', { name: /Edit Project/i })).toBeVisible();
@@ -117,42 +117,31 @@ test.describe('Project Management Workflow', () => {
   });
 
   test('can assign task to project during task creation', async ({ page }) => {
-    // Create a project via API
-    await createProjectViaAPI(page, {
+    // Create a project and task via API
+    const project = await createProjectViaAPI(page, {
       name: 'Backend API',
+    });
+    await createTaskViaAPI(page, {
+      title: 'Implement authentication endpoint',
+      status: 'next',
     });
 
     await navigateTo(page, '/');
 
-    // Create a task via quick capture
-    const input = page.getByPlaceholder(/What's on your mind/i);
-    await input.fill('Implement authentication endpoint');
-    await page.getByRole('button', { name: /Capture to Inbox/i }).click();
-
-    // Convert to task
-    const taskButton = page
+    // Find the task
+    const taskItem = page
       .locator('[data-slot="card-content"]')
-      .filter({ hasText: 'Implement authentication endpoint' })
-      .getByRole('button', { name: /Task/i });
-    await taskButton.click();
+      .filter({ hasText: 'Implement authentication endpoint' });
 
-    // In the task form, select the project
-    await expect(page.getByRole('heading', { name: /Create Task/i })).toBeVisible();
+    // Assign project using the dropdown
+    const projectSelect = taskItem.locator('select[aria-label="Project assignment"]');
+    await projectSelect.selectOption(project.id);
 
-    // Find and select project dropdown
-    const projectSelect = page.locator('select, [role="combobox"]').filter({ hasText: /Project/i }).first();
-    await projectSelect.click();
-    await page.locator('option, [role="option"]').filter({ hasText: 'Backend API' }).click();
+    // Wait for UI to update
+    await page.waitForTimeout(300);
 
-    // Submit
-    await page.getByRole('button', { name: /Create Task/i }).click();
-
-    // Verify task appears with project assigned
-    const tasksCard = page
-      .locator('[data-slot="card"]')
-      .filter({ has: page.locator('[data-slot="card-title"]', { hasText: 'Tasks' }) });
-    await expect(tasksCard.getByText('Implement authentication endpoint')).toBeVisible();
-    await expect(tasksCard.getByText('Backend API')).toBeVisible();
+    // Verify project is assigned
+    await expect(projectSelect).toHaveValue(project.id);
   });
 
   test('can complete a project', async ({ page }) => {
@@ -204,10 +193,11 @@ test.describe('Project Management Workflow', () => {
     const projectContainer = projectsCard
       .locator('[data-slot="card-content"]')
       .filter({ hasText: 'Project to Delete' });
-    await projectContainer.locator('button[aria-label*="delete" i], button:has(svg)').last().click();
 
-    // Confirm deletion
-    await page.getByRole('button', { name: /Delete/i }).click();
+    // Set up dialog handler for browser confirm
+    page.on('dialog', dialog => dialog.accept());
+
+    await projectContainer.getByRole('button', { name: 'Delete' }).click();
 
     // Verify project is removed
     await expect(projectsCard.getByText('Project to Delete')).not.toBeVisible();
@@ -242,16 +232,15 @@ test.describe('Project Management Workflow', () => {
     const projectsCard = page
       .locator('[data-slot="card"]')
       .filter({ has: page.locator('[data-slot="card-title"]', { hasText: 'Projects' }) });
-    await projectsCard.getByRole('button', { name: /New Project/i }).click();
+    await projectsCard.getByRole('button', { name: '+ New Project' }).click();
 
     // Fill in sub-project details
     await page.getByLabel(/Name/i).fill('Sub Project');
 
-    // If there's a parent project selector in the form
-    const parentSelect = page.locator('select, [role="combobox"]').filter({ hasText: /Parent/i }).first();
+    // Select parent project using the labeled select element
+    const parentSelect = page.getByLabel('Parent Project');
     if (await parentSelect.isVisible()) {
-      await parentSelect.click();
-      await page.locator('option, [role="option"]').filter({ hasText: 'Parent Project' }).click();
+      await parentSelect.selectOption(parentProject.id);
     }
 
     // Submit

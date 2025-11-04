@@ -62,6 +62,7 @@ export function ItemCard({
               onClick={onEdit}
               className="h-8 w-8"
               title="Edit"
+              aria-label="Edit"
             >
               <Pencil className="h-4 w-4" />
             </Button>
@@ -73,6 +74,7 @@ export function ItemCard({
               onClick={handleDelete}
               className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 w-8"
               title="Delete"
+              aria-label="Delete"
             >
               <Trash2 className="h-4 w-4" />
             </Button>

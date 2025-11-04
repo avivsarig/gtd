@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/auto-cleanup';
 import { waitForApp, navigateTo } from '../fixtures/test-helpers';
 
 /**

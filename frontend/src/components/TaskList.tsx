@@ -63,6 +63,9 @@ export function TaskList({
               title={
                 task.completed_at ? "Mark as incomplete" : "Mark as complete"
               }
+              aria-label={
+                task.completed_at ? "Mark as incomplete" : "Mark as complete"
+              }
             >
               {task.completed_at ? (
                 <Check className="h-5 w-5" />

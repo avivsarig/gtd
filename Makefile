@@ -86,4 +86,5 @@ test-e2e-debug:
 	@echo "Running E2E tests in debug mode..."
 	@npm run test:e2e:debug
 
-code: format lint typecheck test
+code:
+	@pre-commit run --all-files
