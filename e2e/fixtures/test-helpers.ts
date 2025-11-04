@@ -21,12 +21,29 @@ export async function navigateTo(page: Page, route: string) {
 }
 
 /**
- * Clear all data via API (useful for test isolation)
+ * Get all inbox items via API
  */
-export async function clearDatabase(page: Page) {
-  // This would call a backend endpoint to reset the test database
-  // For now, we'll implement this as needed
-  // await page.request.post('http://localhost:8000/api/v1/test/reset');
+export async function getInboxItemsViaAPI(page: Page) {
+  const response = await page.request.get('http://localhost:8000/api/v1/inbox/');
+  expect(response.ok()).toBeTruthy();
+  return response.json();
+}
+
+/**
+ * Delete an inbox item via API
+ */
+export async function deleteInboxItemViaAPI(page: Page, id: string) {
+  await page.request.delete(`http://localhost:8000/api/v1/inbox/${id}`);
+}
+
+/**
+ * Delete all inbox items via API (for cleanup)
+ */
+export async function deleteAllInboxItemsViaAPI(page: Page) {
+  const items = await getInboxItemsViaAPI(page);
+  for (const item of items) {
+    await deleteInboxItemViaAPI(page, item.id);
+  }
 }
 
 /**
