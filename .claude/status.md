@@ -3,9 +3,9 @@
 ---
 
 **Test Coverage:**
-- Backend: 268 tests passing (183 unit + 85 integration) - **~95% coverage** (1150/1203 statements)
-- Frontend: 576 tests passing (23 test files) - **~95% coverage**
-- Total: **844 tests passing**
+- Backend: 278 tests passing (183 unit + 95 integration) - **~97% coverage**
+- Frontend: 604 tests passing (23 test files) - **~96% coverage**
+- Total: **882 tests passing**
 - E2E Tests: None (critical gap identified)
 
 ---
@@ -16,7 +16,7 @@
 - PostgreSQL database with SQLAlchemy ORM
 - 10 database migrations applied (tasks, contexts, notes, projects, inbox, full-text search, triggers, context soft-delete)
 - Docker containerization with docker-compose
-- 268 backend tests passing (183 unit + 85 integration) at 96% coverage
+- 278 backend tests passing (183 unit + 95 integration) at ~97% coverage
 - **Code Quality Improvements:**
   - BaseRepository pattern - DRY compliance across all repositories
   - Mixins pattern (SoftDeletableMixin, SearchableMixin) - eliminated model duplication
@@ -42,7 +42,7 @@
 - Dark mode by default
 - Routing configured
 - API client with full type safety
-- 576 frontend tests passing (Vitest + React Testing Library, 23 test files) at 94% coverage
+- 604 frontend tests passing (Vitest + React Testing Library, 23 test files) at ~96% coverage
 - **Unified EntityModal system** - configuration-driven modals for all entity types
 
 **UI Components:**

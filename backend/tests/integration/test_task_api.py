@@ -159,6 +159,97 @@ class TestTaskStatusManagement:
         assert response.status_code == 422
 
 
+class TestTaskCRUDErrorHandling:
+    """Test error handling for task CRUD operations."""
+
+    def test_get_nonexistent_task_returns_404(self, client_postgres: TestClient):
+        """Should return 404 when getting task that doesn't exist."""
+        from uuid import uuid4
+
+        fake_id = str(uuid4())
+        response = client_postgres.get(f"/api/v1/tasks/{fake_id}")
+
+        assert response.status_code == 404
+
+    def test_update_nonexistent_task_returns_404(self, client_postgres: TestClient):
+        """Should return 404 when updating task that doesn't exist."""
+        from uuid import uuid4
+
+        fake_id = str(uuid4())
+        response = client_postgres.put(f"/api/v1/tasks/{fake_id}", json={"title": "Updated title"})
+
+        assert response.status_code == 404
+
+    def test_delete_nonexistent_task_returns_404(self, client_postgres: TestClient):
+        """Should return 404 when deleting task that doesn't exist."""
+        from uuid import uuid4
+
+        fake_id = str(uuid4())
+        response = client_postgres.delete(f"/api/v1/tasks/{fake_id}")
+
+        assert response.status_code == 404
+
+    def test_delete_task_success(self, client_postgres: TestClient):
+        """Should successfully delete an existing task."""
+        # Create a task
+        create_response = client_postgres.post("/api/v1/tasks/", json={"title": "Task to delete"})
+        task_id = create_response.json()["id"]
+
+        # Delete the task
+        delete_response = client_postgres.delete(f"/api/v1/tasks/{task_id}")
+
+        assert delete_response.status_code == 204
+
+        # Verify task is deleted (should return 404)
+        get_response = client_postgres.get(f"/api/v1/tasks/{task_id}")
+        assert get_response.status_code == 404
+
+    def test_uncomplete_nonexistent_task_returns_404(self, client_postgres: TestClient):
+        """Should return 404 when uncompleting task that doesn't exist."""
+        from uuid import uuid4
+
+        fake_id = str(uuid4())
+        response = client_postgres.post(f"/api/v1/tasks/{fake_id}/uncomplete")
+
+        assert response.status_code == 404
+
+    def test_list_tasks_with_status_filter(self, client_postgres: TestClient):
+        """Should filter tasks by status."""
+        # Create tasks with different statuses
+        client_postgres.post("/api/v1/tasks/", json={"title": "Next task", "status": "next"})
+        client_postgres.post("/api/v1/tasks/", json={"title": "Waiting task", "status": "waiting"})
+        client_postgres.post("/api/v1/tasks/", json={"title": "Someday task", "status": "someday"})
+
+        # Filter by status=next
+        response = client_postgres.get("/api/v1/tasks/?status=next")
+
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) >= 1
+        assert all(task["status"] == "next" for task in data)
+
+    def test_list_tasks_with_project_filter(self, client_postgres: TestClient):
+        """Should filter tasks by project_id."""
+        # Create a project
+        project_response = client_postgres.post("/api/v1/projects/", json={"name": "Test Project"})
+        project_id = project_response.json()["id"]
+
+        # Create task with project
+        client_postgres.post(
+            "/api/v1/tasks/", json={"title": "Project task", "project_id": project_id}
+        )
+        # Create task without project
+        client_postgres.post("/api/v1/tasks/", json={"title": "No project task"})
+
+        # Filter by project
+        response = client_postgres.get(f"/api/v1/tasks/?project_id={project_id}")
+
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) >= 1
+        assert all(task["project_id"] == project_id for task in data)
+
+
 class TestBlockedTaskStatusRules:
     """Test business rules for blocked tasks."""
 

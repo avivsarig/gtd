@@ -14,6 +14,8 @@ import {
   deleteTask,
   getProjects,
   createProject,
+  updateProject,
+  deleteProject,
   getNotes,
   createNote,
   updateNote,
@@ -23,6 +25,7 @@ import {
   deleteInboxItem,
   getContexts,
   createContext,
+  deleteContext,
   healthCheck,
 } from "./api"
 import {
@@ -515,5 +518,271 @@ describe("API Client - Health Check", () => {
     fetchMock.mockResolvedValue({ ok: false })
 
     await expect(healthCheck()).rejects.toThrow("Health check failed")
+  })
+})
+
+describe("API Client - Error Handling", () => {
+  let fetchMock: ReturnType<typeof vi.fn>
+
+  beforeEach(() => {
+    fetchMock = vi.fn()
+    global.fetch = fetchMock
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  describe("Network Errors", () => {
+    it("handles network failure on getTasks", async () => {
+      fetchMock.mockRejectedValue(new Error("Network error"))
+
+      await expect(getTasks()).rejects.toThrow()
+    })
+
+    it("handles network failure on createTask", async () => {
+      fetchMock.mockRejectedValue(new Error("Network error"))
+
+      await expect(createTask({ title: "Test" })).rejects.toThrow()
+    })
+
+    it("handles network failure on getProjects", async () => {
+      fetchMock.mockRejectedValue(new Error("Network error"))
+
+      await expect(getProjects()).rejects.toThrow()
+    })
+
+    it("handles network failure on getNotes", async () => {
+      fetchMock.mockRejectedValue(new Error("Network error"))
+
+      await expect(getNotes()).rejects.toThrow()
+    })
+
+    it("handles network failure on getInboxItems", async () => {
+      fetchMock.mockRejectedValue(new Error("Network error"))
+
+      await expect(getInboxItems()).rejects.toThrow()
+    })
+
+    it("handles network failure on getContexts", async () => {
+      fetchMock.mockRejectedValue(new Error("Network error"))
+
+      await expect(getContexts()).rejects.toThrow()
+    })
+  })
+
+  describe("404 Errors", () => {
+    it("handles 404 on updateTask", async () => {
+      fetchMock.mockResolvedValue({
+        ok: false,
+        status: 404,
+      })
+
+      await expect(updateTask("fake-id", { title: "Updated" })).rejects.toThrow(
+        "Failed to update task",
+      )
+    })
+
+    it("handles 404 on completeTask", async () => {
+      fetchMock.mockResolvedValue({
+        ok: false,
+        status: 404,
+      })
+
+      await expect(completeTask("fake-id")).rejects.toThrow()
+    })
+
+    it("handles 404 on deleteTask", async () => {
+      fetchMock.mockResolvedValue({
+        ok: false,
+        status: 404,
+      })
+
+      await expect(deleteTask("fake-id")).rejects.toThrow()
+    })
+
+    it("handles 404 on updateProject", async () => {
+      fetchMock.mockResolvedValue({
+        ok: false,
+        status: 404,
+      })
+
+      await expect(
+        updateProject("fake-id", { name: "Updated" }),
+      ).rejects.toThrow()
+    })
+
+    it("handles 404 on deleteProject", async () => {
+      fetchMock.mockResolvedValue({
+        ok: false,
+        status: 404,
+      })
+
+      await expect(deleteProject("fake-id")).rejects.toThrow()
+    })
+
+    it("handles 404 on deleteNote", async () => {
+      fetchMock.mockResolvedValue({
+        ok: false,
+        status: 404,
+      })
+
+      await expect(deleteNote("fake-id")).rejects.toThrow()
+    })
+
+    it("handles 404 on deleteInboxItem", async () => {
+      fetchMock.mockResolvedValue({
+        ok: false,
+        status: 404,
+      })
+
+      await expect(deleteInboxItem("fake-id")).rejects.toThrow()
+    })
+
+    it("handles 404 on deleteContext", async () => {
+      fetchMock.mockResolvedValue({
+        ok: false,
+        status: 404,
+      })
+
+      await expect(deleteContext("fake-id")).rejects.toThrow()
+    })
+  })
+
+  describe("500 Server Errors", () => {
+    it("handles 500 on getTasks", async () => {
+      fetchMock.mockResolvedValue({
+        ok: false,
+        status: 500,
+      })
+
+      await expect(getTasks()).rejects.toThrow("Failed to fetch tasks")
+    })
+
+    it("handles 500 on createTask", async () => {
+      fetchMock.mockResolvedValue({
+        ok: false,
+        status: 500,
+      })
+
+      await expect(createTask({ title: "Test" })).rejects.toThrow()
+    })
+
+    it("handles 500 on getProjects", async () => {
+      fetchMock.mockResolvedValue({
+        ok: false,
+        status: 500,
+      })
+
+      await expect(getProjects()).rejects.toThrow()
+    })
+
+    it("handles 500 on createProject", async () => {
+      fetchMock.mockResolvedValue({
+        ok: false,
+        status: 500,
+      })
+
+      await expect(createProject({ name: "Test" })).rejects.toThrow()
+    })
+
+    it("handles 500 on getNotes", async () => {
+      fetchMock.mockResolvedValue({
+        ok: false,
+        status: 500,
+      })
+
+      await expect(getNotes()).rejects.toThrow()
+    })
+
+    it("handles 500 on createNote", async () => {
+      fetchMock.mockResolvedValue({
+        ok: false,
+        status: 500,
+      })
+
+      await expect(
+        createNote({ title: "Test", content: "Test" }),
+      ).rejects.toThrow()
+    })
+
+    it("handles 500 on getInboxItems", async () => {
+      fetchMock.mockResolvedValue({
+        ok: false,
+        status: 500,
+      })
+
+      await expect(getInboxItems()).rejects.toThrow()
+    })
+
+    it("handles 500 on createInboxItem", async () => {
+      fetchMock.mockResolvedValue({
+        ok: false,
+        status: 500,
+      })
+
+      await expect(createInboxItem({ content: "Test" })).rejects.toThrow()
+    })
+  })
+
+  describe("422 Validation Errors", () => {
+    it("handles 422 on createTask with invalid data", async () => {
+      fetchMock.mockResolvedValue({
+        ok: false,
+        status: 422,
+      })
+
+      await expect(createTask({ title: "" })).rejects.toThrow()
+    })
+
+    it("handles 422 on createProject with invalid data", async () => {
+      fetchMock.mockResolvedValue({
+        ok: false,
+        status: 422,
+      })
+
+      await expect(createProject({ name: "" })).rejects.toThrow()
+    })
+
+    it("handles 422 on createNote with invalid data", async () => {
+      fetchMock.mockResolvedValue({
+        ok: false,
+        status: 422,
+      })
+
+      await expect(createNote({ title: "", content: "" })).rejects.toThrow()
+    })
+
+    it("handles 422 on createInboxItem with invalid data", async () => {
+      fetchMock.mockResolvedValue({
+        ok: false,
+        status: 422,
+      })
+
+      await expect(createInboxItem({ content: "" })).rejects.toThrow()
+    })
+  })
+
+  describe("Response Parsing", () => {
+    it("handles malformed JSON response", async () => {
+      fetchMock.mockResolvedValue({
+        ok: true,
+        json: async () => {
+          throw new Error("Invalid JSON")
+        },
+      })
+
+      await expect(getTasks()).rejects.toThrow()
+    })
+
+    it("handles empty response where data expected", async () => {
+      fetchMock.mockResolvedValue({
+        ok: true,
+        json: async () => null,
+      })
+
+      const result = await getTasks()
+      expect(result).toBeNull()
+    })
   })
 })

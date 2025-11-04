@@ -115,6 +115,37 @@ class TestProjectAPI:
         assert response.status_code == 404
         assert "not found" in response.json()["detail"].lower()
 
+    def test_get_project_with_stats(self, client_postgres: TestClient):
+        """Should retrieve project with task statistics using with_stats parameter."""
+        # Create project
+        project_response = client_postgres.post(
+            "/api/v1/projects/", json={"name": "Project with Stats"}
+        )
+        project_id = project_response.json()["id"]
+
+        # Create tasks for the project
+        client_postgres.post(
+            "/api/v1/tasks/", json={"title": "Task 1", "project_id": project_id, "status": "next"}
+        )
+        task2_response = client_postgres.post(
+            "/api/v1/tasks/", json={"title": "Task 2", "project_id": project_id}
+        )
+        task2_id = task2_response.json()["id"]
+        client_postgres.post(f"/api/v1/tasks/{task2_id}/complete")
+
+        # Get project with stats
+        response = client_postgres.get(f"/api/v1/projects/{project_id}?with_stats=true")
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["id"] == project_id
+        assert "task_count" in data
+        assert "completed_task_count" in data
+        assert "next_task_count" in data
+        assert data["task_count"] == 2
+        assert data["completed_task_count"] == 1
+        assert data["next_task_count"] == 1
+
     def test_update_project(self, client_postgres: TestClient):
         """Should update project fields."""
         # Create project
@@ -166,6 +197,15 @@ class TestProjectAPI:
         assert response.status_code == 200
         assert response.json()["status"] == "on_hold"
 
+    def test_update_project_not_found(self, client_postgres: TestClient):
+        """Should return 404 when updating non-existent project."""
+        fake_uuid = "00000000-0000-0000-0000-000000000000"
+        response = client_postgres.put(
+            f"/api/v1/projects/{fake_uuid}", json={"name": "Updated Name"}
+        )
+
+        assert response.status_code == 404
+
     def test_complete_project(self, client_postgres: TestClient):
         """Should mark project as completed."""
         # Create project
@@ -181,6 +221,13 @@ class TestProjectAPI:
         data = response.json()
         assert data["status"] == "completed"
         assert data["completed_at"] is not None
+
+    def test_complete_project_not_found(self, client_postgres: TestClient):
+        """Should return 404 when completing non-existent project."""
+        fake_uuid = "00000000-0000-0000-0000-000000000000"
+        response = client_postgres.post(f"/api/v1/projects/{fake_uuid}/complete")
+
+        assert response.status_code == 404
 
     def test_delete_project(self, client_postgres: TestClient):
         """Should soft delete project."""
