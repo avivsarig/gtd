@@ -16,6 +16,13 @@ build/
 *.log
 coverage/
 *.tsbuildinfo
+package-lock.json
+
+# E2E Tests
+/e2e/reports/
+/test-results/
+/playwright-report/
+/playwright/.cache/
 
 # Docker
 .dockerignore

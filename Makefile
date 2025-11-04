@@ -3,14 +3,15 @@ EXEC := $(DC) exec $(if $(shell [ -t 0 ] || echo 1),-T,)
 
 .PHONY: help up down restart clean status logs \
 	db-migrate db-reset db-shell \
-	lint typecheck format test
+	lint typecheck format test test-e2e e2e-install
 
 help:
 	@echo "Usage: make [target]"
 	@echo ""
 	@echo "Services:     up down restart clean status logs"
 	@echo "Database:     db-migrate db-reset db-shell"
-	@echo "Code Quality: lint typecheck format test"
+	@echo "Code Quality: lint typecheck format test test-e2e"
+	@echo "E2E Setup:    e2e-install"
 
 up:
 	$(DC) up -d
@@ -67,5 +68,22 @@ test-be:
 	@$(EXEC) backend pytest tests/
 test-fe:
 	@$(EXEC) frontend npm test
+
+e2e-install:
+	@echo "Installing Playwright and dependencies..."
+	@npm install
+	@npx playwright install --with-deps chromium
+
+test-e2e:
+	@echo "Running E2E tests (requires: make up)"
+	@npm run test:e2e
+
+test-e2e-ui:
+	@echo "Running E2E tests in UI mode..."
+	@npm run test:e2e:ui
+
+test-e2e-debug:
+	@echo "Running E2E tests in debug mode..."
+	@npm run test:e2e:debug
 
 code: format lint typecheck test

@@ -67,6 +67,26 @@ For local development outside Docker, copy `frontend/.env.example` to `frontend/
 
 See [Makefile](Makefile) for all available commands including linting, formatting, and testing.
 
+### Testing
+
+The project has comprehensive test coverage:
+
+**Unit & Integration Tests** (run in Docker):
+```bash
+make test          # Run all tests (backend + frontend)
+make test-be       # Backend tests only (pytest)
+make test-fe       # Frontend tests only (Vitest)
+```
+
+**E2E Tests** (run on host with Playwright):
+```bash
+make e2e-install   # First-time setup (install Playwright)
+make test-e2e      # Run all E2E tests
+make test-e2e-ui   # Run with interactive UI
+```
+
+See [e2e/README.md](e2e/README.md) for detailed E2E testing documentation.
+
 ### Pre-commit Hooks
 
 The project uses pre-commit hooks to ensure code quality. Every commit automatically runs:
