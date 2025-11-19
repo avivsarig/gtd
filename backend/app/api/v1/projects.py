@@ -8,26 +8,41 @@ from sqlalchemy.orm import Session
 from app.controllers.project_controller import ProjectController
 from app.db.database import get_db
 from app.dependencies import get_project_controller
-from app.schemas.project import ProjectCreate, ProjectResponse, ProjectUpdate, ProjectWithStats
+from app.schemas.project import (
+    ProjectCreate,
+    ProjectResponse,
+    ProjectStatus,
+    ProjectUpdate,
+    ProjectWithStats,
+)
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 
 
 @router.get("/")
 def list_projects(
+    status: ProjectStatus | None = Query(None, description="Filter by project status"),
     with_stats: bool = Query(False, description="Include task statistics"),
     db: Session = Depends(get_db),
     controller: ProjectController = Depends(get_project_controller),
 ) -> list[ProjectResponse] | list[ProjectWithStats]:
     """
-    Get all active projects.
+    Get all projects.
 
     Returns list of all non-deleted projects ordered by created_at descending.
-    Use ?with_stats=true to include task counts.
+
+    Query parameters:
+    - status: Filter by project status (active, on_hold, completed)
+    - with_stats: Include task statistics (default: false)
+
+    Examples:
+    - GET /api/v1/projects/ - All projects
+    - GET /api/v1/projects/?status=active - Only active projects
+    - GET /api/v1/projects/?status=completed&with_stats=true - Completed projects with stats
     """
     if with_stats:
-        return controller.list_projects_with_stats(db)
-    return controller.list_projects(db)
+        return controller.list_projects_with_stats(db, status=status)
+    return controller.list_projects(db, status=status)
 
 
 @router.get("/{project_id}")

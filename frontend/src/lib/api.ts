@@ -39,11 +39,40 @@ export interface UpdateTaskInput {
   context_id?: string | null
 }
 
+export interface TaskFilters {
+  status?: TaskStatus
+  project_id?: string
+  context_id?: string
+  scheduled_after?: string
+  scheduled_before?: string
+  show_completed?: boolean
+}
+
 /**
- * Fetch all tasks
+ * Fetch all tasks with optional filters
  */
-export async function getTasks(): Promise<Task[]> {
-  const response = await fetch(`${API_BASE_URL}/api/v1/tasks`)
+export async function getTasks(filters?: TaskFilters): Promise<Task[]> {
+  const params = new URLSearchParams()
+
+  if (filters) {
+    if (filters.status) params.set("status", filters.status)
+    if (filters.project_id) params.set("project_id", filters.project_id)
+    if (filters.context_id) params.set("context_id", filters.context_id)
+    if (filters.scheduled_after)
+      params.set("scheduled_after", filters.scheduled_after)
+    if (filters.scheduled_before)
+      params.set("scheduled_before", filters.scheduled_before)
+    if (filters.show_completed !== undefined) {
+      params.set("show_completed", String(filters.show_completed))
+    }
+  }
+
+  const queryString = params.toString()
+  const url = queryString
+    ? `${API_BASE_URL}/api/v1/tasks?${queryString}`
+    : `${API_BASE_URL}/api/v1/tasks`
+
+  const response = await fetch(url)
   if (!response.ok) {
     throw new Error(MESSAGES.api.FETCH_TASKS_FAILED)
   }
@@ -155,13 +184,29 @@ export interface CreateProjectInput {
   status?: ProjectStatus
 }
 
+export interface ProjectFilters {
+  status?: ProjectStatus
+  with_stats?: boolean
+}
+
 /**
- * Fetch all projects
+ * Fetch all projects with optional filters
  */
-export async function getProjects(withStats = false): Promise<Project[]> {
-  const url = withStats
-    ? `${API_BASE_URL}/api/v1/projects/?with_stats=true`
+export async function getProjects(
+  filters?: ProjectFilters,
+): Promise<Project[]> {
+  const params = new URLSearchParams()
+
+  if (filters) {
+    if (filters.status) params.set("status", filters.status)
+    if (filters.with_stats) params.set("with_stats", "true")
+  }
+
+  const queryString = params.toString()
+  const url = queryString
+    ? `${API_BASE_URL}/api/v1/projects/?${queryString}`
     : `${API_BASE_URL}/api/v1/projects/`
+
   const response = await fetch(url)
   if (!response.ok) {
     throw new Error(MESSAGES.api.FETCH_PROJECTS_FAILED)
@@ -269,13 +314,31 @@ export interface UpdateNoteInput {
   project_id?: string | null
 }
 
+export interface NoteFilters {
+  project_id?: string
+  created_after?: string
+  created_before?: string
+}
+
 /**
- * Fetch all notes
+ * Fetch all notes with optional filters
  */
-export async function getNotes(projectId?: string): Promise<Note[]> {
-  const url = projectId
-    ? `${API_BASE_URL}/api/v1/notes/?project_id=${projectId}`
+export async function getNotes(filters?: NoteFilters): Promise<Note[]> {
+  const params = new URLSearchParams()
+
+  if (filters) {
+    if (filters.project_id) params.set("project_id", filters.project_id)
+    if (filters.created_after)
+      params.set("created_after", filters.created_after)
+    if (filters.created_before)
+      params.set("created_before", filters.created_before)
+  }
+
+  const queryString = params.toString()
+  const url = queryString
+    ? `${API_BASE_URL}/api/v1/notes/?${queryString}`
     : `${API_BASE_URL}/api/v1/notes/`
+
   const response = await fetch(url)
   if (!response.ok) {
     throw new Error(MESSAGES.api.FETCH_NOTES_FAILED)

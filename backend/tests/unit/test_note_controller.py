@@ -23,7 +23,11 @@ class TestListNotes:
         result = controller.list_notes(mock_db)
 
         mock_repository.get_all.assert_called_once_with(
-            mock_db, include_deleted=False, project_id=None
+            mock_db,
+            include_deleted=False,
+            project_id=None,
+            created_after=None,
+            created_before=None,
         )
         assert result == []
 
@@ -39,7 +43,11 @@ class TestListNotes:
         controller.list_notes(mock_db, project_id=project_id)
 
         mock_repository.get_all.assert_called_once_with(
-            mock_db, include_deleted=False, project_id=project_id
+            mock_db,
+            include_deleted=False,
+            project_id=project_id,
+            created_after=None,
+            created_before=None,
         )
 
 

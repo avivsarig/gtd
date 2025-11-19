@@ -32,10 +32,11 @@ def list_tasks(
     scheduled_before: date | None = Query(
         None, description="Filter tasks scheduled before this date"
     ),
+    show_completed: bool = Query(True, description="Include completed tasks (default: true)"),
     db: Session = Depends(get_db),
     controller: TaskController = Depends(get_task_controller),
 ):
-    """Get all active tasks with optional filters.
+    """Get all tasks with optional filters.
 
     Returns list of all non-deleted tasks ordered by created_at descending.
 
@@ -45,10 +46,12 @@ def list_tasks(
     - ?context_id=<uuid> - Only tasks with specific context
     - ?scheduled_after=2025-01-01 - Tasks scheduled on or after date
     - ?scheduled_before=2025-12-31 - Tasks scheduled on or before date
+    - ?show_completed=false - Hide completed tasks (default: true)
 
     Examples:
     - /tasks?status=next&context_id=abc123 - Next actions with specific context
     - /tasks?project_id=xyz789&status=waiting - Waiting tasks in project
+    - /tasks?show_completed=false - Only incomplete tasks
     """
     return controller.list_tasks(
         db,
@@ -57,6 +60,7 @@ def list_tasks(
         context_id=context_id,
         scheduled_after=scheduled_after,
         scheduled_before=scheduled_before,
+        show_completed=show_completed,
     )
 
 

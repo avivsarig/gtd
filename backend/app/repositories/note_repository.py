@@ -1,5 +1,6 @@
 """Note repository - Data access layer for Note operations."""
 
+from datetime import date
 from uuid import UUID
 
 from sqlalchemy.orm import Session
@@ -17,14 +18,21 @@ class NoteRepository(BaseRepository[Note, NoteCreate, NoteUpdate]):
         super().__init__(Note)
 
     def get_all(
-        self, db: Session, include_deleted: bool = False, project_id: UUID | None = None
+        self,
+        db: Session,
+        include_deleted: bool = False,
+        project_id: UUID | None = None,
+        created_after: date | None = None,
+        created_before: date | None = None,
     ) -> list[Note]:
-        """Get all notes, optionally filtered by project.
+        """Get all notes, optionally filtered by project and date range.
 
         Args:
             db: Database session
             include_deleted: Whether to include soft-deleted notes
             project_id: Optional project UUID to filter by
+            created_after: Filter notes created on or after this date (inclusive)
+            created_before: Filter notes created on or before this date (inclusive)
 
         Returns:
             List of Note objects ordered by updated_at descending
@@ -36,6 +44,12 @@ class NoteRepository(BaseRepository[Note, NoteCreate, NoteUpdate]):
 
         if project_id:
             query = query.filter(Note.project_id == self._uuid_to_str(project_id))
+
+        if created_after is not None:
+            query = query.filter(Note.created_at >= created_after)
+
+        if created_before is not None:
+            query = query.filter(Note.created_at <= created_before)
 
         return query.order_by(Note.updated_at.desc()).all()
 

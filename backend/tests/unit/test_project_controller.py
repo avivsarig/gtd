@@ -32,7 +32,7 @@ class TestListProjects:
 
         result = controller.list_projects(mock_db)
 
-        mock_repository.get_all.assert_called_once_with(mock_db, include_deleted=False)
+        mock_repository.get_all.assert_called_once_with(mock_db, include_deleted=False, status=None)
         assert result == mock_projects
 
     def test_list_projects_returns_repository_result(self):
@@ -83,7 +83,7 @@ class TestListProjectsWithStats:
 
         result = controller.list_projects_with_stats(mock_db)
 
-        mock_repository.get_all.assert_called_once_with(mock_db, include_deleted=False)
+        mock_repository.get_all.assert_called_once_with(mock_db, include_deleted=False, status=None)
         mock_repository.get_task_stats.assert_called_once_with(mock_db, project_id)
         assert len(result) == 1
         assert isinstance(result[0], ProjectWithStats)

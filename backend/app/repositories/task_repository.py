@@ -27,6 +27,7 @@ class TaskRepository(BaseRepository[Task, TaskCreate, TaskUpdate]):
         context_id: UUID | None = None,
         scheduled_after: date | None = None,
         scheduled_before: date | None = None,
+        show_completed: bool = True,
     ) -> list[Task]:
         """Get all tasks from database with optional filters.
 
@@ -38,6 +39,7 @@ class TaskRepository(BaseRepository[Task, TaskCreate, TaskUpdate]):
             context_id: Filter by context ID (tasks with this context)
             scheduled_after: Filter tasks scheduled after this date (inclusive)
             scheduled_before: Filter tasks scheduled before this date (inclusive)
+            show_completed: Include completed tasks (default: True)
 
         Returns:
             List of Task objects ordered by created_at descending
@@ -46,6 +48,9 @@ class TaskRepository(BaseRepository[Task, TaskCreate, TaskUpdate]):
 
         if not include_deleted:
             query = query.filter(Task.deleted_at.is_(None))
+
+        if not show_completed:
+            query = query.filter(Task.completed_at.is_(None))
 
         # Apply filters
         if status is not None:

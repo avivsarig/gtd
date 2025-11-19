@@ -1,5 +1,6 @@
 """Note controller - Business logic layer for Note operations."""
 
+from datetime import date
 from uuid import UUID
 
 from sqlalchemy.orm import Session
@@ -13,22 +14,36 @@ from app.schemas.note import NoteCreate, NoteUpdate
 class NoteController(BaseController[Note, NoteRepositoryProtocol]):
     """Controller for Note entity with business logic."""
 
-    def list_notes(self, db: Session, project_id: UUID | None = None) -> list[Note]:
+    def list_notes(
+        self,
+        db: Session,
+        project_id: UUID | None = None,
+        created_after: date | None = None,
+        created_before: date | None = None,
+    ) -> list[Note]:
         """Get list of all active (non-deleted) notes.
 
         Business logic:
         - Only return non-deleted notes
-        - Optionally filter by project
+        - Optionally filter by project and date range
         - Ordered by updated_at descending
 
         Args:
             db: Database session
             project_id: Optional project UUID to filter by
+            created_after: Filter notes created on or after this date
+            created_before: Filter notes created on or before this date
 
         Returns:
             List of Note objects
         """
-        return self.repository.get_all(db, include_deleted=False, project_id=project_id)
+        return self.repository.get_all(
+            db,
+            include_deleted=False,
+            project_id=project_id,
+            created_after=created_after,
+            created_before=created_before,
+        )
 
     def get_note(self, db: Session, note_id: UUID) -> Note | None:
         """Get a single note by ID.

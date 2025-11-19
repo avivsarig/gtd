@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from app.models.project import Project
 from app.models.task import Task
 from app.repositories.base_repository import BaseRepository
-from app.schemas.project import ProjectCreate, ProjectUpdate
+from app.schemas.project import ProjectCreate, ProjectStatus, ProjectUpdate
 from app.schemas.task import TaskStatus
 
 
@@ -19,12 +19,15 @@ class ProjectRepository(BaseRepository[Project, ProjectCreate, ProjectUpdate]):
         """Initialize ProjectRepository with Project model."""
         super().__init__(Project)
 
-    def get_all(self, db: Session, include_deleted: bool = False) -> list[Project]:
+    def get_all(
+        self, db: Session, include_deleted: bool = False, status: ProjectStatus | None = None
+    ) -> list[Project]:
         """Get all projects.
 
         Args:
             db: Database session
             include_deleted: Whether to include soft-deleted projects
+            status: Optional status filter
 
         Returns:
             List of Project objects ordered by created_at descending
@@ -33,6 +36,9 @@ class ProjectRepository(BaseRepository[Project, ProjectCreate, ProjectUpdate]):
 
         if not include_deleted:
             query = query.filter(Project.deleted_at.is_(None))
+
+        if status is not None:
+            query = query.filter(Project.status == status.value)
 
         return query.order_by(Project.created_at.desc()).all()
 

@@ -22,11 +22,13 @@ class TaskController(BaseController[Task, TaskRepositoryProtocol]):
         context_id: UUID | None = None,
         scheduled_after: date | None = None,
         scheduled_before: date | None = None,
+        show_completed: bool = True,
     ) -> list[Task]:
         """Get list of all active (non-deleted) tasks with optional filters.
 
         Business logic:
         - Only return non-deleted tasks
+        - Optionally exclude completed tasks
         - Ordered by created_at descending
         - Apply filters as specified
 
@@ -37,6 +39,7 @@ class TaskController(BaseController[Task, TaskRepositoryProtocol]):
             context_id: Filter by context ID
             scheduled_after: Filter tasks scheduled after this date
             scheduled_before: Filter tasks scheduled before this date
+            show_completed: Include completed tasks (default: True)
 
         Returns:
             List of Task objects matching filters
@@ -49,6 +52,7 @@ class TaskController(BaseController[Task, TaskRepositoryProtocol]):
             context_id=context_id,
             scheduled_after=scheduled_after,
             scheduled_before=scheduled_before,
+            show_completed=show_completed,
         )
 
     def get_task(self, db: Session, task_id: UUID) -> Task | None:

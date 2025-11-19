@@ -213,7 +213,9 @@ describe("Home", () => {
       render(<Home />)
 
       await waitFor(() => {
-        expect(vi.mocked(api.getProjects)).toHaveBeenCalledWith(true)
+        expect(vi.mocked(api.getProjects)).toHaveBeenCalledWith({
+          with_stats: true,
+        })
       })
     })
   })

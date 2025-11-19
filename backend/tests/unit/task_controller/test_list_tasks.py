@@ -32,6 +32,7 @@ class TestListTasks:
             context_id=None,
             scheduled_after=None,
             scheduled_before=None,
+            show_completed=True,
         )
         assert created_task == mock_tasks
 

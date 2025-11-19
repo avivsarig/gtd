@@ -1,5 +1,6 @@
 """Notes API endpoints."""
 
+from datetime import date
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -16,16 +17,29 @@ router = APIRouter(prefix="/notes", tags=["notes"])
 @router.get("/")
 def list_notes(
     project_id: UUID | None = Query(None, description="Filter by project ID"),
+    created_after: date | None = Query(None, description="Filter notes created after this date"),
+    created_before: date | None = Query(None, description="Filter notes created before this date"),
     db: Session = Depends(get_db),
     controller: NoteController = Depends(get_note_controller),
 ) -> list[NoteResponse]:
     """
-    Get all active notes.
+    Get all notes with optional filters.
 
     Returns list of all non-deleted notes ordered by updated_at descending.
-    Use ?project_id=<uuid> to filter by project.
+
+    Query parameters:
+    - project_id: Filter by project ID
+    - created_after: Filter notes created on or after this date
+    - created_before: Filter notes created on or before this date
+
+    Examples:
+    - GET /api/v1/notes/ - All notes
+    - GET /api/v1/notes/?project_id=<uuid> - Notes for specific project
+    - GET /api/v1/notes/?created_after=2025-01-01&created_before=2025-12-31 - Notes in date range
     """
-    return controller.list_notes(db, project_id=project_id)
+    return controller.list_notes(
+        db, project_id=project_id, created_after=created_after, created_before=created_before
+    )
 
 
 @router.get("/{note_id}")

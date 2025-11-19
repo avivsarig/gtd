@@ -20,31 +20,36 @@ from app.schemas.project import (
 class ProjectController(BaseController[Project, ProjectRepositoryProtocol]):
     """Controller for Project entity with business logic."""
 
-    def list_projects(self, db: Session) -> list[Project]:
+    def list_projects(self, db: Session, status: ProjectStatus | None = None) -> list[Project]:
         """Get list of all active (non-deleted) projects.
 
         Business logic:
         - Only return non-deleted projects
+        - Optionally filter by status
         - Ordered by created_at descending
 
         Args:
             db: Database session
+            status: Optional status filter
 
         Returns:
             List of Project objects
         """
-        return self.repository.get_all(db, include_deleted=False)
+        return self.repository.get_all(db, include_deleted=False, status=status)
 
-    def list_projects_with_stats(self, db: Session) -> list[ProjectWithStats]:
+    def list_projects_with_stats(
+        self, db: Session, status: ProjectStatus | None = None
+    ) -> list[ProjectWithStats]:
         """Get list of projects with task statistics.
 
         Args:
             db: Database session
+            status: Optional status filter
 
         Returns:
             List of ProjectWithStats objects
         """
-        projects = self.repository.get_all(db, include_deleted=False)
+        projects = self.repository.get_all(db, include_deleted=False, status=status)
         result = []
 
         for project in projects:

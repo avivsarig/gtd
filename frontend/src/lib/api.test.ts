@@ -224,7 +224,7 @@ describe("API Client - Projects", () => {
         json: async () => mockProjects,
       })
 
-      await getProjects(true)
+      await getProjects({ with_stats: true })
 
       expect(fetchMock).toHaveBeenCalledWith(
         `${API_BASE_URL}/api/v1/projects/?with_stats=true`,
@@ -290,7 +290,7 @@ describe("API Client - Notes", () => {
         json: async () => mockNotes,
       })
 
-      await getNotes(projectId)
+      await getNotes({ project_id: projectId })
 
       expect(fetchMock).toHaveBeenCalledWith(
         `${API_BASE_URL}/api/v1/notes/?project_id=${projectId}`,

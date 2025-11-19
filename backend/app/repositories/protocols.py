@@ -113,6 +113,7 @@ class TaskRepositoryProtocol(Protocol):
         context_id: UUID | None = None,
         scheduled_after: date | None = None,
         scheduled_before: date | None = None,
+        show_completed: bool = True,
     ) -> list[Any]:
         """Retrieve all tasks with optional filters.
 
@@ -124,6 +125,7 @@ class TaskRepositoryProtocol(Protocol):
             context_id: Filter by context ID (tasks with this context)
             scheduled_after: Filter tasks scheduled after this date (inclusive)
             scheduled_before: Filter tasks scheduled before this date (inclusive)
+            show_completed: Include completed tasks (default: True)
 
         Returns:
             List of Task objects ordered by created_at descending
@@ -155,14 +157,21 @@ class NoteRepositoryProtocol(Protocol):
         ...
 
     def get_all(
-        self, db: Session, include_deleted: bool = False, project_id: UUID | None = None
+        self,
+        db: Session,
+        include_deleted: bool = False,
+        project_id: UUID | None = None,
+        created_after: date | None = None,
+        created_before: date | None = None,
     ) -> list[Any]:
-        """Retrieve all notes with optional project filter.
+        """Retrieve all notes with optional filters.
 
         Args:
             db: Database session
             include_deleted: Whether to include soft-deleted notes
             project_id: Optional project UUID to filter by
+            created_after: Filter notes created on or after this date (inclusive)
+            created_before: Filter notes created on or before this date (inclusive)
 
         Returns:
             List of Note objects ordered by updated_at descending
@@ -258,12 +267,15 @@ class ProjectRepositoryProtocol(Protocol):
         """Retrieve a project by its UUID."""
         ...
 
-    def get_all(self, db: Session, include_deleted: bool = False) -> list[Any]:
+    def get_all(
+        self, db: Session, include_deleted: bool = False, status: Any | None = None
+    ) -> list[Any]:
         """Retrieve all projects.
 
         Args:
             db: Database session
             include_deleted: Whether to include soft-deleted projects
+            status: Optional status filter (active/on_hold/completed)
 
         Returns:
             List of Project objects ordered by created_at descending

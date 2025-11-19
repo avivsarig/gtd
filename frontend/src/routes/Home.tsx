@@ -53,7 +53,7 @@ export function Home() {
   })
 
   const { data: projects, reload: loadProjects } = useResourceLoader(
-    () => getProjects(true),
+    () => getProjects({ with_stats: true }),
     {
       errorContext: MESSAGES.errors.console.LOAD_PROJECTS_FAILED,
     },
